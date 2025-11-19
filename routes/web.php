@@ -21,8 +21,12 @@ use App\Http\Controllers\FaceEnrollmentController;
 use App\Http\Controllers\HistoryKaryawanController;
 use App\Http\Controllers\IzinKaryawanController;
 use App\Http\Controllers\PresensiKaryawanController;
+use App\Http\Controllers\PresensiWithFaceController;
 use App\Http\Controllers\ProfileKaryawanController;
+use App\Http\Controllers\SimpleFacePresensiController;
 use Illuminate\Support\Facades\Route;
+
+
 
 
 /*
@@ -67,8 +71,6 @@ Route::middleware('auth:karyawan')->group(function () {
 
     Route::post('/gethistori', [HistoryKaryawanController::class, 'gethistori']);
 
-
-
     // Izin
     Route::controller(IzinKaryawanController::class)->prefix('presensi/izin')->name('izin.')->group(function () {
         Route::get('/', 'index')->name('index');
@@ -90,7 +92,6 @@ Route::middleware('auth:karyawan')->group(function () {
     Route::post('/changepassword', [ProfileKaryawanController::class, 'changePassword'])->name('profile.changePassword');
     Route::get('/getprofile', [ProfileKaryawanController::class, 'getProfile'])->name('profile.data');
 
-
     // Face Enrollment & Verification
     Route::prefix('face')->name('face.')->group(function () {
         Route::get('/enrollment', [FaceEnrollmentController::class, 'index'])->name('enrollment');
@@ -99,7 +100,18 @@ Route::middleware('auth:karyawan')->group(function () {
         Route::delete('/delete', [FaceEnrollmentController::class, 'destroy'])->name('delete');
     });
 
-   
+    // ===== SIMPLE FACE PRESENSI (STANDALONE) =====
+    Route::prefix('face-presensi')->name('face-presensi.')->group(function () {
+        Route::get('/dashboard', [SimpleFacePresensiController::class, 'dashboard'])->name('dashboard');
+        Route::get('/create', [SimpleFacePresensiController::class, 'create'])->name('create');
+        Route::post('/store', [SimpleFacePresensiController::class, 'store'])->name('store');
+        
+        // Enrollment khusus simple-face
+        Route::get('/enrollment', [SimpleFacePresensiController::class, 'enrollment'])->name('enrollment');
+        Route::post('/enrollment/store', [SimpleFacePresensiController::class, 'enrollmentStore'])->name('enrollment.store');
+        Route::get('/descriptor', [SimpleFacePresensiController::class, 'getDescriptor'])->name('descriptor');
+        Route::delete('/enrollment/delete', [SimpleFacePresensiController::class, 'deleteEnrollment'])->name('enrollment.delete');
+    });
 });
 
 // ========================================

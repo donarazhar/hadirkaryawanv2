@@ -1,0 +1,71 @@
+{
+    "name": "Hadir Karyawan - YPI Al Azhar",
+    "short_name": "Hadir Karyawan",
+    "description": "Sistem Presensi Karyawan YPI Al Azhar",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#0053C5",
+    "orientation": "portrait",
+    "scope": "/",
+    "icons": [
+      {
+        "src": "/assets/img/logo-ypi.png",
+        "sizes": "192x192",
+        "type": "image/png",
+        "purpose": "any maskable"
+      },
+      {
+        "src": "/assets/img/logo-ypi.png",
+        "sizes": "512x512",
+        "type": "image/png",
+        "purpose": "any maskable"
+      }
+    ],
+    "screenshots": [
+      {
+        "src": "/assets/img/screenshot-1.png",
+        "sizes": "540x720",
+        "type": "image/png"
+      }
+    ],
+    "categories": ["productivity", "business"],
+    "shortcuts": [
+      {
+        "name": "Presensi",
+        "short_name": "Presensi",
+        "description": "Absen masuk/pulang",
+        "url": "/presensi/create",
+        "icons": [
+          {
+            "src": "/assets/img/logo-ypi.png",
+            "sizes": "96x96"
+          }
+        ]
+      },
+      {
+        "name": "Dashboard",
+        "short_name": "Dashboard",
+        "description": "Lihat dashboard",
+        "url": "/dashboard",
+        "icons": [
+          {
+            "src": "/assets/img/logo-ypi.png",
+            "sizes": "96x96"
+          }
+        ]
+      },
+      {
+        "name": "Histori",
+        "short_name": "Histori",
+        "description": "Riwayat presensi",
+        "url": "/presensi/histori",
+        "icons": [
+          {
+            "src": "/assets/img/logo-ypi.png",
+            "sizes": "96x96"
+          }
+        ]
+      }
+    ]
+  }

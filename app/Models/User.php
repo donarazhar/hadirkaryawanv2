@@ -2,46 +2,52 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'name',
         'email',
         'password',
+        'role',
+        'kode_cabang',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+    ];
+
+    // Relationship
+    public function cabang()
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return $this->belongsTo(Cabang::class, 'kode_cabang', 'kode_cabang');
+    }
+
+    // Check if user is superadmin
+    public function isSuperAdmin()
+    {
+        return $this->role === 'superadmin';
+    }
+
+    // Check if user is admin
+    public function isAdmin()
+    {
+        return $this->role === 'admin';
+    }
+
+    // Check if user is pimpinan
+    public function isPimpinan()
+    {
+        return $this->role === 'pimpinan';
     }
 }

@@ -2,46 +2,83 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
+
+    // ========== KARYAWAN LOGIN ==========
+    public function login()
+    {
+        // If already logged in, redirect to dashboard
+        if (Auth::guard('karyawan')->check()) {
+            return redirect()->route('dashboard');
+        }
+
+        return view('karyawan.auth.login');
+    }
+
     public function proseslogin(Request $request)
     {
-        // $pass = 123;
-        // echo Hash::make($pass);
+        $request->validate([
+            'nik' => 'required',
+            'password' => 'required'
+        ], [
+            'nik.required' => 'NIK harus diisi',
+            'password.required' => 'Password harus diisi'
+        ]);
 
-        if (Auth::guard('karyawan')->attempt(['nik' => $request->nik, 'password' => $request->password])) {
-            return redirect('/dashboard');
-        } else {
-            return redirect('/')->with(['warning' => 'NIK/Password Salah']);
+        $credentials = [
+            'nik' => $request->nik,
+            'password' => $request->password
+        ];
+
+        // Attempt login
+        if (Auth::guard('karyawan')->attempt($credentials, $request->filled('remember'))) {
+            $request->session()->regenerate();
+
+            $user = Auth::guard('karyawan')->user();
+
+            Log::info('User logged in successfully', [
+                'nik' => $user->nik,
+                'nama' => $user->nama_lengkap
+            ]);
+
+            // Redirect to intended URL or dashboard
+            return redirect()->intended(route('dashboard'))
+                ->with('success', 'Selamat datang, ' . $user->nama_lengkap);
         }
+
+        Log::warning('Failed login attempt', ['nik' => $request->nik]);
+
+        return back()
+            ->withInput($request->only('nik'))
+            ->with('error', 'NIK atau password salah');
     }
 
-    public function proseslogout()
+    public function proseslogout(Request $request)
     {
-        if (Auth::guard('karyawan')->check()) {
-            Auth::guard('karyawan')->logout();
-            return redirect('/');
-        }
-    }
+        $user = Auth::guard('karyawan')->user();
 
-    public function prosesloginadmin(Request $request)
-    {
-        if (Auth::guard('user')->attempt(['email' => $request->email, 'password' => $request->password])) {
-            return redirect('/panel/dashboardadmin');
-        } else {
-            return redirect('/panel')->with(['warning' => 'Email/Password Salah']);
+        if ($user) {
+            Log::info('User logged out', [
+                'nik' => $user->nik,
+                'nama' => $user->nama_lengkap
+            ]);
         }
-    }
 
-    public function proseslogoutadmin()
-    {
-        if (Auth::guard('user')->check()) {
-            Auth::guard('user')->logout();
-            return redirect('/panel');
-        }
+        Auth::guard('karyawan')->logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('login')
+            ->with('success', 'Anda telah logout');
     }
 }

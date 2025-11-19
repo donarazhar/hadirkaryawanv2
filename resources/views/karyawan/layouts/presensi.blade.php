@@ -9,7 +9,7 @@
     <meta name="theme-color" content="#0053C5">
     <title>YPI Al Azhar - E-Presensi</title>
     <meta name="description" content="Sistem Presensi YPI Al Azhar">
-    <link rel="shortcut icon" href="https://siap.al-azhar.id/upload/favicon.ico" type="image/x-icon"/>
+    <link rel="shortcut icon" href="https://siap.al-azhar.id/upload/favicon.ico" type="image/x-icon" />
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
 
     <style>
@@ -403,12 +403,112 @@
     @stack('styles')
 </head>
 
+@php
+$nik = Auth::guard('karyawan')->user()->nik;
+$hasFaceData = DB::table('face_data')
+->where('nik', $nik)
+->where('status', 'active')
+->exists();
+@endphp
+
+@if(!$hasFaceData)
+<!-- Face Enrollment Banner -->
+<div class="alert-banner" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); padding: 16px 20px; margin: 0 0 16px 0; border-radius: 16px; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);">
+    <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            <ion-icon name="scan-outline" style="font-size: 24px; color: white;"></ion-icon>
+        </div>
+        <div style="flex: 1;">
+            <h6 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 700; color: white;">
+                Face Recognition Belum Terdaftar
+            </h6>
+            <p style="margin: 0; font-size: 12px; color: rgba(255, 255, 255, 0.9);">
+                Daftarkan wajah Anda untuk keamanan presensi yang lebih baik
+            </p>
+        </div>
+        <a href="{{ route('face.enrollment') }}" style="padding: 8px 16px; background: white; color: #8b5cf6; border-radius: 10px; font-size: 13px; font-weight: 700; text-decoration: none; white-space: nowrap;">
+            Daftar Sekarang
+        </a>
+    </div>
+</div>
+@endif
+
 <body>
     <!-- App Capsule -->
     <div id="appCapsule">
         @yield('content')
     </div>
     <!-- * App Capsule -->
+    @php
+    $nik = Auth::guard('karyawan')->user()->nik;
+    $faceData = DB::table('face_data')
+    ->where('nik', $nik)
+    ->where('status', 'active')
+    ->first();
+    @endphp
+
+    <!-- Face Recognition Status Card -->
+    <div class="card" style="margin-bottom: 16px; overflow: hidden; border: none; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);">
+        <div style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); padding: 16px 20px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 50px; height: 50px; background: rgba(255, 255, 255, 0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                    <ion-icon name="scan-outline" style="font-size: 28px; color: white;"></ion-icon>
+                </div>
+                <div style="flex: 1;">
+                    <h6 style="margin: 0 0 4px 0; font-size: 16px; font-weight: 700; color: white;">
+                        Face Recognition
+                    </h6>
+                    <p style="margin: 0; font-size: 13px; color: rgba(255, 255, 255, 0.9);">
+                        Verifikasi Biometrik Presensi
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body" style="padding: 16px 20px;">
+            @if($faceData)
+            <!-- Already Enrolled -->
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                <div style="width: 40px; height: 40px; background: rgba(16, 185, 129, 0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                    <ion-icon name="checkmark-circle" style="font-size: 24px; color: #10b981;"></ion-icon>
+                </div>
+                <div>
+                    <p style="margin: 0; font-size: 14px; font-weight: 700; color: #10b981;">
+                        Wajah Terdaftar
+                    </p>
+                    <p style="margin: 0; font-size: 12px; color: #64748b;">
+                        Terakhir diperbarui: {{ \Carbon\Carbon::parse($faceData->last_updated)->diffForHumans() }}
+                    </p>
+                </div>
+            </div>
+
+            <a href="{{ route('face.enrollment') }}" style="display: block; width: 100%; padding: 12px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(124, 58, 237, 0.1) 100%); border: 1px solid #8b5cf6; border-radius: 12px; text-align: center; color: #8b5cf6; font-weight: 700; font-size: 14px; text-decoration: none;">
+                <ion-icon name="settings-outline" style="vertical-align: middle; margin-right: 6px;"></ion-icon>
+                Kelola Data Wajah
+            </a>
+            @else
+            <!-- Not Enrolled Yet -->
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                <div style="width: 40px; height: 40px; background: rgba(239, 68, 68, 0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                    <ion-icon name="alert-circle" style="font-size: 24px; color: #ef4444;"></ion-icon>
+                </div>
+                <div>
+                    <p style="margin: 0; font-size: 14px; font-weight: 700; color: #ef4444;">
+                        Belum Terdaftar
+                    </p>
+                    <p style="margin: 0; font-size: 12px; color: #64748b;">
+                        Daftarkan wajah untuk keamanan lebih
+                    </p>
+                </div>
+            </div>
+
+            <a href="{{ route('face.enrollment') }}" style="display: block; width: 100%; padding: 12px; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); border-radius: 12px; text-align: center; color: white; font-weight: 700; font-size: 14px; text-decoration: none; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);">
+                <ion-icon name="scan-outline" style="vertical-align: middle; margin-right: 6px;"></ion-icon>
+                Daftar Wajah Sekarang
+            </a>
+            @endif
+        </div>
+    </div>
 
     <!-- Responsive Glassmorphism Dock Navigation -->
     <div class="dock-container">

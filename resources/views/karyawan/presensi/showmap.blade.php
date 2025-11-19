@@ -219,6 +219,8 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+
+
 <script>
     // Parse lokasi presensi
     var lokasi = "{{ $presensi->lokasi_in }}";
@@ -226,21 +228,11 @@
     var latitude = parseFloat(lok[0]);
     var longitude = parseFloat(lok[1]);
 
-    // Parse lokasi kantor
-    @php
-    $lokasi_kantor = $cabang ? $cabang - > lokasi_cabang : "-6.2088,106.8456";
-    $radius_kantor = $cabang ? $cabang - > radius_cabang : 100;
-    @endphp
-
     var lokasi_kantor = "{{ $lokasi_kantor }}";
     var lok_kantor = lokasi_kantor.split(",");
     var lat_kantor = parseFloat(lok_kantor[0]);
     var long_kantor = parseFloat(lok_kantor[1]);
-    var radius = {
-        {
-            $radius_kantor
-        }
-    };
+    var radius = {{ $lok_kantor->radius_cabang }};
 
     // Initialize map
     var map = L.map('map-detail').setView([latitude, longitude], 17);

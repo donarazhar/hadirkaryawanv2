@@ -1,27 +1,29 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\AuthAdminController;
 
 // ==================== KARYAWAN CONTROLLERS ====================
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\DashboardKaryawanController;
-use App\Http\Controllers\HistoryKaryawanController;
-use App\Http\Controllers\PresensiKaryawanController;
-use App\Http\Controllers\IzinKaryawanController;
-use App\Http\Controllers\ProfileKaryawanController;
-
-// ==================== ADMIN CONTROLLERS ====================
-use App\Http\Controllers\Admin\AuthAdminController;
-use App\Http\Controllers\Admin\DashboardAdminController;
 use App\Http\Controllers\Admin\CabangController;
+use App\Http\Controllers\Admin\DashboardAdminController;
 use App\Http\Controllers\Admin\DepartemenController;
+use App\Http\Controllers\Admin\IzinSakitController;
 use App\Http\Controllers\Admin\JamKerjaController;
 use App\Http\Controllers\Admin\KaryawanAdminController;
+
+// ==================== ADMIN CONTROLLERS ====================
 use App\Http\Controllers\Admin\KonfigurasiJkDeptController;
-use App\Http\Controllers\Admin\MonitoringController;
 use App\Http\Controllers\Admin\LaporanController;
+use App\Http\Controllers\Admin\MonitoringController;
 use App\Http\Controllers\Admin\RekapController;
-use App\Http\Controllers\Admin\IzinSakitController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardKaryawanController;
+use App\Http\Controllers\FaceEnrollmentController;
+use App\Http\Controllers\HistoryKaryawanController;
+use App\Http\Controllers\IzinKaryawanController;
+use App\Http\Controllers\PresensiKaryawanController;
+use App\Http\Controllers\ProfileKaryawanController;
+use Illuminate\Support\Facades\Route;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -87,6 +89,15 @@ Route::middleware('auth:karyawan')->group(function () {
     Route::delete('/deleteprofilefoto', [ProfileKaryawanController::class, 'deleteFoto'])->name('profile.deleteFoto');
     Route::post('/changepassword', [ProfileKaryawanController::class, 'changePassword'])->name('profile.changePassword');
     Route::get('/getprofile', [ProfileKaryawanController::class, 'getProfile'])->name('profile.data');
+
+
+    // Face Enrollment & Verification
+    Route::prefix('face')->name('face.')->group(function () {
+        Route::get('/enrollment', [FaceEnrollmentController::class, 'index'])->name('enrollment');
+        Route::post('/enrollment/store', [FaceEnrollmentController::class, 'store'])->name('enrollment.store');
+        Route::get('/descriptor', [FaceEnrollmentController::class, 'getDescriptor'])->name('descriptor');
+        Route::delete('/delete', [FaceEnrollmentController::class, 'destroy'])->name('delete');
+    });
 
    
 });

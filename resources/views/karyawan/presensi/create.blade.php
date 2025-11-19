@@ -178,7 +178,7 @@
     .map-card {
         background: var(--bg-card);
         border-radius: 20px;
-        padding: 0 10px 50px;
+        padding: 16px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
         border: 1px solid rgba(0, 83, 197, 0.08);
         margin-bottom: 16px;
@@ -234,7 +234,7 @@
 
     /* ===== BUTTON ABSEN ===== */
     .button-section {
-        padding: 0 10px 20px;
+        padding: 0 20px 20px;
     }
 
     .btn-presensi {
@@ -251,6 +251,7 @@
         cursor: pointer;
         transition: all 0.3s ease;
         box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        margin-bottom: 12px;
     }
 
     .btn-presensi ion-icon {
@@ -274,6 +275,19 @@
     .btn-pulang {
         background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
         color: white;
+    }
+
+    /* ===== BUTTON FACE VERIFICATION (BARU) ===== */
+    .btn-masuk-face {
+        background: linear-gradient(135deg, #0053C5 0%, #003d94 100%);
+        color: white;
+        border: 2px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-pulang-face {
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        color: white;
+        border: 2px solid rgba(239, 68, 68, 0.3);
     }
 
     /* ===== STATUS BADGE ===== */
@@ -423,19 +437,33 @@
     </div>
 </div>
 
-<!-- Button Section (DIPINDAH KE SINI - ANTARA WEBCAM DAN MAP) -->
+<!-- Button Section -->
 <div class="button-section">
     <input type="hidden" id="lokasi">
 
     @if($cek > 0)
+    <!-- METODE LAMA: Absen Pulang Biasa -->
     <button id="takeabsen" class="btn-presensi btn-pulang">
         <ion-icon name="log-out-outline"></ion-icon>
         <span>Absen Pulang</span>
     </button>
+
+    <!-- METODE BARU: Absen Pulang dengan Face Verification -->
+    <button id="takeabsen-face" class="btn-presensi btn-pulang-face">
+        <ion-icon name="scan-outline"></ion-icon>
+        <span>Absen Pulang + Verifikasi Wajah</span>
+    </button>
     @else
+    <!-- METODE LAMA: Absen Masuk Biasa -->
     <button id="takeabsen" class="btn-presensi btn-masuk">
         <ion-icon name="log-in-outline"></ion-icon>
         <span>Absen Masuk</span>
+    </button>
+
+    <!-- METODE BARU: Absen Masuk dengan Face Verification -->
+    <button id="takeabsen-face" class="btn-presensi btn-masuk-face">
+        <ion-icon name="scan-outline"></ion-icon>
+        <span>Absen Masuk + Verifikasi Wajah</span>
     </button>
     @endif
 </div>
@@ -477,6 +505,8 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <!-- Webcam JS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/webcamjs/1.0.26/webcam.min.js"></script>
+<!-- Face-API.js -->
+<script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
 
 <script>
     console.log('Script started');
@@ -488,6 +518,10 @@
     var marker;
     var circle;
     var webcamReady = false;
+
+    // Face Recognition Variables
+    var modelsLoaded = false;
+    var faceDescriptor = null;
 
     // Check if Webcam library loaded
     if (typeof Webcam === 'undefined') {
@@ -595,12 +629,7 @@
             // User Marker
             var userIcon = L.divIcon({
                 className: 'custom-div-icon',
-                html: `<div style='background: linear-gradient(135deg, #10b981 0%, #059669 100%); 
-                       width: 40px; height: 40px; border-radius: 50%; 
-                       border: 4px solid white; box-shadow: 0 3px 10px rgba(0,0,0,0.3); 
-                       display: flex; align-items: center; justify-content: center;'>
-                       <ion-icon name='person' style='color: white; font-size: 22px;'></ion-icon>
-                       </div>`,
+                html: '<div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); width: 40px; height: 40px; border-radius: 50%; border: 4px solid white; box-shadow: 0 3px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;"><ion-icon name="person" style="color: white; font-size: 22px;"></ion-icon></div>',
                 iconSize: [40, 40],
                 iconAnchor: [20, 20]
             });
@@ -617,6 +646,7 @@
             var long_kantor = parseFloat(lok[1]);
             var radius = {{ $lok_kantor->radius_cabang }};
 
+            console.log('Office location:', lat_kantor, long_kantor, 'Radius:', radius);
 
             // Office Circle
             circle = L.circle([lat_kantor, long_kantor], {
@@ -631,12 +661,7 @@
             // Office Marker
             var officeIcon = L.divIcon({
                 className: 'custom-div-icon',
-                html: `<div style='background: linear-gradient(135deg, #0053C5 0%, #003d94 100%); 
-                       width: 40px; height: 40px; border-radius: 50%; 
-                       border: 4px solid white; box-shadow: 0 3px 10px rgba(0,0,0,0.3); 
-                       display: flex; align-items: center; justify-content: center;'>
-                       <ion-icon name='business' style='color: white; font-size: 22px;'></ion-icon>
-                       </div>`,
+                html: '<div style="background: linear-gradient(135deg, #0053C5 0%, #003d94 100%); width: 40px; height: 40px; border-radius: 50%; border: 4px solid white; box-shadow: 0 3px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;"><ion-icon name="business" style="color: white; font-size: 22px;"></ion-icon></div>',
                 iconSize: [40, 40],
                 iconAnchor: [20, 20]
             });
@@ -644,7 +669,7 @@
             var officeMarker = L.marker([lat_kantor, long_kantor], {
                 icon: officeIcon
             }).addTo(map);
-            officeMarker.bindPopup(`<strong style="color: #0053C5;">Kantor</strong><br><small>Radius: ${radius}m</small>`);
+            officeMarker.bindPopup('<strong style="color: #0053C5;">Kantor</strong><br><small>Radius: ' + radius + 'm</small>');
 
             // Fit bounds
             var group = L.featureGroup([marker, officeMarker, circle]);
@@ -712,11 +737,11 @@
         return Math.round(R * c);
     }
 
-    // Take Attendance
+    // ===== METODE LAMA: Take Attendance (Tanpa Face Verification) =====
     $("#takeabsen").click(function(e) {
         e.preventDefault();
 
-        console.log('Take attendance clicked');
+        console.log('Take attendance clicked (No Face Verification)');
 
         // Validate location
         var lokasi_val = $("#lokasi").val();
@@ -806,6 +831,258 @@
                 }
             });
         });
+    });
+
+    // ===== FACE-API.js Functions =====
+
+    // Load Face-API models
+    async function loadFaceModels() {
+        if (modelsLoaded) return true;
+
+        try {
+            console.log('Loading face-api models...');
+
+            const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model';
+
+            await Promise.all([
+                faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+                faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+                faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+            ]);
+
+            modelsLoaded = true;
+            console.log('Face-API models loaded successfully');
+            return true;
+        } catch (error) {
+            console.error('Error loading face models:', error);
+            return false;
+        }
+    }
+
+    // Get reference face descriptor from server
+    async function getReferenceFaceDescriptor() {
+        try {
+            const response = await fetch('/face/descriptor', {
+                method: 'GET',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                return new Float32Array(result.descriptor);
+            } else {
+                throw new Error(result.message);
+            }
+        } catch (error) {
+            console.error('Error getting reference descriptor:', error);
+            throw error;
+        }
+    }
+
+    // Verify face from webcam
+    async function verifyFace() {
+        try {
+            console.log('Starting face verification...');
+
+            // Get current frame from webcam
+            const video = document.querySelector('.webcam-capture video');
+
+            if (!video) {
+                throw new Error('Video element not found');
+            }
+
+            // Detect face in current frame
+            const detection = await faceapi
+                .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+                .withFaceLandmarks()
+                .withFaceDescriptor();
+
+            if (!detection) {
+                throw new Error('Wajah tidak terdeteksi. Pastikan wajah Anda terlihat jelas di kamera.');
+            }
+
+            console.log('Face detected with confidence:', detection.detection.score);
+
+            if (detection.detection.score < 0.5) {
+                throw new Error('Deteksi wajah kurang jelas. Coba posisikan wajah lebih baik.');
+            }
+
+            // Get reference descriptor
+            const referenceDescriptor = await getReferenceFaceDescriptor();
+
+            // Calculate distance (similarity)
+            const distance = faceapi.euclideanDistance(detection.descriptor, referenceDescriptor);
+            console.log('Face distance:', distance);
+
+            // Threshold: 0.6 (makin kecil makin mirip)
+            const threshold = 0.6;
+
+            if (distance > threshold) {
+                throw new Error('Verifikasi wajah gagal. Wajah tidak cocok dengan data yang terdaftar.');
+            }
+
+            console.log('Face verification SUCCESS! Distance:', distance);
+            return true;
+
+        } catch (error) {
+            console.error('Face verification error:', error);
+            throw error;
+        }
+    }
+
+    // ===== METODE BARU: Take Attendance WITH Face Verification =====
+    $("#takeabsen-face").click(async function(e) {
+        e.preventDefault();
+
+        console.log('Take attendance with face verification clicked');
+
+        // Validate location
+        var lokasi_val = $("#lokasi").val();
+        if (!lokasi_val) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Lokasi Belum Terdeteksi',
+                text: 'Mohon tunggu hingga lokasi Anda terdeteksi',
+                confirmButtonColor: '#0053C5'
+            });
+            return;
+        }
+
+        // Validate webcam
+        if (!webcamReady) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Kamera Belum Siap',
+                text: 'Mohon tunggu hingga kamera aktif',
+                confirmButtonColor: '#0053C5'
+            });
+            return;
+        }
+
+        try {
+            // Show loading for face verification
+            Swal.fire({
+                title: 'Memverifikasi Wajah...',
+                html: 'Mohon tunggu, sedang memverifikasi identitas Anda',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Load models if not loaded yet
+            if (!modelsLoaded) {
+                const loaded = await loadFaceModels();
+                if (!loaded) {
+                    throw new Error('Gagal memuat model face recognition');
+                }
+            }
+
+            // Verify face
+            await verifyFace();
+
+            // Close loading
+            Swal.close();
+
+            // Show success message
+            await Swal.fire({
+                icon: 'success',
+                title: 'Verifikasi Berhasil!',
+                text: 'Wajah Anda terverifikasi. Melanjutkan presensi...',
+                timer: 2000,
+                showConfirmButton: false,
+                confirmButtonColor: '#0053C5'
+            });
+
+            // Continue with normal attendance process
+            $("#loading-overlay").addClass('show');
+
+            // Capture photo
+            Webcam.snap(function(uri) {
+                console.log('Photo captured after face verification');
+                var image = uri;
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/presensi/store',
+                    data: {
+                        _token: "{{ csrf_token() }}",
+                        image: image,
+                        lokasi: lokasi_val,
+                        verified: true // Flag bahwa ini menggunakan verifikasi wajah
+                    },
+                    cache: false,
+                    success: function(respond) {
+                        $("#loading-overlay").removeClass('show');
+                        console.log('Response:', respond);
+
+                        var status = respond.split("|");
+
+                        if (status[0] == "success") {
+                            if (status[2] == "in") {
+                                notifikasi_in.play();
+                            } else {
+                                notifikasi_out.play();
+                            }
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil!',
+                                html: '<strong>' + status[1] + '</strong><br><small>✅ Terverifikasi dengan Face Recognition</small>',
+                                confirmButtonColor: '#0053C5',
+                                timer: 3000
+                            }).then(() => {
+                                window.location.href = '/dashboard';
+                            });
+                        } else {
+                            if (status[2] == "radius") {
+                                radius_sound.play();
+                            }
+
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal!',
+                                text: status[1],
+                                confirmButtonColor: '#0053C5'
+                            });
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        $("#loading-overlay").removeClass('show');
+                        console.error('AJAX Error:', error);
+
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Terjadi Kesalahan',
+                            text: 'Gagal mengirim data presensi. Silakan coba lagi.',
+                            confirmButtonColor: '#0053C5'
+                        });
+                    }
+                });
+            });
+
+        } catch (error) {
+            Swal.close();
+            $("#loading-overlay").removeClass('show');
+
+            console.error('Face verification failed:', error);
+
+            Swal.fire({
+                icon: 'error',
+                title: 'Verifikasi Gagal',
+                html: error.message || 'Verifikasi wajah gagal. Pastikan:<br>- Wajah Anda sudah terdaftar di sistem<br>- Wajah terlihat jelas di kamera<br>- Pencahayaan cukup',
+                confirmButtonColor: '#0053C5'
+            });
+        }
+    });
+
+    // Preload face-api models saat halaman dimuat (optional)
+    $(document).ready(function() {
+        console.log('Page ready - Preloading face-api models...');
+        loadFaceModels();
     });
 </script>
 @endpush

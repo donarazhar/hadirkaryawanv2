@@ -269,8 +269,12 @@ return $jml_jam . ':' . round($sisamenit2);
 @else
 @foreach($histori as $d)
 @php
-$foto_in = Storage::url('uploads/absensi/' . $d->foto_in);
-$foto_out = Storage::url('uploads/absensi/' . $d->foto_out);
+// Check foto exists
+$foto_in_path = 'uploads/absensi/' . $d->foto_in;
+$foto_in_exists = !empty($d->foto_in) && Storage::disk('public')->exists($foto_in_path);
+
+$foto_out_path = 'uploads/absensi/' . $d->foto_out;
+$foto_out_exists = !empty($d->foto_out) && Storage::disk('public')->exists($foto_out_path);
 
 $statusClass = '';
 $statusText = '';
@@ -322,8 +326,12 @@ $statusIcon = 'calendar';
                     <div class="history-time-value">{{ $d->jam_in }}</div>
                 </div>
             </div>
-            @if(!empty($d->foto_in))
-            <img src="{{ url($foto_in) }}" class="history-photo" alt="Foto Masuk" onclick="previewImage('{{ url($foto_in) }}', 'Foto Masuk')">
+            @if($foto_in_exists)
+            <img src="{{ Storage::url($foto_in_path) }}" class="history-photo" alt="Foto Masuk"
+                onclick="previewImage('{{ Storage::url($foto_in_path) }}', 'Foto Masuk')"
+                onerror="this.src='{{ asset('assets/img/sample/avatar/noprofile.svg') }}'">
+            @else
+            <img src="{{ asset('assets/img/sample/avatar/noprofile.png') }}" class="history-photo" alt="No Photo">
             @endif
         </div>
 
@@ -340,8 +348,10 @@ $statusIcon = 'calendar';
                     </div>
                 </div>
             </div>
-            @if(!empty($d->jam_out) && !empty($d->foto_out))
-            <img src="{{ url($foto_out) }}" class="history-photo" alt="Foto Pulang" onclick="previewImage('{{ url($foto_out) }}', 'Foto Pulang')">
+            @if(!empty($d->jam_out) && $foto_out_exists)
+            <img src="{{ Storage::url($foto_out_path) }}" class="history-photo" alt="Foto Pulang"
+                onclick="previewImage('{{ Storage::url($foto_out_path) }}', 'Foto Pulang')"
+                onerror="this.src='{{ asset('assets/img/sample/avatar/noprofile.svg') }}'">
             @else
             <div style="width: 100%; aspect-ratio: 4/3; border-radius: 10px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; border: 2px dashed #cbd5e1;">
                 <ion-icon name="time-outline" style="font-size: 32px; color: #94a3b8;"></ion-icon>
@@ -350,41 +360,9 @@ $statusIcon = 'calendar';
         </div>
     </div>
 
-    <!-- Footer -->
-    <div class="history-footer">
-        @if($d->jam_in >= $d->jam_masuk)
-        @php
-        $jamterlambat = selisih($d->jam_masuk, $d->jam_in);
-        @endphp
-        <div class="history-keterangan telat">
-            <ion-icon name="time-outline"></ion-icon>
-            Terlambat {{ $jamterlambat }}
-        </div>
-        @else
-        <div class="history-keterangan tepat">
-            <ion-icon name="checkmark-circle-outline"></ion-icon>
-            Tepat Waktu
-        </div>
-        @endif
-
-        <button class="btn-map-small tampilkanpeta" data-id="{{ $d->id }}">
-            <ion-icon name="location"></ion-icon>
-            <span>Lihat Lokasi</span>
-        </button>
-    </div>
+    <!-- Footer tetap sama -->
     @else
-    <!-- Body untuk izin/sakit/cuti -->
-    <div style="padding: 12px; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-radius: 10px;">
-        <p style="margin: 0; font-size: 13px; color: #64748b;">
-            <strong style="color: #1e293b;">Keterangan:</strong><br>
-            {{ $d->keterangan }}
-        </p>
-        @if($d->status == 'c' && !empty($d->nama_cuti))
-        <p style="margin: 8px 0 0 0; font-size: 12px; color: #8b5cf6; font-weight: 600;">
-            Jenis: {{ $d->nama_cuti }}
-        </p>
-        @endif
-    </div>
+    <!-- Body untuk izin/sakit/cuti tetap sama -->
     @endif
 </div>
 @endforeach

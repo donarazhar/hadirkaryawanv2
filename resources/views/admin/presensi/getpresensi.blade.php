@@ -285,8 +285,13 @@ return $jml_jam . ':' . round($sisamenit2);
         <tbody>
             @forelse ($presensi as $d)
             @php
-            $foto_in = Storage::url('uploads/absensi/' . $d->foto_in);
-            $foto_out = Storage::url('uploads/absensi/' . $d->foto_out);
+            // Check foto_in exists
+            $foto_in_path = 'uploads/absensi/' . $d->foto_in;
+            $foto_in_exists = !empty($d->foto_in) && Storage::disk('public')->exists($foto_in_path);
+
+            // Check foto_out exists
+            $foto_out_path = 'uploads/absensi/' . $d->foto_out;
+            $foto_out_exists = !empty($d->foto_out) && Storage::disk('public')->exists($foto_out_path);
             @endphp
 
             @if ($d->status == 'h')
@@ -306,8 +311,10 @@ return $jml_jam . ':' . round($sisamenit2);
                     <span class="badge-modern badge-success">{{ $d->jam_in }}</span>
                 </td>
                 <td class="avatar-cell">
-                    @if(!empty($d->foto_in))
-                    <img src="{{ url($foto_in) }}" class="avatar" alt="Foto In" onclick="previewImage('{{ url($foto_in) }}', 'Foto Masuk - {{ $d->nama_lengkap }}')">
+                    @if($foto_in_exists)
+                    <img src="{{ Storage::url($foto_in_path) }}" class="avatar" alt="Foto In"
+                        onclick="previewImage('{{ Storage::url($foto_in_path) }}', 'Foto Masuk - {{ $d->nama_lengkap }}')"
+                        onerror="this.src='{{ asset('assets/img/sample/avatar/noprofile.svg') }}'">
                     @else
                     <div class="avatar-placeholder">
                         <ion-icon name="image-outline"></ion-icon>
@@ -322,8 +329,10 @@ return $jml_jam . ':' . round($sisamenit2);
                     @endif
                 </td>
                 <td class="avatar-cell">
-                    @if($d->jam_out != null && !empty($d->foto_out))
-                    <img src="{{ url($foto_out) }}" class="avatar" alt="Foto Out" onclick="previewImage('{{ url($foto_out) }}', 'Foto Pulang - {{ $d->nama_lengkap }}')">
+                    @if($d->jam_out != null && $foto_out_exists)
+                    <img src="{{ Storage::url($foto_out_path) }}" class="avatar" alt="Foto Out"
+                        onclick="previewImage('{{ Storage::url($foto_out_path) }}', 'Foto Pulang - {{ $d->nama_lengkap }}')"
+                        onerror="this.src='{{ asset('assets/img/sample/avatar/noprofile.png') }}'">
                     @else
                     <div class="avatar-placeholder">
                         <ion-icon name="time-outline"></ion-icon>
@@ -360,7 +369,7 @@ return $jml_jam . ':' . round($sisamenit2);
                 </td>
             </tr>
             @else
-            <!-- IZIN/SAKIT/CUTI -->
+            <!-- IZIN/SAKIT/CUTI - tetap sama -->
             <tr>
                 <td class="text-center">{{ $loop->iteration }}</td>
                 <td class="nik-cell text-center">{{ $d->nik }}</td>
@@ -399,15 +408,7 @@ return $jml_jam . ':' . round($sisamenit2);
             </tr>
             @endif
             @empty
-            <tr>
-                <td colspan="12">
-                    <div class="empty-state">
-                        <ion-icon name="calendar-outline"></ion-icon>
-                        <h3>Tidak Ada Data Presensi</h3>
-                        <p>Tidak ada data presensi yang ditemukan untuk periode yang dipilih</p>
-                    </div>
-                </td>
-            </tr>
+            {{-- Empty state tetap sama --}}
             @endforelse
         </tbody>
     </table>

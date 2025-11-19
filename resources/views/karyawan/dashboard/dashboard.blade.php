@@ -848,9 +848,14 @@
                 <div class="presence-icon">
                     @if ($presensihariini != null)
                     @php
-                    $path = Storage::url('uploads/absensi/' . $presensihariini->foto_in);
+                    $foto_path = 'uploads/absensi/' . $presensihariini->foto_in;
+                    $foto_exists = Storage::disk('public')->exists($foto_path);
                     @endphp
-                    <img src="{{ url($path) }}" alt="Check In">
+                    @if($foto_exists)
+                    <img src="{{ Storage::url($foto_path) }}" alt="Check In">
+                    @else
+                    <img src="{{ asset('assets/img/sample/avatar/noprofile.svg') }}" alt="No Photo">
+                    @endif
                     @else
                     <ion-icon name="log-in"></ion-icon>
                     @endif
@@ -876,9 +881,14 @@
                 <div class="presence-icon">
                     @if ($presensihariini != null && $presensihariini->jam_out != null)
                     @php
-                    $path = Storage::url('uploads/absensi/' . $presensihariini->foto_out);
+                    $foto_path = 'uploads/absensi/' . $presensihariini->foto_out;
+                    $foto_exists = Storage::disk('public')->exists($foto_path);
                     @endphp
-                    <img src="{{ url($path) }}" alt="Check Out">
+                    @if($foto_exists)
+                    <img src="{{ Storage::url($foto_path) }}" alt="Check Out">
+                    @else
+                    <img src="{{ asset('assets/img/sample/avatar/noprofile.png') }}" alt="No Photo">
+                    @endif
                     @else
                     <ion-icon name="log-out"></ion-icon>
                     @endif
@@ -962,7 +972,15 @@
         @foreach ($leaderboard->take(5) as $index => $d)
         <div class="leaderboard-item">
             <div class="leaderboard-rank">{{ $index + 1 }}</div>
-            <img src="{{ asset('assets/img/sample/avatar/avatar1.jpg') }}" alt="avatar" class="leaderboard-avatar">
+            @php
+            $avatar_path = !empty($d->foto) ? 'uploads/karyawan/' . $d->foto : null;
+            $avatar_exists = $avatar_path && Storage::disk('public')->exists($avatar_path);
+            @endphp
+            @if($avatar_exists)
+            <img src="{{ Storage::url($avatar_path) }}" alt="avatar" class="leaderboard-avatar">
+            @else
+            <img src="{{ asset('assets/img/sample/avatar/noprofile.png') }}" alt="avatar" class="leaderboard-avatar">
+            @endif
             <div class="leaderboard-info">
                 <div class="leaderboard-name">{{ $d->nama_lengkap }}</div>
                 <div class="leaderboard-role">{{ $d->jabatan }}</div>
@@ -979,7 +997,7 @@
     </div>
 </div>
 
-<!-- TAB: Riwayat Tim & Riwayat Saya (BARU) -->
+<!-- TAB: Riwayat Tim & Riwayat Saya -->
 <div class="section-wrapper bottom-spacer">
     <div class="section-header">
         <h3 class="section-title">
@@ -1006,11 +1024,16 @@
             @if($riwayattim->count() > 0)
             @foreach ($riwayattim as $d)
             @php
-            $path = Storage::url('uploads/absensi/' . $d->foto_in);
+            $foto_path = 'uploads/absensi/' . $d->foto_in;
+            $foto_exists = Storage::disk('public')->exists($foto_path);
             $isLate = $d->jam_in > $d->jam_masuk;
             @endphp
             <div class="riwayat-item {{ $isLate ? 'late' : 'ontime' }}">
-                <img src="{{ url($path) }}" alt="foto" class="riwayat-photo">
+                @if($foto_exists)
+                <img src="{{ Storage::url($foto_path) }}" alt="foto" class="riwayat-photo">
+                @else
+                <img src="{{ asset('assets/img/sample/avatar/noprofile.png') }}" alt="foto" class="riwayat-photo">
+                @endif
                 <div class="riwayat-info">
                     <div class="riwayat-name">{{ $d->nama_lengkap }}</div>
                     <div class="riwayat-meta">
@@ -1037,11 +1060,16 @@
             @if($historibulanini->count() > 0)
             @foreach ($historibulanini->take(10) as $d)
             @php
-            $path = Storage::url('uploads/absensi/' . $d->foto_in);
+            $foto_path = 'uploads/absensi/' . $d->foto_in;
+            $foto_exists = Storage::disk('public')->exists($foto_path);
             $isLate = $d->jam_in > $d->jam_masuk;
             @endphp
             <div class="riwayat-item {{ $isLate ? 'late' : 'ontime' }}">
-                <img src="{{ url($path) }}" alt="foto" class="riwayat-photo">
+                @if($foto_exists)
+                <img src="{{ Storage::url($foto_path) }}" alt="foto" class="riwayat-photo">
+                @else
+                <img src="{{ asset('assets/img/sample/avatar/noprofile.png') }}" alt="foto" class="riwayat-photo">
+                @endif
                 <div class="riwayat-info">
                     <div class="riwayat-name">{{ date('d M Y', strtotime($d->tgl_presensi)) }}</div>
                     <div class="riwayat-meta">
@@ -1117,6 +1145,15 @@
         if (event.key === 'Escape') {
             closeLogoutModal();
         }
+    });
+
+    // Error handling untuk gambar yang gagal load
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('img').forEach(img => {
+            img.addEventListener('error', function() {
+                this.src = '{{ asset("assets/img/sample/avatar/noprofile.png") }}';
+            });
+        });
     });
 </script>
 @endpush

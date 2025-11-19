@@ -178,7 +178,7 @@
     .map-card {
         background: var(--bg-card);
         border-radius: 20px;
-        padding: 16px;
+        padding: 0 10px 50px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
         border: 1px solid rgba(0, 83, 197, 0.08);
         margin-bottom: 16px;
@@ -234,7 +234,7 @@
 
     /* ===== BUTTON ABSEN ===== */
     .button-section {
-        padding: 0 20px 100px;
+        padding: 0 10px 20px;
     }
 
     .btn-presensi {
@@ -421,24 +421,9 @@
         </div>
         <div class="webcam-capture"></div>
     </div>
-
-    <!-- Map Card -->
-    <div class="map-card">
-        <div class="map-title">
-            <ion-icon name="location-outline"></ion-icon>
-            Lokasi Anda
-        </div>
-        <div id="map"></div>
-        <div class="location-info">
-            <p>
-                <ion-icon name="business-outline"></ion-icon>
-                <strong>Radius Kantor:</strong> {{ $lok_kantor->radius_cabang }} meter
-            </p>
-        </div>
-    </div>
 </div>
 
-<!-- Button Section -->
+<!-- Button Section (DIPINDAH KE SINI - ANTARA WEBCAM DAN MAP) -->
 <div class="button-section">
     <input type="hidden" id="lokasi">
 
@@ -453,6 +438,23 @@
         <span>Absen Masuk</span>
     </button>
     @endif
+</div>
+
+<!-- Map Section -->
+<div class="map-section">
+    <div class="map-card">
+        <div class="map-title">
+            <ion-icon name="location-outline"></ion-icon>
+            Lokasi Anda
+        </div>
+        <div id="map"></div>
+        <div class="location-info">
+            <p>
+                <ion-icon name="business-outline"></ion-icon>
+                <strong>Radius Kantor:</strong> {{ $lok_kantor->radius_cabang }} meter
+            </p>
+        </div>
+    </div>
 </div>
 
 <!-- Loading Overlay -->

@@ -135,9 +135,14 @@
     <div class="map-info-card">
         <!-- Header -->
         <div class="map-info-header">
-            @if(!empty($presensi->foto_in))
-            <img src="{{ Storage::url('uploads/absensi/' . $presensi->foto_in) }}"
-                class="map-info-avatar" alt="Foto">
+            @php
+            $foto_in_path = !empty($presensi->foto_in) ? 'uploads/absensi/' . $presensi->foto_in : null;
+            $foto_in_exists = $foto_in_path && Storage::disk('public')->exists($foto_in_path);
+            @endphp
+
+            @if($foto_in_exists)
+            <img src="{{ Storage::url($foto_in_path) }}" class="map-info-avatar" alt="Foto"
+                onerror="this.src='{{ asset('assets/img/sample/avatar/noprofile.png') }}'">
             @else
             <div class="map-info-avatar" style="background: linear-gradient(135deg, #0053C5 0%, #2E7CE6 100%); display: flex; align-items: center; justify-content: center;">
                 <ion-icon name="person" style="font-size: 24px; color: white;"></ion-icon>

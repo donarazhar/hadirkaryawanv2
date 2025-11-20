@@ -1,3 +1,4 @@
+e
 # Hadir Karyawan v2
 
 Aplikasi Hadir Karyawan v2 adalah sistem informasi manajemen kehadiran karyawan berbasis web yang dibangun menggunakan framework Laravel. Aplikasi ini memungkinkan karyawan untuk melakukan absensi (presensi) secara online menggunakan teknologi geolokasi untuk memastikan kehadiran di lokasi yang telah ditentukan.

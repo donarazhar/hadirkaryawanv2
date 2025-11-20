@@ -369,7 +369,7 @@ class PresensiKaryawanController extends Controller
                     ]);
 
                     // Send notification (optional)
-                    $this->sendWhatsAppNotification($nik, "Presensi Pulang berhasil pada jam {$jam}", 'out');
+                    // $this->sendWhatsAppNotification($nik, "Presensi Pulang berhasil pada jam {$jam}", 'out');
 
                     DB::commit();
                     return response("success|Terima Kasih, Hati-Hati Dijalan!|out", 200);
@@ -442,7 +442,7 @@ class PresensiKaryawanController extends Controller
                     ]);
 
                     // Send notification (optional)
-                    $this->sendWhatsAppNotification($nik, "Presensi Masuk berhasil pada jam {$jam}", 'in');
+                    // $this->sendWhatsAppNotification($nik, "Presensi Masuk berhasil pada jam {$jam}", 'in');
 
                     DB::commit();
                     return response("success|Selamat Bekerja, {$nama_lengkap}!|in", 200);

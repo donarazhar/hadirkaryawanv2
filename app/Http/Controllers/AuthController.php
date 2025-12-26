@@ -18,7 +18,7 @@ class AuthController extends Controller
     {
         // If already logged in, redirect to dashboard
         if (Auth::guard('karyawan')->check()) {
-            return redirect()->route('dashboard');
+            return redirect()->route('face-presensi.dashboard');
         }
 
         return view('karyawan.auth.login');
@@ -51,7 +51,7 @@ class AuthController extends Controller
             ]);
 
             // Redirect to intended URL or dashboard
-            return redirect()->intended(route('dashboard'))
+            return redirect()->intended(route('face-presensi.dashboard'))
                 ->with('success', 'Selamat datang, ' . $user->nama_lengkap);
         }
 

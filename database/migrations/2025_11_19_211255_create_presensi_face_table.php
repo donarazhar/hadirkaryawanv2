@@ -12,9 +12,19 @@ return new class extends Migration
             $table->id();
             $table->string('nik', 20);
             $table->date('tanggal');
+
+            // Multi-shift columns (NO ->after() in CREATE!)
+            $table->integer('shift_ke')
+                ->nullable()
+                ->comment('Urutan shift (1, 2, 3, dst) untuk multi-shift');
+
+            $table->string('nama_shift', 50)
+                ->nullable()
+                ->comment('Nama shift (contoh: Subuh, Zuhur, Ashar)');
+
             $table->time('jam_masuk')->nullable();
             $table->time('jam_pulang')->nullable();
-            $table->text('lokasi')->nullable(); // Format: latitude,longitude
+            $table->text('lokasi')->nullable()->comment('Format: latitude,longitude');
             $table->enum('status', ['verified', 'failed'])->default('verified');
             $table->timestamps();
 
@@ -26,7 +36,7 @@ return new class extends Migration
                 ->onUpdate('cascade');
 
             // Indexes
-            $table->index(['nik', 'tanggal'], 'idx_presensi_face_nik_tanggal');
+            $table->index(['nik', 'tanggal', 'shift_ke'], 'idx_presensi_face_nik_tanggal_shift');
             $table->index('tanggal', 'idx_presensi_face_tanggal');
         });
     }

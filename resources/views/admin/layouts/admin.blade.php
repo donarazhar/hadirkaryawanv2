@@ -25,6 +25,7 @@
             --primary-dark: #003d94;
             --primary-light: #3379d9;
             --sidebar-width: 280px;
+            --sidebar-collapsed-width: 70px;
         }
 
         * {
@@ -38,8 +39,8 @@
             background-color: #f5f7fa;
         }
 
-        /* ===== HAMBURGER BUTTON ===== */
-        .hamburger-btn {
+        /* ===== TOGGLE BUTTON (Desktop & Mobile) ===== */
+        .sidebar-toggle-btn {
             position: fixed;
             top: 15px;
             left: 15px;
@@ -49,7 +50,7 @@
             background: linear-gradient(135deg, #0053C5 0%, #003d94 100%);
             border: none;
             border-radius: 10px;
-            display: none;
+            display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
@@ -57,13 +58,15 @@
             transition: all 0.3s;
         }
 
-        .hamburger-btn:hover {
+        .sidebar-toggle-btn:hover {
             transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(0, 83, 197, 0.4);
         }
 
-        .hamburger-btn i {
+        .sidebar-toggle-btn i {
             color: white;
             font-size: 24px;
+            transition: transform 0.3s;
         }
 
         /* ===== SIDEBAR OVERLAY (Mobile) ===== */
@@ -95,8 +98,14 @@
             background: linear-gradient(180deg, #0053C5 0%, #003d94 100%);
             color: white;
             overflow-y: auto;
+            overflow-x: hidden;
             z-index: 999;
-            transition: all 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Sidebar Collapsed State (Desktop) */
+        .sidebar.collapsed {
+            width: var(--sidebar-collapsed-width);
         }
 
         .sidebar::-webkit-scrollbar {
@@ -108,29 +117,54 @@
             border-radius: 10px;
         }
 
+        /* ===== SIDEBAR HEADER ===== */
         .sidebar-header {
             padding: 25px 20px;
             text-align: center;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
         }
 
         .sidebar-header i {
             font-size: 48px;
             margin-bottom: 10px;
+            transition: all 0.3s;
         }
 
         .sidebar-header h4 {
             margin: 0;
             font-size: 20px;
             font-weight: 600;
+            white-space: nowrap;
+            opacity: 1;
+            transition: all 0.3s;
         }
 
         .sidebar-header p {
             margin: 5px 0 0 0;
             font-size: 12px;
             opacity: 0.8;
+            transition: all 0.3s;
         }
 
+        /* Collapsed Header */
+        .sidebar.collapsed .sidebar-header {
+            padding: 20px 10px;
+        }
+
+        .sidebar.collapsed .sidebar-header i {
+            font-size: 32px;
+            margin-bottom: 0;
+        }
+
+        .sidebar.collapsed .sidebar-header h4,
+        .sidebar.collapsed .sidebar-header p {
+            opacity: 0;
+            height: 0;
+            overflow: hidden;
+        }
+
+        /* ===== SIDEBAR MENU ===== */
         .sidebar-menu {
             padding: 20px 0;
         }
@@ -161,18 +195,41 @@
             font-size: 14px;
             font-weight: 600;
             color: rgba(255, 255, 255, 0.9);
+            flex: 1;
+            white-space: nowrap;
         }
 
         .menu-group-title i {
             font-size: 20px;
+            min-width: 24px;
+            text-align: center;
+        }
+
+        .menu-group-title span {
+            opacity: 1;
+            transition: opacity 0.3s;
         }
 
         .menu-group-icon {
             transition: transform 0.3s;
+            opacity: 1;
         }
 
         .menu-group-header[aria-expanded="true"] .menu-group-icon {
             transform: rotate(180deg);
+        }
+
+        /* Collapsed Menu Group */
+        .sidebar.collapsed .menu-group-header {
+            padding: 12px 10px;
+            justify-content: center;
+        }
+
+        .sidebar.collapsed .menu-group-title span,
+        .sidebar.collapsed .menu-group-icon {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
         }
 
         /* Menu Items Inside Group */
@@ -189,6 +246,7 @@
             transition: all 0.3s;
             border-left: 3px solid transparent;
             font-size: 14px;
+            white-space: nowrap;
         }
 
         .menu-item:hover {
@@ -207,7 +265,30 @@
         .menu-item i {
             margin-right: 10px;
             font-size: 18px;
-            width: 20px;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        .menu-item span {
+            opacity: 1;
+            transition: opacity 0.3s;
+        }
+
+        /* Collapsed Menu Items */
+        .sidebar.collapsed .menu-item {
+            padding: 12px 10px;
+            justify-content: center;
+        }
+
+        .sidebar.collapsed .menu-item span {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+        }
+
+        /* Hide submenu when collapsed */
+        .sidebar.collapsed .menu-group-content {
+            display: none;
         }
 
         /* Single Menu Item (No Group) */
@@ -220,6 +301,7 @@
             transition: all 0.3s;
             border-left: 3px solid transparent;
             margin-bottom: 5px;
+            white-space: nowrap;
         }
 
         .menu-single:hover {
@@ -238,14 +320,68 @@
         .menu-single i {
             margin-right: 10px;
             font-size: 20px;
-            width: 24px;
+            min-width: 24px;
+            text-align: center;
+        }
+
+        .menu-single span {
+            opacity: 1;
+            transition: opacity 0.3s;
+        }
+
+        /* Collapsed Single Menu */
+        .sidebar.collapsed .menu-single {
+            padding: 12px 10px;
+            justify-content: center;
+        }
+
+        .sidebar.collapsed .menu-single span {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+        }
+
+        /* ===== TOOLTIP FOR COLLAPSED STATE ===== */
+        .sidebar.collapsed .menu-single,
+        .sidebar.collapsed .menu-group-header {
+            position: relative;
+        }
+
+        .sidebar.collapsed .menu-single::after,
+        .sidebar.collapsed .menu-group-header::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            left: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #333;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s;
+            margin-left: 10px;
+            z-index: 1000;
+        }
+
+        .sidebar.collapsed .menu-single:hover::after,
+        .sidebar.collapsed .menu-group-header:hover::after {
+            opacity: 1;
+            margin-left: 15px;
         }
 
         /* ===== MAIN CONTENT ===== */
         .main-content {
             margin-left: var(--sidebar-width);
             min-height: 100vh;
-            transition: all 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .main-content.expanded {
+            margin-left: var(--sidebar-collapsed-width);
         }
 
         /* ===== TOPBAR ===== */
@@ -452,10 +588,8 @@
 
         /* ===== RESPONSIVE ===== */
         @media (max-width: 992px) {
-            .hamburger-btn {
-                display: flex;
-            }
 
+            /* Mobile: Sidebar slides from left */
             .sidebar {
                 transform: translateX(-100%);
             }
@@ -464,7 +598,13 @@
                 transform: translateX(0);
             }
 
-            .main-content {
+            /* Mobile: No collapsed state, always full width when shown */
+            .sidebar.collapsed {
+                width: var(--sidebar-width);
+            }
+
+            .main-content,
+            .main-content.expanded {
                 margin-left: 0;
             }
 
@@ -483,6 +623,12 @@
             .content {
                 padding: 20px 15px;
             }
+
+            /* Hide tooltips on mobile */
+            .sidebar.collapsed .menu-single::after,
+            .sidebar.collapsed .menu-group-header::after {
+                display: none;
+            }
         }
 
         @media (max-width: 576px) {
@@ -493,6 +639,13 @@
             .btn-logout {
                 padding: 6px 12px;
                 font-size: 13px;
+            }
+        }
+
+        /* Desktop: Show collapse functionality */
+        @media (min-width: 993px) {
+            .sidebar.collapsed .sidebar-menu {
+                padding: 10px 0;
             }
         }
 
@@ -520,9 +673,9 @@
 </head>
 
 <body>
-    <!-- Hamburger Button (Mobile Only) -->
-    <button class="hamburger-btn" id="hamburgerBtn">
-        <i class="mdi mdi-menu"></i>
+    <!-- Toggle Button (Desktop & Mobile) -->
+    <button class="sidebar-toggle-btn" id="sidebarToggleBtn">
+        <i class="mdi mdi-menu" id="toggleIcon"></i>
     </button>
 
     <!-- Sidebar Overlay (Mobile Only) -->
@@ -538,31 +691,41 @@
 
         <div class="sidebar-menu">
             <!-- Dashboard (Single Menu) -->
-            <a href="{{ route('panel.dashboard') }}" class="menu-single {{ Request::is('panel/dashboard') ? 'active' : '' }}">
+            <a href="{{ route('panel.dashboard') }}"
+                class="menu-single {{ Request::is('panel/dashboard') ? 'active' : '' }}"
+                data-tooltip="Dashboard">
                 <i class="mdi mdi-view-dashboard"></i>
                 <span>Dashboard</span>
             </a>
 
             <!-- Master Data Group (Collapsible) -->
             <div class="menu-group">
-                <div class="menu-group-header" data-bs-toggle="collapse" data-bs-target="#masterDataMenu" aria-expanded="{{ Request::is('panel/cabang*') || Request::is('panel/departemen*') || Request::is('panel/karyawan*') ? 'true' : 'false' }}">
+                <div class="menu-group-header"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#masterDataMenu"
+                    data-tooltip="Master Data"
+                    aria-expanded="{{ Request::is('panel/cabang*') || Request::is('panel/departemen*') || Request::is('panel/karyawan*') ? 'true' : 'false' }}">
                     <div class="menu-group-title">
                         <i class="mdi mdi-database"></i>
                         <span>Master Data</span>
                     </div>
                     <i class="mdi mdi-chevron-down menu-group-icon"></i>
                 </div>
-                <div class="collapse {{ Request::is('panel/cabang*') || Request::is('panel/departemen*') || Request::is('panel/karyawan*') ? 'show' : '' }}" id="masterDataMenu">
+                <div class="collapse {{ Request::is('panel/cabang*') || Request::is('panel/departemen*') || Request::is('panel/karyawan*') ? 'show' : '' }}"
+                    id="masterDataMenu">
                     <div class="menu-group-content">
-                        <a href="{{ route('panel.cabang.index') }}" class="menu-item {{ Request::is('panel/cabang*') ? 'active' : '' }}">
+                        <a href="{{ route('panel.cabang.index') }}"
+                            class="menu-item {{ Request::is('panel/cabang*') ? 'active' : '' }}">
                             <i class="mdi mdi-office-building"></i>
                             <span>Data Cabang</span>
                         </a>
-                        <a href="{{ route('panel.departemen.index') }}" class="menu-item {{ Request::is('panel/departemen*') ? 'active' : '' }}">
+                        <a href="{{ route('panel.departemen.index') }}"
+                            class="menu-item {{ Request::is('panel/departemen*') ? 'active' : '' }}">
                             <i class="mdi mdi-file-tree"></i>
                             <span>Data Departemen</span>
                         </a>
-                        <a href="{{ route('panel.karyawan.index') }}" class="menu-item {{ Request::is('panel/karyawan*') ? 'active' : '' }}">
+                        <a href="{{ route('panel.karyawan.index') }}"
+                            class="menu-item {{ Request::is('panel/karyawan*') ? 'active' : '' }}">
                             <i class="mdi mdi-account-group"></i>
                             <span>Data Karyawan</span>
                         </a>
@@ -572,20 +735,27 @@
 
             <!-- Konfigurasi Group (Collapsible) -->
             <div class="menu-group">
-                <div class="menu-group-header" data-bs-toggle="collapse" data-bs-target="#konfigurasiMenu" aria-expanded="{{ Request::is('panel/jamkerja*') || Request::is('panel/konfigurasi-jk-dept*') ? 'true' : 'false' }}">
+                <div class="menu-group-header"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#konfigurasiMenu"
+                    data-tooltip="Konfigurasi"
+                    aria-expanded="{{ Request::is('panel/jamkerja*') || Request::is('panel/konfigurasi-jk-dept*') ? 'true' : 'false' }}">
                     <div class="menu-group-title">
                         <i class="mdi mdi-cog"></i>
                         <span>Konfigurasi</span>
                     </div>
                     <i class="mdi mdi-chevron-down menu-group-icon"></i>
                 </div>
-                <div class="collapse {{ Request::is('panel/jamkerja*') || Request::is('panel/konfigurasi-jk-dept*') ? 'show' : '' }}" id="konfigurasiMenu">
+                <div class="collapse {{ Request::is('panel/jamkerja*') || Request::is('panel/konfigurasi-jk-dept*') ? 'show' : '' }}"
+                    id="konfigurasiMenu">
                     <div class="menu-group-content">
-                        <a href="{{ route('panel.jamkerja.index') }}" class="menu-item {{ Request::is('panel/jamkerja*') ? 'active' : '' }}">
+                        <a href="{{ route('panel.jamkerja.index') }}"
+                            class="menu-item {{ Request::is('panel/jamkerja*') ? 'active' : '' }}">
                             <i class="mdi mdi-clock-outline"></i>
                             <span>Jam Kerja</span>
                         </a>
-                        <a href="{{ route('panel.konfigurasi-jk-dept.index') }}" class="menu-item {{ Request::is('panel/konfigurasi-jk-dept*') ? 'active' : '' }}">
+                        <a href="{{ route('panel.konfigurasi-jk-dept.index') }}"
+                            class="menu-item {{ Request::is('panel/konfigurasi-jk-dept*') ? 'active' : '' }}">
                             <i class="mdi mdi-cog-outline"></i>
                             <span>Jam Kerja Departemen</span>
                         </a>
@@ -593,17 +763,26 @@
                 </div>
             </div>
 
-            <!-- Presensi Group (Collapsible) - Contoh tambahan -->
-            <div class="menu-group">
-                <div class="menu-group-header" data-bs-toggle="collapse" data-bs-target="#presensiMenu" aria-expanded="false">
+            <!-- Presensi GPS Group (Collapsible) -->
+            <!-- <div class="menu-group">
+                <div class="menu-group-header"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#presensiGPSMenu"
+                    data-tooltip="Presensi GPS"
+                    aria-expanded="{{ Request::is('panel/presensi') && !Request::is('panel/presensi-face*') && !Request::is('panel/face-verification*') ? 'true' : 'false' }}">
                     <div class="menu-group-title">
-                        <i class="mdi mdi-calendar-check"></i>
-                        <span>Presensi</span>
+                        <i class="mdi mdi-map-marker-check"></i>
+                        <span>Presensi GPS</span>
                     </div>
                     <i class="mdi mdi-chevron-down menu-group-icon"></i>
                 </div>
-                <div class="collapse" id="presensiMenu">
+                <div class="collapse {{ Request::is('panel/presensi') && !Request::is('panel/presensi-face*') && !Request::is('panel/face-verification*') ? 'show' : '' }}"
+                    id="presensiGPSMenu">
                     <div class="menu-group-content">
+                        <a href="#" class="menu-item">
+                            <i class="mdi mdi-format-list-bulleted"></i>
+                            <span>Data Presensi</span>
+                        </a>
                         <a href="#" class="menu-item">
                             <i class="mdi mdi-calendar-today"></i>
                             <span>Rekap Harian</span>
@@ -613,18 +792,63 @@
                             <span>Rekap Bulanan</span>
                         </a>
                         <a href="#" class="menu-item">
-                            <i class="mdi mdi-file-export"></i>
-                            <span>Export Data</span>
+                            <i class="mdi mdi-map"></i>
+                            <span>Monitoring Lokasi</span>
                         </a>
+                    </div>
+                </div>
+            </div> -->
+
+            <!-- Presensi Face Group (Collapsible) - MERGED WITH VERIFIKASI WAJAH -->
+            <div class="menu-group">
+                <div class="menu-group-header"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#presensiFaceMenu"
+                    data-tooltip="Presensi Face"
+                    aria-expanded="{{ Request::is('panel/presensi-face*') || Request::is('panel/face-verification*') ? 'true' : 'false' }}">
+                    <div class="menu-group-title">
+                        <i class="mdi mdi-face-recognition"></i>
+                        <span>Presensi Face</span>
+                    </div>
+                    <i class="mdi mdi-chevron-down menu-group-icon"></i>
+                </div>
+                <div class="collapse {{ Request::is('panel/presensi-face*') || Request::is('panel/face-verification*') ? 'show' : '' }}"
+                    id="presensiFaceMenu">
+                    <div class="menu-group-content">
+                        <a href="{{ route('panel.presensi-face.index') }}"
+                            class="menu-item {{ Request::is('panel/presensi-face') || Request::is('panel/presensi-face/show*') ? 'active' : '' }}">
+                            <i class="mdi mdi-format-list-bulleted"></i>
+                            <span>Data Presensi</span>
+                        </a>
+                        <a href="{{ route('panel.presensi-face.rekap') }}"
+                            class="menu-item {{ Request::is('panel/presensi-face/rekap*') ? 'active' : '' }}">
+                            <i class="mdi mdi-file-chart"></i>
+                            <span>Rekap Presensi</span>
+                        </a>
+                        <a href="{{ route('panel.presensi-face.monitoring') }}"
+                            class="menu-item {{ Request::is('panel/presensi-face/rmonitoring*') ? 'active' : '' }}">
+                            <i class="mdi mdi-file-chart"></i>
+                            <span>Monitoring Presensi</span>
+                        </a>
+                        <a href="{{ route('panel.face-verification.index') }}"
+                            class="menu-item {{ Request::is('panel/face-verification') || Request::is('panel/face-verification/show*') ? 'active' : '' }}">
+                            <i class="mdi mdi-account-check"></i>
+                            <span>Verifikasi Wajah</span>
+                        </a>
+                        
                     </div>
                 </div>
             </div>
 
-            <!-- Laporan Group (Collapsible) - Contoh tambahan -->
+            <!-- Laporan Group (Collapsible) -->
             <div class="menu-group">
-                <div class="menu-group-header" data-bs-toggle="collapse" data-bs-target="#laporanMenu" aria-expanded="false">
+                <div class="menu-group-header"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#laporanMenu"
+                    data-tooltip="Laporan"
+                    aria-expanded="false">
                     <div class="menu-group-title">
-                        <i class="mdi mdi-file-chart"></i>
+                        <i class="mdi mdi-chart-bar"></i>
                         <span>Laporan</span>
                     </div>
                     <i class="mdi mdi-chevron-down menu-group-icon"></i>
@@ -643,6 +867,10 @@
                             <i class="mdi mdi-account-off"></i>
                             <span>Ketidakhadiran</span>
                         </a>
+                        <a href="#" class="menu-item">
+                            <i class="mdi mdi-file-document"></i>
+                            <span>Laporan Lengkap</span>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -650,7 +878,7 @@
     </div>
 
     <!-- Main Content -->
-    <div class="main-content">
+    <div class="main-content" id="mainContent">
         <!-- Topbar -->
         <div class="topbar">
             <h5>@yield('page-title')</h5>
@@ -680,28 +908,127 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-        // ===== SIDEBAR TOGGLE (Mobile) =====
-        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        // ===== SIDEBAR TOGGLE FUNCTIONALITY =====
+        const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
         const sidebar = document.getElementById('sidebar');
         const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const mainContent = document.getElementById('mainContent');
+        const toggleIcon = document.getElementById('toggleIcon');
 
-        function toggleSidebar() {
-            sidebar.classList.toggle('show');
-            sidebarOverlay.classList.toggle('show');
+        // Check if we're on mobile or desktop
+        function isMobile() {
+            return window.innerWidth <= 992;
         }
 
-        hamburgerBtn.addEventListener('click', toggleSidebar);
+        // Load saved state from localStorage
+        function loadSidebarState() {
+            const savedState = localStorage.getItem('sidebarCollapsed');
+            if (savedState === 'true' && !isMobile()) {
+                sidebar.classList.add('collapsed');
+                mainContent.classList.add('expanded');
+                updateToggleIcon(true);
+            }
+        }
+
+        // Save state to localStorage
+        function saveSidebarState(isCollapsed) {
+            localStorage.setItem('sidebarCollapsed', isCollapsed);
+        }
+
+        // Update toggle button icon
+        function updateToggleIcon(isCollapsed) {
+            if (isCollapsed && !isMobile()) {
+                toggleIcon.classList.remove('mdi-menu');
+                toggleIcon.classList.add('mdi-menu-open');
+            } else {
+                toggleIcon.classList.remove('mdi-menu-open');
+                toggleIcon.classList.add('mdi-menu');
+            }
+        }
+
+        // Toggle sidebar
+        function toggleSidebar() {
+            if (isMobile()) {
+                // Mobile: slide in/out
+                sidebar.classList.toggle('show');
+                sidebarOverlay.classList.toggle('show');
+
+                // Prevent body scroll when sidebar is open
+                if (sidebar.classList.contains('show')) {
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    document.body.style.overflow = '';
+                }
+            } else {
+                // Desktop: collapse/expand
+                const isCollapsed = sidebar.classList.toggle('collapsed');
+                mainContent.classList.toggle('expanded');
+                updateToggleIcon(isCollapsed);
+                saveSidebarState(isCollapsed);
+
+                // Close all open menus when collapsing
+                if (isCollapsed) {
+                    const openMenus = document.querySelectorAll('.collapse.show');
+                    openMenus.forEach(menu => {
+                        const bsCollapse = new bootstrap.Collapse(menu, {
+                            toggle: false
+                        });
+                        bsCollapse.hide();
+                    });
+                }
+            }
+        }
+
+        // Event listeners
+        sidebarToggleBtn.addEventListener('click', toggleSidebar);
         sidebarOverlay.addEventListener('click', toggleSidebar);
 
         // Close sidebar when clicking menu item on mobile
         const menuItems = document.querySelectorAll('.menu-item, .menu-single');
         menuItems.forEach(item => {
             item.addEventListener('click', function() {
-                if (window.innerWidth <= 992) {
+                if (isMobile() && sidebar.classList.contains('show')) {
                     toggleSidebar();
                 }
             });
         });
+
+        // Handle window resize
+        let resizeTimer;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(function() {
+                if (isMobile()) {
+                    // Mobile: remove collapsed state
+                    sidebar.classList.remove('collapsed');
+                    mainContent.classList.remove('expanded');
+                    if (!sidebar.classList.contains('show')) {
+                        document.body.style.overflow = '';
+                    }
+                } else {
+                    // Desktop: restore saved state
+                    sidebar.classList.remove('show');
+                    sidebarOverlay.classList.remove('show');
+                    document.body.style.overflow = '';
+                    loadSidebarState();
+                }
+                updateToggleIcon(sidebar.classList.contains('collapsed'));
+            }, 250);
+        });
+
+        // Prevent menu group toggle when sidebar is collapsed on desktop
+        const menuGroupHeaders = document.querySelectorAll('.menu-group-header');
+        menuGroupHeaders.forEach(header => {
+            header.addEventListener('click', function(e) {
+                if (!isMobile() && sidebar.classList.contains('collapsed')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            });
+        });
+
+        // Initialize sidebar state
+        loadSidebarState();
 
         // ===== AUTO HIDE ALERTS =====
         setTimeout(function() {
@@ -725,22 +1052,6 @@
                 }
             });
         }
-
-        // ===== PREVENT BODY SCROLL WHEN SIDEBAR OPEN (Mobile) =====
-        const mutationObserver = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
-                if (sidebar.classList.contains('show')) {
-                    document.body.style.overflow = 'hidden';
-                } else {
-                    document.body.style.overflow = '';
-                }
-            });
-        });
-
-        mutationObserver.observe(sidebar, {
-            attributes: true,
-            attributeFilter: ['class']
-        });
     </script>
 
     @stack('scripts')

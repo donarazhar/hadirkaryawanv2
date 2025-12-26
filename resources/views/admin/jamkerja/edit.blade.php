@@ -23,124 +23,182 @@
                 </div>
                 @endif
 
-                <form action="{{ route('panel.jamkerja.update', $jamkerja->kode_jam_kerja) }}" method="POST">
+                <form action="{{ route('panel.jamkerja.update', $jamkerja->kode_jam_kerja) }}" method="POST" id="formJamKerja">
                     @csrf
                     @method('PUT')
 
+                    <!-- Basic Info -->
                     <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="kode_jam_kerja" class="form-label">Kode Jam Kerja</label>
-                                <input type="text" class="form-control bg-light" id="kode_jam_kerja" value="{{ $jamkerja->kode_jam_kerja }}" disabled>
-                                <small class="text-muted">Kode jam kerja tidak dapat diubah</small>
-                            </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Kode Jam Kerja</label>
+                            <input type="text" class="form-control bg-light" value="{{ $jamkerja->kode_jam_kerja }}" disabled>
+                            <small class="text-muted">Kode tidak dapat diubah</small>
                         </div>
 
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="nama_jam_kerja" class="form-label">Nama Jam Kerja <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control @error('nama_jam_kerja') is-invalid @enderror"
-                                    id="nama_jam_kerja" name="nama_jam_kerja"
-                                    value="{{ old('nama_jam_kerja', $jamkerja->nama_jam_kerja) }}"
-                                    maxlength="15" required>
-                                @error('nama_jam_kerja')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Nama Jam Kerja <span class="text-danger">*</span></label>
+                            <input type="text" name="nama_jam_kerja" class="form-control @error('nama_jam_kerja') is-invalid @enderror"
+                                value="{{ old('nama_jam_kerja', $jamkerja->nama_jam_kerja) }}" required>
+                            @error('nama_jam_kerja')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <!-- Tipe Jam Kerja -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Tipe Jam Kerja <span class="text-danger">*</span></label>
+                            <select name="tipe_jam_kerja" id="tipeJamKerja" class="form-select" required>
+                                <option value="regular" {{ old('tipe_jam_kerja', $jamkerja->tipe_jam_kerja) == 'regular' ? 'selected' : '' }}>
+                                    Regular (Jam Kerja Normal)
+                                </option>
+                                <option value="multi_shift" {{ old('tipe_jam_kerja', $jamkerja->tipe_jam_kerja) == 'multi_shift' ? 'selected' : '' }}>
+                                    Multi Shift (Untuk Imam/Muazin dll)
+                                </option>
+                            </select>
+                            <small class="text-muted">
+                                Pilih "Multi Shift" untuk jam kerja dengan beberapa shift dalam 1 hari
+                            </small>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Lintas Hari <span class="text-danger">*</span></label>
+                            <select name="lintashari" class="form-select" required>
+                                <option value="0" {{ old('lintashari', $jamkerja->lintashari) == '0' ? 'selected' : '' }}>Tidak</option>
+                                <option value="1" {{ old('lintashari', $jamkerja->lintashari) == '1' ? 'selected' : '' }}>Ya (Shift Malam)</option>
+                            </select>
                         </div>
                     </div>
 
                     <hr>
-                    <h6 class="mb-3">Konfigurasi Waktu Masuk</h6>
 
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="awal_jam_masuk" class="form-label">
-                                    Awal Jam Masuk <span class="text-danger">*</span>
-                                    <i class="mdi mdi-help-circle text-info" data-bs-toggle="tooltip" title="Waktu paling awal karyawan bisa mulai presensi masuk"></i>
-                                </label>
-                                <input type="time" class="form-control @error('awal_jam_masuk') is-invalid @enderror"
-                                    id="awal_jam_masuk" name="awal_jam_masuk"
-                                    value="{{ old('awal_jam_masuk', date('H:i', strtotime($jamkerja->awal_jam_masuk))) }}" required>
-                                @error('awal_jam_masuk')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                    <!-- Regular Section -->
+                    <div id="regularSection" style="{{ old('tipe_jam_kerja', $jamkerja->tipe_jam_kerja) == 'multi_shift' ? 'display:none' : '' }}">
+                        <h6 class="mb-3">⏰ Konfigurasi Jam Kerja Regular</h6>
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Awal Jam Masuk</label>
+                                <input type="time" name="awal_jam_masuk" class="form-control"
+                                    value="{{ old('awal_jam_masuk', date('H:i', strtotime($jamkerja->awal_jam_masuk))) }}">
                             </div>
-                        </div>
-
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="jam_masuk" class="form-label">
-                                    Jam Masuk <span class="text-danger">*</span>
-                                    <i class="mdi mdi-help-circle text-info" data-bs-toggle="tooltip" title="Jam kerja resmi dimulai"></i>
-                                </label>
-                                <input type="time" class="form-control @error('jam_masuk') is-invalid @enderror"
-                                    id="jam_masuk" name="jam_masuk"
-                                    value="{{ old('jam_masuk', date('H:i', strtotime($jamkerja->jam_masuk))) }}" required>
-                                @error('jam_masuk')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Jam Masuk</label>
+                                <input type="time" name="jam_masuk" class="form-control"
+                                    value="{{ old('jam_masuk', date('H:i', strtotime($jamkerja->jam_masuk))) }}">
                             </div>
-                        </div>
-
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="akhir_jam_masuk" class="form-label">
-                                    Akhir Jam Masuk <span class="text-danger">*</span>
-                                    <i class="mdi mdi-help-circle text-info" data-bs-toggle="tooltip" title="Batas waktu toleransi keterlambatan"></i>
-                                </label>
-                                <input type="time" class="form-control @error('akhir_jam_masuk') is-invalid @enderror"
-                                    id="akhir_jam_masuk" name="akhir_jam_masuk"
-                                    value="{{ old('akhir_jam_masuk', date('H:i', strtotime($jamkerja->akhir_jam_masuk))) }}" required>
-                                @error('akhir_jam_masuk')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Akhir Jam Masuk</label>
+                                <input type="time" name="akhir_jam_masuk" class="form-control"
+                                    value="{{ old('akhir_jam_masuk', date('H:i', strtotime($jamkerja->akhir_jam_masuk))) }}">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Jam Pulang</label>
+                                <input type="time" name="jam_pulang" class="form-control"
+                                    value="{{ old('jam_pulang', date('H:i', strtotime($jamkerja->jam_pulang))) }}">
                             </div>
                         </div>
                     </div>
 
-                    <hr>
-                    <h6 class="mb-3">Waktu Pulang</h6>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="jam_pulang" class="form-label">
-                                    Jam Pulang <span class="text-danger">*</span>
-                                    <i class="mdi mdi-help-circle text-info" data-bs-toggle="tooltip" title="Waktu kerja selesai"></i>
-                                </label>
-                                <input type="time" class="form-control @error('jam_pulang') is-invalid @enderror"
-                                    id="jam_pulang" name="jam_pulang"
-                                    value="{{ old('jam_pulang', date('H:i', strtotime($jamkerja->jam_pulang))) }}" required>
-                                @error('jam_pulang')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
+                    <!-- Multi Shift Section -->
+                    <div id="multiShiftSection" style="{{ old('tipe_jam_kerja', $jamkerja->tipe_jam_kerja) == 'regular' ? 'display:none' : '' }}">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="mb-0">🕌 Konfigurasi Multi Shift</h6>
+                            <button type="button" class="btn btn-sm btn-primary" id="addShiftBtn">
+                                <i class="mdi mdi-plus"></i> Tambah Shift
+                            </button>
                         </div>
 
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Lintas Hari <span class="text-danger">*</span></label>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="lintashari" id="lintashari_tidak" value="0"
-                                        {{ old('lintashari', $jamkerja->lintashari) == '0' ? 'checked' : '' }}>
-                                    <label class="form-check-label" for="lintashari_tidak">
-                                        <strong>Tidak</strong> - Jam pulang di hari yang sama
-                                    </label>
+                        <input type="hidden" name="total_shift" id="totalShift" value="{{ $jamkerja->shifts->count() }}">
+
+                        <div id="shiftsContainer">
+                            @foreach($jamkerja->shifts as $shift)
+                            <div class="card mb-3 shift-item">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">Shift <span class="shift-number">{{ $shift->shift_ke }}</span></h6>
+                                    <button type="button" class="btn btn-sm btn-danger remove-shift">
+                                        <i class="mdi mdi-delete"></i> Hapus
+                                    </button>
                                 </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="lintashari" id="lintashari_ya" value="1"
-                                        {{ old('lintashari', $jamkerja->lintashari) == '1' ? 'checked' : '' }}>
-                                    <label class="form-check-label" for="lintashari_ya">
-                                        <strong>Ya</strong> - Jam pulang melewati tengah malam (shift malam)
-                                    </label>
+                                <div class="card-body">
+                                    <input type="hidden" name="shifts[{{ $loop->index }}][shift_ke]" class="shift-ke" value="{{ $shift->shift_ke }}">
+
+                                    <div class="row">
+                                        <div class="col-md-12 mb-3">
+                                            <label class="form-label">Nama Shift</label>
+                                            <input type="text" name="shifts[{{ $loop->index }}][nama_shift]" class="form-control"
+                                                value="{{ $shift->nama_shift }}" placeholder="Contoh: Subuh, Zuhur, dll" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-3 mb-3">
+                                            <label class="form-label">Awal Jam Masuk</label>
+                                            <input type="time" name="shifts[{{ $loop->index }}][awal_jam_masuk]" class="form-control"
+                                                value="{{ date('H:i', strtotime($shift->awal_jam_masuk)) }}" required>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label class="form-label">Jam Masuk</label>
+                                            <input type="time" name="shifts[{{ $loop->index }}][jam_masuk]" class="form-control"
+                                                value="{{ date('H:i', strtotime($shift->jam_masuk)) }}" required>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label class="form-label">Akhir Jam Masuk</label>
+                                            <input type="time" name="shifts[{{ $loop->index }}][akhir_jam_masuk]" class="form-control"
+                                                value="{{ date('H:i', strtotime($shift->akhir_jam_masuk)) }}" required>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label class="form-label">Jam Pulang</label>
+                                            <input type="time" name="shifts[{{ $loop->index }}][jam_pulang]" class="form-control"
+                                                value="{{ date('H:i', strtotime($shift->jam_pulang)) }}" required>
+                                        </div>
+                                    </div>
                                 </div>
-                                @error('lintashari')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
-                                @enderror
                             </div>
+                            @endforeach
                         </div>
+
+                        <!-- Template for new shift -->
+                        <template id="shiftTemplate">
+                            <div class="card mb-3 shift-item">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">Shift <span class="shift-number">1</span></h6>
+                                    <button type="button" class="btn btn-sm btn-danger remove-shift">
+                                        <i class="mdi mdi-delete"></i> Hapus
+                                    </button>
+                                </div>
+                                <div class="card-body">
+                                    <input type="hidden" name="shifts[INDEX][shift_ke]" class="shift-ke" value="1">
+
+                                    <div class="row">
+                                        <div class="col-md-12 mb-3">
+                                            <label class="form-label">Nama Shift</label>
+                                            <input type="text" name="shifts[INDEX][nama_shift]" class="form-control"
+                                                placeholder="Contoh: Subuh, Zuhur, dll" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-3 mb-3">
+                                            <label class="form-label">Awal Jam Masuk</label>
+                                            <input type="time" name="shifts[INDEX][awal_jam_masuk]" class="form-control" required>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label class="form-label">Jam Masuk</label>
+                                            <input type="time" name="shifts[INDEX][jam_masuk]" class="form-control" required>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label class="form-label">Akhir Jam Masuk</label>
+                                            <input type="time" name="shifts[INDEX][akhir_jam_masuk]" class="form-control" required>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label class="form-label">Jam Pulang</label>
+                                            <input type="time" name="shifts[INDEX][jam_pulang]" class="form-control" required>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
                     </div>
 
                     <hr>
@@ -158,61 +216,39 @@
         </div>
     </div>
 
+    <!-- Sidebar Info -->
     <div class="col-md-4">
         <div class="card">
             <div class="card-header">
                 <h5 class="card-title mb-0">
-                    <i class="mdi mdi-clock-outline"></i> Detail Jam Kerja
+                    <i class="mdi mdi-information-outline"></i> Informasi
                 </h5>
             </div>
             <div class="card-body">
-                <div class="text-center mb-3">
-                    <h4 class="text-primary mb-1">{{ $jamkerja->nama_jam_kerja }}</h4>
+                <div class="mb-3">
+                    <strong>Kode:</strong>
                     <span class="badge bg-warning text-dark">{{ $jamkerja->kode_jam_kerja }}</span>
                 </div>
-
-                <hr>
-
                 <div class="mb-3">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="text-muted">
-                            <i class="mdi mdi-clock-outline text-primary"></i> Awal Masuk
-                        </span>
-                        <strong>{{ date('H:i', strtotime($jamkerja->awal_jam_masuk)) }}</strong>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="text-muted">
-                            <i class="mdi mdi-clock text-success"></i> Jam Masuk
-                        </span>
-                        <strong>{{ date('H:i', strtotime($jamkerja->jam_masuk)) }}</strong>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="text-muted">
-                            <i class="mdi mdi-clock-alert text-warning"></i> Akhir Masuk
-                        </span>
-                        <strong>{{ date('H:i', strtotime($jamkerja->akhir_jam_masuk)) }}</strong>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="text-muted">
-                            <i class="mdi mdi-clock-end text-danger"></i> Jam Pulang
-                        </span>
-                        <strong>{{ date('H:i', strtotime($jamkerja->jam_pulang)) }}</strong>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="text-muted">
-                            <i class="mdi mdi-weather-night text-info"></i> Lintas Hari
-                        </span>
-                        @if($jamkerja->lintashari == '1')
-                        <span class="badge bg-info">Ya</span>
-                        @else
-                        <span class="badge bg-secondary">Tidak</span>
-                        @endif
-                    </div>
+                    <strong>Nama:</strong> {{ $jamkerja->nama_jam_kerja }}
+                </div>
+                <div class="mb-3">
+                    <strong>Tipe:</strong>
+                    @if($jamkerja->tipe_jam_kerja == 'multi_shift')
+                    <span class="badge bg-info">Multi Shift</span>
+                    @else
+                    <span class="badge bg-secondary">Regular</span>
+                    @endif
                 </div>
 
-                <hr>
+                @if($jamkerja->tipe_jam_kerja == 'multi_shift')
+                <div class="mb-3">
+                    <strong>Total Shift:</strong> {{ $jamkerja->shifts->count() }} shift/hari
+                </div>
+                @endif
 
                 @if($total_penggunaan > 0)
+                <hr>
                 <div class="alert alert-info mb-0">
                     <small>
                         <i class="mdi mdi-information-outline"></i>
@@ -233,7 +269,7 @@
                 <div class="alert alert-warning mb-0">
                     <small>
                         <i class="mdi mdi-alert"></i>
-                        Perubahan jam kerja akan mempengaruhi semua konfigurasi yang menggunakan jam kerja ini. Pastikan perubahan sudah sesuai.
+                        Perubahan jam kerja akan mempengaruhi semua konfigurasi yang menggunakan jam kerja ini.
                     </small>
                 </div>
             </div>
@@ -243,11 +279,72 @@
 
 @push('scripts')
 <script>
-    // Initialize tooltips
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-    var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl)
-    })
+    let shiftIndex = {{$jamkerja->shifts->count()}
+    };
+
+    $(document).ready(function() {
+        // Toggle sections
+        $('#tipeJamKerja').on('change', function() {
+            toggleSections();
+        });
+
+        // Add shift
+        $('#addShiftBtn').on('click', function() {
+            addShift();
+        });
+
+        // Remove shift
+        $(document).on('click', '.remove-shift', function() {
+            $(this).closest('.shift-item').remove();
+            updateShiftNumbers();
+            updateTotalShift();
+        });
+
+        // Initialize
+        toggleSections();
+    });
+
+    function toggleSections() {
+        const tipe = $('#tipeJamKerja').val();
+
+        if (tipe === 'multi_shift') {
+            $('#regularSection').hide();
+            $('#regularSection input').prop('required', false);
+            $('#multiShiftSection').show();
+            $('#multiShiftSection input[type="time"]').prop('required', true);
+        } else {
+            $('#regularSection').show();
+            $('#regularSection input').prop('required', true);
+            $('#multiShiftSection').hide();
+            $('#multiShiftSection input[type="time"]').prop('required', false);
+        }
+    }
+
+    function addShift() {
+        shiftIndex++;
+
+        const template = document.getElementById('shiftTemplate');
+        const clone = template.content.cloneNode(true);
+        const html = clone.querySelector('.shift-item').outerHTML.replace(/INDEX/g, shiftIndex);
+
+        $('#shiftsContainer').append(html);
+
+        updateShiftNumbers();
+        updateTotalShift();
+    }
+
+    function updateShiftNumbers() {
+        $('.shift-item').each(function(index) {
+            $(this).find('.shift-number').text(index + 1);
+            $(this).find('.shift-ke').val(index + 1);
+        });
+    }
+
+    function updateTotalShift() {
+        const total = $('.shift-item').length;
+        $('#totalShift').val(total);
+    }
 </script>
 @endpush
+
 @endsection

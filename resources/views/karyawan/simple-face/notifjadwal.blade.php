@@ -1,4 +1,4 @@
-@extends('karyawan.layouts.presensi-face')
+@extends('karyawan.layouts.simple-face')
 
 @section('content')
 
@@ -62,9 +62,9 @@
     <div class="notif-icon">
         <ion-icon name="calendar-outline"></ion-icon>
     </div>
-    
+
     <h1 class="notif-title">Tidak Ada Jadwal Kerja</h1>
-    
+
     <p class="notif-message">
         Maaf <strong>{{ $nama }}</strong>,<br>
         Tidak ada jadwal kerja untuk hari <strong>{{ $hari }}</strong>.<br>

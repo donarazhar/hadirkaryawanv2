@@ -95,13 +95,12 @@
                             <thead class="table-light">
                                 <tr>
                                     <th width="5%">No</th>
-                                    <th width="35%">Hari <span class="text-danger">*</span></th>
-                                    <th width="50%">Jam Kerja <span class="text-danger">*</span></th>
+                                    <th width="20%">Hari <span class="text-danger">*</span></th>
+                                    <th width="65%">Jam Kerja <span class="text-danger">*</span></th>
                                     <th width="10%" class="text-center">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody id="bodyJamKerja">
-                                <!-- Row akan ditambahkan via JavaScript -->
                                 @if(old('hari'))
                                 @foreach(old('hari') as $index => $hari)
                                 <tr>
@@ -119,15 +118,27 @@
                                         </select>
                                     </td>
                                     <td>
-                                        <select name="kode_jam_kerja[]" class="form-select" required>
+                                        <select name="kode_jam_kerja[]" class="form-select select-jam-kerja" required>
                                             <option value="">-- Pilih Jam Kerja --</option>
                                             @foreach($jamkerja as $jk)
                                             <option value="{{ $jk->kode_jam_kerja }}"
+                                                data-tipe="{{ $jk->tipe_jam_kerja }}"
+                                                data-total-shift="{{ $jk->total_shift }}"
+                                                data-shifts="{{ $jk->shifts->pluck('nama_shift')->implode(', ') }}"
                                                 {{ (old('kode_jam_kerja')[$index] ?? '') == $jk->kode_jam_kerja ? 'selected' : '' }}>
-                                                {{ $jk->nama_jam_kerja }} ({{ date('H:i', strtotime($jk->jam_masuk)) }} - {{ date('H:i', strtotime($jk->jam_pulang)) }})
+                                                @if($jk->tipe_jam_kerja == 'multi_shift')
+                                                🕌 {{ $jk->nama_jam_kerja }} ({{ $jk->total_shift }} Shift: {{ $jk->shifts->pluck('nama_shift')->take(3)->implode(', ') }}{{ $jk->shifts->count() > 3 ? '...' : '' }})
+                                                @else
+                                                ⏰ {{ $jk->nama_jam_kerja }} ({{ date('H:i', strtotime($jk->jam_masuk)) }} - {{ date('H:i', strtotime($jk->jam_pulang)) }})
+                                                @endif
                                             </option>
                                             @endforeach
                                         </select>
+                                        <div class="jam-kerja-info mt-2" style="display: none;">
+                                            <div class="alert alert-info py-2 px-3 mb-0">
+                                                <small class="info-content"></small>
+                                            </div>
+                                        </div>
                                     </td>
                                     <td class="text-center">
                                         <button type="button" class="btn btn-danger btn-sm btnHapusRow">
@@ -143,7 +154,13 @@
 
                     <div class="alert alert-info">
                         <i class="mdi mdi-information-outline"></i>
-                        <strong>Petunjuk:</strong> Klik tombol "Tambah Hari" untuk menambahkan konfigurasi jam kerja per hari. Anda dapat menambahkan 1-7 hari (Senin-Minggu).
+                        <strong>Petunjuk:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Klik tombol "Tambah Hari" untuk menambahkan konfigurasi jam kerja per hari</li>
+                            <li>Anda dapat menambahkan 1-7 hari (Senin-Minggu)</li>
+                            <li>Jam kerja dengan ikon 🕌 adalah Multi Shift (5 waktu sholat)</li>
+                            <li>Jam kerja dengan ikon ⏰ adalah Regular (jam kerja normal)</li>
+                        </ul>
                     </div>
 
                     <hr>
@@ -169,8 +186,15 @@
         const jamKerjaOptions = `
             <option value="">-- Pilih Jam Kerja --</option>
             @foreach($jamkerja as $jk)
-            <option value="{{ $jk->kode_jam_kerja }}">
-                {{ $jk->nama_jam_kerja }} ({{ date('H:i', strtotime($jk->jam_masuk)) }} - {{ date('H:i', strtotime($jk->jam_pulang)) }})
+            <option value="{{ $jk->kode_jam_kerja }}"
+                data-tipe="{{ $jk->tipe_jam_kerja }}"
+                data-total-shift="{{ $jk->total_shift }}"
+                data-shifts="{{ $jk->shifts->pluck('nama_shift')->implode(', ') }}">
+                @if($jk->tipe_jam_kerja == 'multi_shift')
+                    🕌 {{ $jk->nama_jam_kerja }} ({{ $jk->total_shift }} Shift: {{ $jk->shifts->pluck('nama_shift')->take(3)->implode(', ') }}{{ $jk->shifts->count() > 3 ? '...' : '' }})
+                @else
+                    ⏰ {{ $jk->nama_jam_kerja }} ({{ date('H:i', strtotime($jk->jam_masuk)) }} - {{ date('H:i', strtotime($jk->jam_pulang)) }})
+                @endif
             </option>
             @endforeach
         `;
@@ -181,6 +205,43 @@
                 $(this).find('.row-number').text(index + 1);
             });
         }
+
+        // Fungsi untuk show jam kerja info
+        function updateJamKerjaInfo(selectElement) {
+            const selected = $(selectElement).find('option:selected');
+            const tipe = selected.data('tipe');
+            const infoDiv = $(selectElement).closest('td').find('.jam-kerja-info');
+            const infoContent = infoDiv.find('.info-content');
+
+            if (tipe === 'multi_shift') {
+                const totalShift = selected.data('total-shift');
+                const shifts = selected.data('shifts');
+                infoContent.html(`
+                    <i class="mdi mdi-layers"></i> <strong>Multi Shift:</strong> 
+                    ${totalShift} shift per hari<br>
+                    <strong>Shifts:</strong> ${shifts}
+                `);
+                infoDiv.show();
+            } else if (tipe === 'regular') {
+                infoContent.html(`
+                    <i class="mdi mdi-clock-outline"></i> <strong>Regular:</strong> 
+                    Jam kerja normal (1x presensi per hari)
+                `);
+                infoDiv.show();
+            } else {
+                infoDiv.hide();
+            }
+        }
+
+        // Event handler untuk perubahan jam kerja
+        $(document).on('change', '.select-jam-kerja', function() {
+            updateJamKerjaInfo(this);
+        });
+
+        // Initialize info for existing rows
+        $('.select-jam-kerja').each(function() {
+            updateJamKerjaInfo(this);
+        });
 
         // Tambah row baru
         $('#btnTambahHari').click(function() {
@@ -211,9 +272,14 @@
                         </select>
                     </td>
                     <td>
-                        <select name="kode_jam_kerja[]" class="form-select" required>
+                        <select name="kode_jam_kerja[]" class="form-select select-jam-kerja" required>
                             ${jamKerjaOptions}
                         </select>
+                        <div class="jam-kerja-info mt-2" style="display: none;">
+                            <div class="alert alert-info py-2 px-3 mb-0">
+                                <small class="info-content"></small>
+                            </div>
+                        </div>
                     </td>
                     <td class="text-center">
                         <button type="button" class="btn btn-danger btn-sm btnHapusRow">

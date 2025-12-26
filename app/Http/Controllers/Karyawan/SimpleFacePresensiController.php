@@ -1,15 +1,17 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Karyawan;
 
+use App\Http\Controllers\Controller;
+use App\Models\Karyawan;
+use App\Models\PresensiFace;
+use Carbon\Carbon;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Carbon\Carbon;
-use App\Models\PrensensiFace;
-use Exception;
 
 class SimpleFacePresensiController extends Controller
 {
@@ -21,8 +23,15 @@ class SimpleFacePresensiController extends Controller
     public function dashboard()
     {
         try {
-            $nik = Auth::guard('karyawan')->user()->nik;
-            $nama_lengkap = Auth::guard('karyawan')->user()->nama_lengkap;
+           
+            $karyawan = Auth::guard('karyawan')->user();
+            $nik = $karyawan->nik;
+            $nama_lengkap = $karyawan->nama_lengkap;
+
+            // ✅ Load karyawan dengan relasi lengkap
+            $karyawan_model = Karyawan::where('nik', $nik)
+                ->with(['cabang', 'departemen', 'jamKerja'])
+                ->first();
 
             // Check face data
             $faceData = DB::table('face_data')
@@ -32,31 +41,65 @@ class SimpleFacePresensiController extends Controller
 
             $hariini = Carbon::now('Asia/Jakarta')->format('Y-m-d');
 
-            // ✅ PERBAIKAN: Ubah orderBy('jam') menjadi orderBy('created_at')
-            $presensi_hari_ini = PrensensiFace::where('nik', $nik)
+            // ✅ Get ALL presensi today (bisa multiple untuk multi-shift)
+            $presensi_hari_ini = PresensiFace::where('nik', $nik)
                 ->where('tanggal', $hariini)
-                ->orderBy('created_at', 'desc') // ✅ Ganti dari 'jam' ke 'created_at'
+                ->orderBy('created_at', 'desc')
                 ->get();
 
-            // ✅ PERBAIKAN: Hapus orderBy('jam')
-            $histori = PrensensiFace::where('nik', $nik)
+            $histori = PresensiFace::where('nik', $nik)
                 ->where('tanggal', '<', $hariini)
                 ->orderBy('tanggal', 'DESC')
-                ->orderBy('created_at', 'DESC') // ✅ Ganti dari 'jam' ke 'created_at'
+                ->orderBy('created_at', 'DESC')
                 ->limit(10)
                 ->get();
 
             $bulan_ini = Carbon::now('Asia/Jakarta')->format('Y-m');
-            $statistik = PrensensiFace::where('nik', $nik)
+            $statistik = PresensiFace::where('nik', $nik)
                 ->whereRaw('DATE_FORMAT(tanggal, "%Y-%m") = ?', [$bulan_ini])
                 ->count();
+
+            // ✅ MULTI-SHIFT DETECTION
+            $jam_kerja = $karyawan->jamKerja ?? null;
+            $is_multi_shift = false;
+            $shifts_available = collect();
+            $total_shifts = 0;
+
+            if ($jam_kerja) {
+                $shifts_available = DB::table('jam_kerja_shifts')
+                    ->where('kode_jam_kerja', $jam_kerja->kode_jam_kerja)
+                    ->where('is_active', true)
+                    ->orderBy('shift_ke')
+                    ->get();
+
+                $total_shifts = $shifts_available->count();
+                $is_multi_shift = $total_shifts > 0;
+            }
+
+            // ✅ Check which shifts completed
+            $completed_shifts = $presensi_hari_ini
+                ->whereNotNull('shift_ke')
+                ->where('jam_pulang', '!=', null)
+                ->pluck('shift_ke')
+                ->toArray();
+
+            $regular_done = $presensi_hari_ini
+                ->whereNull('shift_ke')
+                ->where('jam_pulang', '!=', null)
+                ->count() > 0;
 
             return view('karyawan.simple-face.dashboard', compact(
                 'faceData',
                 'presensi_hari_ini',
                 'histori',
                 'statistik',
-                'nama_lengkap'
+                'nama_lengkap',
+                'karyawan_model', 
+                'is_multi_shift',
+                'shifts_available',
+                'total_shifts',
+                'completed_shifts',
+                'regular_done'
             ));
         } catch (Exception $e) {
             Log::error('SimpleFace Dashboard Error: ' . $e->getMessage());
@@ -116,85 +159,121 @@ class SimpleFacePresensiController extends Controller
             $tanggal = Carbon::now('Asia/Jakarta')->format('Y-m-d');
             $jam = Carbon::now('Asia/Jakarta')->format('H:i:s');
 
-            Log::info('Simple Face Presensi Store Started', [
-                'nik' => $nik,
-                'tanggal' => $tanggal,
-                'jam' => $jam
-            ]);
-
             // Validasi verified flag
             if (!$request->verified || $request->verified !== 'true') {
                 return response("error|Presensi harus menggunakan verifikasi wajah|system", 200);
             }
 
-            // ✅ Ambil lokasi dari cabang (bukan dari GPS request)
-            $cabang = DB::table('cabang')
-                ->where('kode_cabang', $kode_cabang)
-                ->first();
+            // Get lokasi cabang
+            $cabang = DB::table('cabang')->where('kode_cabang', $kode_cabang)->first();
 
             if (!$cabang || empty($cabang->lokasi_cabang)) {
                 return response("error|Data lokasi cabang tidak ditemukan|system", 200);
             }
 
-            // ✅ Tambahkan validasi format lokasi
             $lokasi_parts = explode(',', $cabang->lokasi_cabang);
-            if (count($lokasi_parts) != 2) {
-                return response("error|Format lokasi cabang tidak valid|system", 200);
-            }
-
             $lokasi_cabang = trim($lokasi_parts[0]) . ',' . trim($lokasi_parts[1]);
+
+            // ✅ GET SHIFT INFO
+            $shift_ke = $request->filled('shift_ke') ? $request->shift_ke : null;
+            $nama_shift = null;
+
+            if ($shift_ke) {
+                $karyawan_model = Karyawan::where('nik', $nik)->first();
+                $jam_kerja = $karyawan_model->jamKerja;
+
+                if (!$jam_kerja) {
+                    return response("error|Jam kerja tidak ditemukan|system", 200);
+                }
+
+                $shift_data = DB::table('jam_kerja_shifts')
+                    ->where('kode_jam_kerja', $jam_kerja->kode_jam_kerja)
+                    ->where('shift_ke', $shift_ke)
+                    ->where('is_active', true)
+                    ->first();
+
+                if (!$shift_data) {
+                    return response("error|Shift tidak valid|system", 200);
+                }
+
+                $nama_shift = $shift_data->nama_shift;
+            }
 
             DB::beginTransaction();
 
             try {
-                // Cek apakah sudah ada presensi hari ini
-                $presensi = PrensensiFace::where('nik', $nik)
-                    ->where('tanggal', $tanggal)
-                    ->first();
+                if ($shift_ke) {
+                    // === MULTI-SHIFT MODE ===
+                    $presensi = PresensiFace::where('nik', $nik)
+                        ->where('tanggal', $tanggal)
+                        ->where('shift_ke', $shift_ke)
+                        ->first();
 
-                if ($presensi) {
-                    // Sudah ada, update jam pulang
-                    if (!empty($presensi->jam_pulang)) {
-                        DB::rollBack();
-                        return response("error|Anda sudah melakukan absen pulang hari ini|out", 200);
+                    if ($presensi) {
+                        // Update jam pulang
+                        if (!empty($presensi->jam_pulang)) {
+                            DB::rollBack();
+                            return response("error|Shift {$shift_ke} sudah selesai|out", 200);
+                        }
+
+                        $presensi->update([
+                            'jam_pulang' => $jam,
+                            'lokasi' => $lokasi_cabang,
+                        ]);
+
+                        DB::commit();
+                        return response("success|Absen Pulang Shift {$shift_ke} Berhasil! ✅ {$jam}|out", 200);
+                    } else {
+                        // Create new
+                        PresensiFace::create([
+                            'nik' => $nik,
+                            'tanggal' => $tanggal,
+                            'jam_masuk' => $jam,
+                            'jam_pulang' => null,
+                            'lokasi' => $lokasi_cabang,
+                            'status' => 'verified',
+                            'shift_ke' => $shift_ke,
+                            'nama_shift' => $nama_shift
+                        ]);
+
+                        DB::commit();
+                        return response("success|Absen Masuk Shift {$shift_ke} Berhasil! ✅ {$jam}|in", 200);
                     }
-
-                    $presensi->update([
-                        'jam_pulang' => $jam,
-                        'lokasi' => $lokasi_cabang, // ✅ Lokasi dari cabang
-                    ]);
-
-                    Log::info('Simple Face Presensi OUT Success', [
-                        'id' => $presensi->id,
-                        'nik' => $nik,
-                        'nama' => $nama_lengkap,
-                        'jam_pulang' => $jam,
-                        'lokasi' => $lokasi_cabang
-                    ]);
-
-                    DB::commit();
-                    return response("success|Absen Pulang Berhasil! ✅ {$jam}|out", 200);
                 } else {
-                    // Belum ada, buat baru dengan jam masuk
-                    $presensi = PrensensiFace::create([
-                        'nik' => $nik,
-                        'tanggal' => $tanggal,
-                        'jam_masuk' => $jam,
-                        'jam_pulang' => null,
-                        'lokasi' => $lokasi_cabang, // ✅ Lokasi dari cabang
-                        'status' => 'verified'
-                    ]);
+                    // === REGULAR MODE ===
+                    $presensi = PresensiFace::where('nik', $nik)
+                        ->where('tanggal', $tanggal)
+                        ->whereNull('shift_ke')
+                        ->first();
 
-                    Log::info('Simple Face Presensi IN Success', [
-                        'id' => $presensi->id,
-                        'nik' => $nik,
-                        'nama' => $nama_lengkap,
-                        'jam_masuk' => $jam,
-                        'lokasi' => $lokasi_cabang
-                    ]);
+                    if ($presensi) {
+                        if (!empty($presensi->jam_pulang)) {
+                            DB::rollBack();
+                            return response("error|Sudah absen pulang hari ini|out", 200);
+                        }
 
-                    DB::commit();
-                    return response("success|Absen Masuk Berhasil! ✅ {$jam}|in", 200);
+                        $presensi->update([
+                            'jam_pulang' => $jam,
+                            'lokasi' => $lokasi_cabang,
+                        ]);
+
+                        DB::commit();
+                        return response("success|Absen Pulang Berhasil! ✅ {$jam}|out", 200);
+                    } else {
+                        PresensiFace::create([
+                            'nik' => $nik,
+                            'tanggal' => $tanggal,
+                            'jam_masuk' => $jam,
+                            'jam_pulang' => null,
+                            'lokasi' => $lokasi_cabang,
+                            'status' => 'verified',
+                            'shift_ke' => null,
+                            'nama_shift' => null
+                        ]);
+
+                        DB::commit();
+                        return response("success|Absen Masuk Berhasil! ✅ {$jam}|in", 200);
+                    }
                 }
             } catch (Exception $e) {
                 DB::rollBack();
@@ -202,13 +281,8 @@ class SimpleFacePresensiController extends Controller
             }
         } catch (Exception $e) {
             DB::rollBack();
-
-            Log::error('SimpleFace Store Error: ' . $e->getMessage(), [
-                'nik' => $nik ?? 'unknown',
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return response("error|Terjadi kesalahan sistem. Silakan coba lagi|system", 200);
+            Log::error('SimpleFace Store Error: ' . $e->getMessage());
+            return response("error|Terjadi kesalahan sistem|system", 200);
         }
     }
 

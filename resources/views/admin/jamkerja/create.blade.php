@@ -4,254 +4,233 @@
 @section('page-title', 'Tambah Jam Kerja')
 
 @section('content')
-<div class="row">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title mb-0">Form Tambah Jam Kerja</h5>
-            </div>
-            <div class="card-body">
-                @if($errors->any())
-                <div class="alert alert-danger alert-dismissible fade show">
-                    <strong>Error!</strong> Terdapat kesalahan pada form:
-                    <ul class="mb-0 mt-2">
-                        @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-                @endif
-
-                <form action="{{ route('panel.jamkerja.store') }}" method="POST">
-                    @csrf
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="kode_jam_kerja" class="form-label">Kode Jam Kerja <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control @error('kode_jam_kerja') is-invalid @enderror"
-                                    id="kode_jam_kerja" name="kode_jam_kerja"
-                                    placeholder="Contoh: JK01"
-                                    value="{{ old('kode_jam_kerja') }}"
-                                    maxlength="10" required>
-                                @error('kode_jam_kerja')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                                <small class="text-muted">Maksimal 10 karakter</small>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="nama_jam_kerja" class="form-label">Nama Jam Kerja <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control @error('nama_jam_kerja') is-invalid @enderror"
-                                    id="nama_jam_kerja" name="nama_jam_kerja"
-                                    placeholder="Contoh: Shift Pagi"
-                                    value="{{ old('nama_jam_kerja') }}"
-                                    maxlength="15" required>
-                                @error('nama_jam_kerja')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                                <small class="text-muted">Maksimal 15 karakter</small>
-                            </div>
-                        </div>
-                    </div>
-
-                    <hr>
-                    <h6 class="mb-3">Konfigurasi Waktu Masuk</h6>
-
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="awal_jam_masuk" class="form-label">
-                                    Awal Jam Masuk <span class="text-danger">*</span>
-                                    <i class="mdi mdi-help-circle text-info" data-bs-toggle="tooltip" title="Waktu paling awal karyawan bisa mulai presensi masuk"></i>
-                                </label>
-                                <input type="time" class="form-control @error('awal_jam_masuk') is-invalid @enderror"
-                                    id="awal_jam_masuk" name="awal_jam_masuk"
-                                    value="{{ old('awal_jam_masuk') }}" required>
-                                @error('awal_jam_masuk')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="jam_masuk" class="form-label">
-                                    Jam Masuk <span class="text-danger">*</span>
-                                    <i class="mdi mdi-help-circle text-info" data-bs-toggle="tooltip" title="Jam kerja resmi dimulai"></i>
-                                </label>
-                                <input type="time" class="form-control @error('jam_masuk') is-invalid @enderror"
-                                    id="jam_masuk" name="jam_masuk"
-                                    value="{{ old('jam_masuk') }}" required>
-                                @error('jam_masuk')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="akhir_jam_masuk" class="form-label">
-                                    Akhir Jam Masuk <span class="text-danger">*</span>
-                                    <i class="mdi mdi-help-circle text-info" data-bs-toggle="tooltip" title="Batas waktu toleransi keterlambatan"></i>
-                                </label>
-                                <input type="time" class="form-control @error('akhir_jam_masuk') is-invalid @enderror"
-                                    id="akhir_jam_masuk" name="akhir_jam_masuk"
-                                    value="{{ old('akhir_jam_masuk') }}" required>
-                                @error('akhir_jam_masuk')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-                    </div>
-
-                    <hr>
-                    <h6 class="mb-3">Waktu Pulang</h6>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="jam_pulang" class="form-label">
-                                    Jam Pulang <span class="text-danger">*</span>
-                                    <i class="mdi mdi-help-circle text-info" data-bs-toggle="tooltip" title="Waktu kerja selesai"></i>
-                                </label>
-                                <input type="time" class="form-control @error('jam_pulang') is-invalid @enderror"
-                                    id="jam_pulang" name="jam_pulang"
-                                    value="{{ old('jam_pulang') }}" required>
-                                @error('jam_pulang')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Lintas Hari <span class="text-danger">*</span></label>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="lintashari" id="lintashari_tidak" value="0"
-                                        {{ old('lintashari', '0') == '0' ? 'checked' : '' }}>
-                                    <label class="form-check-label" for="lintashari_tidak">
-                                        <strong>Tidak</strong> - Jam pulang di hari yang sama
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="lintashari" id="lintashari_ya" value="1"
-                                        {{ old('lintashari') == '1' ? 'checked' : '' }}>
-                                    <label class="form-check-label" for="lintashari_ya">
-                                        <strong>Ya</strong> - Jam pulang melewati tengah malam (shift malam)
-                                    </label>
-                                </div>
-                                @error('lintashari')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-                    </div>
-
-                    <hr>
-
-                    <div class="d-flex justify-content-between">
-                        <a href="{{ route('panel.jamkerja.index') }}" class="btn btn-secondary">
-                            <i class="mdi mdi-arrow-left"></i> Kembali
-                        </a>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="mdi mdi-content-save"></i> Simpan
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Form Tambah Jam Kerja</h5>
     </div>
+    <div class="card-body">
+        <form action="{{ route('panel.jamkerja.store') }}" method="POST" id="formJamKerja">
+            @csrf
 
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title mb-0">
-                    <i class="mdi mdi-information-outline"></i> Penjelasan
-                </h5>
+            <!-- Basic Info -->
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Kode Jam Kerja <span class="text-danger">*</span></label>
+                    <input type="text" name="kode_jam_kerja" class="form-control @error('kode_jam_kerja') is-invalid @enderror"
+                        value="{{ old('kode_jam_kerja') }}" required>
+                    @error('kode_jam_kerja')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Nama Jam Kerja <span class="text-danger">*</span></label>
+                    <input type="text" name="nama_jam_kerja" class="form-control @error('nama_jam_kerja') is-invalid @enderror"
+                        value="{{ old('nama_jam_kerja') }}" required>
+                    @error('nama_jam_kerja')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
             </div>
-            <div class="card-body">
-                <h6>Arti Setiap Waktu:</h6>
 
-                <div class="mb-3">
-                    <strong class="text-primary">
-                        <i class="mdi mdi-clock-outline"></i> Awal Jam Masuk
-                    </strong>
-                    <p class="mb-0 small">Waktu paling awal karyawan dapat melakukan presensi masuk.</p>
-                </div>
-
-                <div class="mb-3">
-                    <strong class="text-success">
-                        <i class="mdi mdi-clock"></i> Jam Masuk
-                    </strong>
-                    <p class="mb-0 small">Jam kerja resmi dimulai. Presensi setelah jam ini dianggap terlambat.</p>
-                </div>
-
-                <div class="mb-3">
-                    <strong class="text-warning">
-                        <i class="mdi mdi-clock-alert"></i> Akhir Jam Masuk
-                    </strong>
-                    <p class="mb-0 small">Batas akhir waktu toleransi untuk presensi masuk. Setelah ini dianggap tidak hadir.</p>
-                </div>
-
-                <div class="mb-3">
-                    <strong class="text-danger">
-                        <i class="mdi mdi-clock-end"></i> Jam Pulang
-                    </strong>
-                    <p class="mb-0 small">Waktu kerja selesai dan karyawan dapat melakukan presensi pulang.</p>
-                </div>
-
-                <hr>
-
-                <h6>Contoh Konfigurasi:</h6>
-
-                <div class="card mb-2">
-                    <div class="card-body p-2">
-                        <strong>Shift Pagi</strong>
-                        <ul class="small mb-0 ps-3">
-                            <li>Awal: 07:00</li>
-                            <li>Masuk: 08:00</li>
-                            <li>Akhir: 08:30</li>
-                            <li>Pulang: 16:00</li>
-                            <li>Lintas Hari: Tidak</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="card mb-2">
-                    <div class="card-body p-2">
-                        <strong>Shift Malam</strong>
-                        <ul class="small mb-0 ps-3">
-                            <li>Awal: 19:00</li>
-                            <li>Masuk: 20:00</li>
-                            <li>Akhir: 20:30</li>
-                            <li>Pulang: 04:00</li>
-                            <li>Lintas Hari: Ya</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="alert alert-info mt-3 mb-0">
-                    <small>
-                        <i class="mdi mdi-lightbulb-outline"></i>
-                        <strong>Tips:</strong> Untuk shift malam yang jam pulangnya melewati tengah malam (00:00), pilih "Lintas Hari = Ya".
+            <!-- Tipe Jam Kerja -->
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Tipe Jam Kerja <span class="text-danger">*</span></label>
+                    <select name="tipe_jam_kerja" id="tipeJamKerja" class="form-select" required>
+                        <option value="regular" {{ old('tipe_jam_kerja') == 'regular' ? 'selected' : '' }}>
+                            Regular (Jam Kerja Normal)
+                        </option>
+                        <option value="multi_shift" {{ old('tipe_jam_kerja') == 'multi_shift' ? 'selected' : '' }}>
+                            Multi Shift (Untuk Imam/Muazin dll)
+                        </option>
+                    </select>
+                    <small class="text-muted">
+                        Pilih "Multi Shift" untuk jam kerja yang memiliki beberapa shift dalam 1 hari (contoh: Imam & Muazin dengan 5 waktu sholat)
                     </small>
                 </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Lintas Hari <span class="text-danger">*</span></label>
+                    <select name="lintashari" class="form-select" required>
+                        <option value="0" {{ old('lintashari') == '0' ? 'selected' : '' }}>Tidak</option>
+                        <option value="1" {{ old('lintashari') == '1' ? 'selected' : '' }}>Ya</option>
+                    </select>
+                </div>
             </div>
-        </div>
+
+            <!-- Regular Jam Kerja (Hidden when multi_shift) -->
+            <div id="regularSection">
+                <h6 class="mb-3">⏰ Jam Kerja Regular</h6>
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Awal Jam Masuk</label>
+                        <input type="time" name="awal_jam_masuk" class="form-control"
+                            value="{{ old('awal_jam_masuk') }}">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Jam Masuk</label>
+                        <input type="time" name="jam_masuk" class="form-control"
+                            value="{{ old('jam_masuk') }}">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Akhir Jam Masuk</label>
+                        <input type="time" name="akhir_jam_masuk" class="form-control"
+                            value="{{ old('akhir_jam_masuk') }}">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Jam Pulang</label>
+                        <input type="time" name="jam_pulang" class="form-control"
+                            value="{{ old('jam_pulang') }}">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Multi Shift Section (Shown when multi_shift selected) -->
+            <div id="multiShiftSection" style="display: none;">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0">🕌 Konfigurasi Multi Shift</h6>
+                    <button type="button" class="btn btn-sm btn-primary" id="addShiftBtn">
+                        <i class="mdi mdi-plus"></i> Tambah Shift
+                    </button>
+                </div>
+
+                <input type="hidden" name="total_shift" id="totalShift" value="1">
+
+                <div id="shiftsContainer">
+                    <!-- Shift items will be added here -->
+                </div>
+
+                <!-- Template for Shift (Hidden) -->
+                <template id="shiftTemplate">
+                    <div class="card mb-3 shift-item">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">Shift <span class="shift-number">1</span></h6>
+                            <button type="button" class="btn btn-sm btn-danger remove-shift">
+                                <i class="mdi mdi-delete"></i> Hapus
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <input type="hidden" name="shifts[INDEX][shift_ke]" class="shift-ke" value="1">
+
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label class="form-label">Nama Shift</label>
+                                    <input type="text" name="shifts[INDEX][nama_shift]" class="form-control"
+                                        placeholder="Contoh: Subuh, Zuhur, dll" required>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">Awal Jam Masuk</label>
+                                    <input type="time" name="shifts[INDEX][awal_jam_masuk]" class="form-control" required>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">Jam Masuk</label>
+                                    <input type="time" name="shifts[INDEX][jam_masuk]" class="form-control" required>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">Akhir Jam Masuk</label>
+                                    <input type="time" name="shifts[INDEX][akhir_jam_masuk]" class="form-control" required>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">Jam Pulang</label>
+                                    <input type="time" name="shifts[INDEX][jam_pulang]" class="form-control" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="mdi mdi-content-save"></i> Simpan
+                </button>
+                <a href="{{ route('panel.jamkerja.index') }}" class="btn btn-secondary">
+                    <i class="mdi mdi-arrow-left"></i> Kembali
+                </a>
+            </div>
+        </form>
     </div>
 </div>
 
 @push('scripts')
 <script>
-    // Initialize tooltips
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-    var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl)
-    })
+    let shiftIndex = 0;
+
+    $(document).ready(function() {
+        // Toggle sections based on tipe jam kerja
+        $('#tipeJamKerja').on('change', function() {
+            toggleSections();
+        });
+
+        // Add shift button
+        $('#addShiftBtn').on('click', function() {
+            addShift();
+        });
+
+        // Remove shift button (delegated)
+        $(document).on('click', '.remove-shift', function() {
+            $(this).closest('.shift-item').remove();
+            updateShiftNumbers();
+            updateTotalShift();
+        });
+
+        // Initialize
+        toggleSections();
+
+        // Add default shift if multi_shift is selected
+        if ($('#tipeJamKerja').val() === 'multi_shift') {
+            addShift();
+        }
+    });
+
+    function toggleSections() {
+        const tipe = $('#tipeJamKerja').val();
+
+        if (tipe === 'multi_shift') {
+            $('#regularSection').hide();
+            $('#regularSection input').prop('required', false);
+            $('#multiShiftSection').show();
+            $('#multiShiftSection input[type="time"]').prop('required', true);
+        } else {
+            $('#regularSection').show();
+            $('#regularSection input').prop('required', true);
+            $('#multiShiftSection').hide();
+            $('#multiShiftSection input[type="time"]').prop('required', false);
+        }
+    }
+
+    function addShift() {
+        shiftIndex++;
+
+        // Clone template
+        const template = document.getElementById('shiftTemplate');
+        const clone = template.content.cloneNode(true);
+
+        // Replace INDEX placeholder
+        const html = clone.querySelector('.shift-item').outerHTML.replace(/INDEX/g, shiftIndex);
+
+        // Append to container
+        $('#shiftsContainer').append(html);
+
+        updateShiftNumbers();
+        updateTotalShift();
+    }
+
+    function updateShiftNumbers() {
+        $('.shift-item').each(function(index) {
+            $(this).find('.shift-number').text(index + 1);
+            $(this).find('.shift-ke').val(index + 1);
+        });
+    }
+
+    function updateTotalShift() {
+        const total = $('.shift-item').length;
+        $('#totalShift').val(total);
+    }
 </script>
 @endpush
 @endsection

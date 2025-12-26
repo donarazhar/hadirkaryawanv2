@@ -4,58 +4,128 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use App\Models\Karyawan;
+use Carbon\Carbon;
 
 class SetupJamKerjaKaryawanSeeder extends Seeder
 {
+    /**
+     * Run the database seeds.
+     */
     public function run(): void
     {
-        $hari = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+        $this->command->info('⚙️  Seeding Konfigurasi Jam Kerja per Departemen...');
 
-        // Ambil semua kombinasi unik cabang + departemen
-        $kombinasi = DB::table('karyawan')
-            ->select('kode_cabang', 'kode_dept')
-            ->distinct()
-            ->get();
+        $cabang = DB::table('cabang')->get();
+        $departemen = DB::table('departemen')->get();
+        $jamKerja = DB::table('jam_kerja')->where('tipe_jam_kerja', 'regular')->get();
 
-        echo "Membuat konfigurasi jam kerja...\n";
+        if ($cabang->isEmpty() || $departemen->isEmpty() || $jamKerja->isEmpty()) {
+            $this->command->warn('⚠️  Data master belum lengkap. Jalankan seeder lain terlebih dahulu!');
+            return;
+        }
 
-        foreach ($kombinasi as $k) {
-            $kode_jk_dept = 'JKD' . strtoupper(substr($k->kode_cabang, 0, 3)) . strtoupper(substr($k->kode_dept, 0, 3));
+        $hari = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+        $countKonfig = 0;
+        $countDetail = 0;
 
-            // Cek apakah sudah ada
-            $cek = DB::table('konfigurasi_jk_dept')
-                ->where('kode_cabang', $k->kode_cabang)
-                ->where('kode_dept', $k->kode_dept)
-                ->first();
+        foreach ($cabang as $c) {
+            foreach ($departemen as $d) {
+                // Skip departemen KEAG (pake multi-shift)
+                if ($d->kode_dept === 'KEAG') {
+                    continue;
+                }
 
-            if (!$cek) {
-                // Insert konfigurasi jk dept
+                $kodeJkDept = $c->kode_cabang . '-' . $d->kode_dept;
+
+                // Insert konfigurasi
                 DB::table('konfigurasi_jk_dept')->insert([
-                    'kode_jk_dept' => $kode_jk_dept,
-                    'kode_cabang' => $k->kode_cabang,
-                    'kode_dept' => $k->kode_dept,
-                    'created_at' => now(),
-                    'updated_at' => now()
+                    'kode_jk_dept' => $kodeJkDept,
+                    'kode_cabang' => $c->kode_cabang,
+                    'kode_dept' => $d->kode_dept,
+                    'created_at' => Carbon::now(),
+                    'updated_at' => Carbon::now(),
                 ]);
+
+                $countKonfig++;
+
+                // Pilih jam kerja random untuk dept ini
+                $selectedJK = $jamKerja->random();
 
                 // Insert detail untuk setiap hari
                 foreach ($hari as $h) {
                     DB::table('konfigurasi_jk_dept_detail')->insert([
-                        'kode_jk_dept' => $kode_jk_dept,
-                        'kode_jam_kerja' => 'JK01', // Default Shift Pagi
+                        'kode_jk_dept' => $kodeJkDept,
+                        'kode_jam_kerja' => $selectedJK->kode_jam_kerja,
                         'hari' => $h,
-                        'created_at' => now(),
-                        'updated_at' => now()
+                        'created_at' => Carbon::now(),
+                        'updated_at' => Carbon::now(),
                     ]);
+
+                    $countDetail++;
                 }
 
-                echo "✓ Setup jam kerja untuk Cabang: {$k->kode_cabang}, Dept: {$k->kode_dept}\n";
-            } else {
-                echo "- Jam kerja untuk Cabang: {$k->kode_cabang}, Dept: {$k->kode_dept} sudah ada\n";
+                $this->command->info("  ✓ {$kodeJkDept} - {$d->nama_dept} @ {$c->nama_cabang} ({$selectedJK->nama_jam_kerja})");
             }
         }
 
-        echo "\nSelesai!\n";
+        // Setup khusus untuk KEAG (multi-shift)
+        $this->setupMultiShiftDepartment();
+
+        $this->command->line('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        $this->command->info("✅ Selesai! Total {$countKonfig} konfigurasi dan {$countDetail} detail berhasil dibuat");
+        $this->command->line('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    }
+
+    /**
+     * Setup konfigurasi khusus untuk departemen KEAG (multi-shift)
+     */
+    private function setupMultiShiftDepartment()
+    {
+        $this->command->info("\n🕌 Setup Konfigurasi Multi-Shift (KEAG)...");
+
+        $cabang = DB::table('cabang')->get();
+        $deptKeag = DB::table('departemen')->where('kode_dept', 'KEAG')->first();
+        
+        if (!$deptKeag) {
+            $this->command->warn('  ⚠️  Departemen KEAG tidak ditemukan, skip multi-shift setup');
+            return;
+        }
+
+        $jamKerjaImam = DB::table('jam_kerja')
+            ->where('tipe_jam_kerja', 'multi_shift')
+            ->first();
+
+        if (!$jamKerjaImam) {
+            $this->command->warn('  ⚠️  Jam kerja multi-shift tidak ditemukan, skip');
+            return;
+        }
+
+        $hari = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Ahad'];
+
+        foreach ($cabang as $c) {
+            $kodeJkDept = $c->kode_cabang . '-KEAG';
+
+            // Insert konfigurasi
+            DB::table('konfigurasi_jk_dept')->insert([
+                'kode_jk_dept' => $kodeJkDept,
+                'kode_cabang' => $c->kode_cabang,
+                'kode_dept' => 'KEAG',
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ]);
+
+            // Insert detail untuk setiap hari (termasuk Ahad)
+            foreach ($hari as $h) {
+                DB::table('konfigurasi_jk_dept_detail')->insert([
+                    'kode_jk_dept' => $kodeJkDept,
+                    'kode_jam_kerja' => $jamKerjaImam->kode_jam_kerja,
+                    'hari' => $h,
+                    'created_at' => Carbon::now(),
+                    'updated_at' => Carbon::now(),
+                ]);
+            }
+
+            $this->command->info("  🕌 {$kodeJkDept} - Keagamaan @ {$c->nama_cabang} (Multi-Shift: {$jamKerjaImam->nama_jam_kerja})");
+        }
     }
 }

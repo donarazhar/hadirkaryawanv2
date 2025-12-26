@@ -32,7 +32,7 @@
         right: 0;
         z-index: 100;
         padding: 16px 20px;
-        background: linear-gradient(to bottom, rgba(0, 0, 0, 0.7) 0%, transparent 100%);
+        background: linear-gradient(to bottom, rgba(0, 0, 0, 0.8) 0%, transparent 100%);
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -49,6 +49,12 @@
         justify-content: center;
         text-decoration: none;
         border: 1px solid rgba(255, 255, 255, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .btn-back:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: scale(1.05);
     }
 
     .btn-back ion-icon {
@@ -72,6 +78,59 @@
         font-size: 12px;
         color: rgba(255, 255, 255, 0.8);
         margin: 0;
+    }
+
+    /* Shift Info Badge */
+    .shift-info-badge {
+        position: absolute;
+        top: 70px;
+        left: 20px;
+        right: 20px;
+        z-index: 100;
+    }
+
+    .shift-badge-content {
+        background: linear-gradient(135deg, #0053C5 0%, #003d94 100%);
+        backdrop-filter: blur(10px);
+        padding: 12px 16px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 4px 16px rgba(0, 83, 197, 0.5);
+    }
+
+    .shift-icon-badge {
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .shift-icon-badge span {
+        font-size: 20px;
+        font-weight: 700;
+        color: white;
+    }
+
+    .shift-details {
+        flex: 1;
+    }
+
+    .shift-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 2px;
+    }
+
+    .shift-time-range {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.8);
     }
 
     .camera-container {
@@ -101,7 +160,7 @@
         border-radius: 50%;
         pointer-events: none;
         animation: pulse 2s infinite;
-        box-shadow: linear-gradient(135deg, #0053C5 0%, #2E7CE6 100%);
+        box-shadow: 0 0 30px rgba(0, 83, 197, 0.6);
     }
 
     @keyframes pulse {
@@ -144,54 +203,61 @@
         font-weight: 600;
     }
 
-    /* ===== MAP SECTION ===== */
-    .map-section {
+    /* ===== INFO SECTION (Blue Theme) ===== */
+    .info-section {
         flex: 1;
-        background: #f0f4f8;
+        background: linear-gradient(135deg, #0053C5 0%, #003d94 100%);
         padding: 20px;
         padding-bottom: 20px;
     }
 
-    .map-card {
-        background: white;
+    .info-card {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
         border-radius: 20px;
         padding: 16px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        margin-bottom: 16px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
     }
 
-    .map-title {
+    .info-title {
         font-size: 14px;
         font-weight: 700;
-        color: #1e293b;
+        color: white;
         margin-bottom: 12px;
         display: flex;
         align-items: center;
         gap: 8px;
     }
 
-    .map-title ion-icon {
+    .info-title ion-icon {
         font-size: 20px;
-        color: #0053C5;
+    }
+
+    .map-container {
+        height: 180px;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 12px;
     }
 
     #map {
-        height: 200px;
-        border-radius: 12px;
-        overflow: hidden;
+        height: 100%;
+        width: 100%;
     }
 
     .location-info {
-        margin-top: 12px;
-        padding: 12px;
-        background: linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, rgba(124, 58, 237, 0.05) 100%);
+        padding: 10px 12px;
+        background: rgba(255, 255, 255, 0.1);
         border-radius: 10px;
-        border: 1px solid rgba(139, 92, 246, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.2);
     }
 
     .location-info p {
         margin: 0;
         font-size: 12px;
-        color: #64748b;
+        color: rgba(255, 255, 255, 0.9);
         display: flex;
         align-items: center;
         gap: 6px;
@@ -199,7 +265,117 @@
 
     .location-info ion-icon {
         font-size: 16px;
-        color: #0053C5;
+        color: white;
+    }
+
+    /* Status Info Cards */
+    .status-info-cards {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .status-info-item {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 16px;
+        padding: 14px;
+        text-align: center;
+    }
+
+    .status-icon-small {
+        width: 36px;
+        height: 36px;
+        margin: 0 auto 8px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .status-icon-small ion-icon {
+        font-size: 20px;
+        color: white;
+    }
+
+    .status-label-small {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.8);
+        margin-bottom: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-value-small {
+        font-size: 16px;
+        font-weight: 700;
+        color: white;
+    }
+
+    /* Tips Card */
+    .tips-card {
+        background: rgba(16, 185, 129, 0.2);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        border-radius: 16px;
+        padding: 14px;
+    }
+
+    .tips-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+
+    .tips-icon {
+        width: 28px;
+        height: 28px;
+        background: rgba(16, 185, 129, 0.3);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .tips-icon ion-icon {
+        font-size: 16px;
+        color: #10b981;
+    }
+
+    .tips-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: white;
+    }
+
+    .tips-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .tips-list li {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.9);
+        padding-left: 16px;
+        position: relative;
+        margin-bottom: 6px;
+    }
+
+    .tips-list li:before {
+        content: "✓";
+        position: absolute;
+        left: 0;
+        color: #10b981;
+        font-weight: 700;
+    }
+
+    .tips-list li:last-child {
+        margin-bottom: 0;
     }
 
     /* ===== CAPTURE BUTTON ===== */
@@ -215,7 +391,7 @@
     .btn-capture {
         width: 80px !important;
         height: 80px !important;
-        background: linear-gradient(135deg, #0053C5 0%, #7c3aed 100%) !important;
+        background: linear-gradient(135deg, #0053C5 0%, #003d94 100%) !important;
         border: 5px solid white !important;
         border-radius: 50% !important;
         display: flex !important;
@@ -223,7 +399,7 @@
         justify-content: center !important;
         cursor: pointer !important;
         transition: all 0.3s ease !important;
-        box-shadow: 0 8px 32px rgba(139, 92, 246, 0.8) !important;
+        box-shadow: 0 8px 32px rgba(0, 83, 197, 0.8) !important;
         position: relative !important;
         pointer-events: auto !important;
     }
@@ -236,7 +412,7 @@
 
     .btn-capture:hover {
         transform: scale(1.1) !important;
-        box-shadow: 0 12px 40px rgba(139, 92, 246, 0.9) !important;
+        box-shadow: 0 12px 40px rgba(0, 83, 197, 0.9) !important;
     }
 
     .btn-capture:active {
@@ -250,11 +426,12 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(0, 0, 0, 0.9);
+        background: rgba(0, 0, 0, 0.95);
         display: none;
         align-items: center;
         justify-content: center;
         z-index: 100000;
+        flex-direction: column;
     }
 
     .loading-overlay.show {
@@ -289,6 +466,12 @@
         color: white;
         font-size: 16px;
         font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    .loading-detail {
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.7);
     }
 
     /* Support for notched devices */
@@ -321,6 +504,31 @@
             <div style="width: 40px;"></div>
         </div>
 
+        <!-- Shift Info (if multi-shift) -->
+        @if(isset($shift_ke) && $shift_ke)
+        @php
+        $current_shift = $shifts_available->where('shift_ke', $shift_ke)->first();
+        @endphp
+
+        <div class="shift-info-badge">
+            <div class="shift-badge-content">
+                <div class="shift-icon-badge">
+                    <span>{{ $shift_ke }}</span>
+                </div>
+                <div class="shift-details">
+                    <div class="shift-title">{{ $current_shift->nama_shift }}</div>
+                    <div class="shift-time-range">
+                        {{ date('H:i', strtotime($current_shift->jam_masuk)) }} -
+                        {{ date('H:i', strtotime($current_shift->jam_pulang)) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hidden input for shift_ke -->
+        <input type="hidden" id="shift_ke_input" value="{{ $shift_ke }}">
+        @endif
+
         <!-- Camera -->
         <div class="camera-container">
             <div class="webcam-capture"></div>
@@ -330,25 +538,62 @@
         <!-- Instruction -->
         <div class="instruction-overlay">
             <div class="instruction-box">
-                <p>Posisikan wajah di dalam bingkai</p>
+                <p>Posisikan wajah di dalam bingkai biru</p>
             </div>
         </div>
     </div>
 
-    <!-- MAP SECTION -->
-    <div class="map-section">
-        <div class="map-card">
-            <div class="map-title">
+    <!-- INFO SECTION (Blue Theme) -->
+    <div class="info-section">
+        <!-- Status Info -->
+        <div class="status-info-cards">
+            <div class="status-info-item">
+                <div class="status-icon-small">
+                    <ion-icon name="person-outline"></ion-icon>
+                </div>
+                <div class="status-label-small">Karyawan</div>
+                <div class="status-value-small">{{ Auth::guard('karyawan')->user()->nik }}</div>
+            </div>
+            <div class="status-info-item">
+                <div class="status-icon-small">
+                    <ion-icon name="shield-checkmark-outline"></ion-icon>
+                </div>
+                <div class="status-label-small">Status Face</div>
+                <div class="status-value-small">{{ $faceData ? 'Aktif' : 'Belum' }}</div>
+            </div>
+        </div>
+
+        <!-- Map Card -->
+        <div class="info-card">
+            <div class="info-title">
                 <ion-icon name="location-outline"></ion-icon>
                 Lokasi Presensi
             </div>
-            <div id="map"></div>
+            <div class="map-container">
+                <div id="map"></div>
+            </div>
             <div class="location-info">
                 <p>
                     <ion-icon name="navigate-circle-outline"></ion-icon>
-                    Lokasi Anda: <strong id="coords-display">Mendeteksi...</strong>
+                    <strong id="coords-display">Mendeteksi lokasi...</strong>
                 </p>
             </div>
+        </div>
+
+        <!-- Tips Card -->
+        <div class="tips-card">
+            <div class="tips-header">
+                <div class="tips-icon">
+                    <ion-icon name="bulb"></ion-icon>
+                </div>
+                <div class="tips-title">Tips Verifikasi Wajah</div>
+            </div>
+            <ul class="tips-list">
+                <li>Pastikan wajah terlihat jelas</li>
+                <li>Cahaya cukup terang</li>
+                <li>Tatap langsung ke kamera</li>
+                <li>Lepas masker & kacamata hitam</li>
+            </ul>
         </div>
     </div>
 </div>
@@ -365,6 +610,7 @@
     <div class="loading-content">
         <div class="loading-spinner"></div>
         <p class="loading-text">Memverifikasi wajah...</p>
+        <p class="loading-detail" id="loading-detail">Mohon tunggu sebentar</p>
     </div>
 </div>
 
@@ -373,69 +619,6 @@
 
 <!-- Audio -->
 <audio id="success_sound" src="{{ asset('assets/sound/notifikasi_in.mp3') }}"></audio>
-
-<!-- Face Recognition Status Card -->
-<div class="card" style="margin-bottom: 16px; overflow: hidden; border: none; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);">
-    <div style="background: linear-gradient(135deg, #0053C5 0%, #7c3aed 100%); padding: 16px 20px;">
-        <div style="display: flex; align-items: center; gap: 12px;">
-            <div style="width: 50px; height: 50px; background: rgba(255, 255, 255, 0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                <ion-icon name="scan-outline" style="font-size: 28px; color: white;"></ion-icon>
-            </div>
-            <div style="flex: 1;">
-                <h6 style="margin: 0 0 4px 0; font-size: 16px; font-weight: 700; color: white;">
-                    Face Recognition
-                </h6>
-                <p style="margin: 0; font-size: 13px; color: rgba(255, 255, 255, 0.9);">
-                    Verifikasi Biometrik Presensi
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <div class="card-body" style="padding: 16px 20px;">
-        @if($faceData)
-        <!-- Already Enrolled -->
-        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-            <div style="width: 40px; height: 40px; background: rgba(16, 185, 129, 0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
-                <ion-icon name="checkmark-circle" style="font-size: 24px; color: #10b981;"></ion-icon>
-            </div>
-            <div>
-                <p style="margin: 0; font-size: 14px; font-weight: 700; color: #10b981;">
-                    Wajah Terdaftar
-                </p>
-                <p style="margin: 0; font-size: 12px; color: #64748b;">
-                    Terakhir diperbarui: {{ \Carbon\Carbon::parse($faceData->last_updated)->diffForHumans() }}
-                </p>
-            </div>
-        </div>
-
-        <a href="{{ route('face-presensi.enrollment') }}" style="display: block; width: 100%; padding: 12px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(124, 58, 237, 0.1) 100%); border: 1px solid #0053C5; border-radius: 12px; text-align: center; color: #0053C5; font-weight: 700; font-size: 14px; text-decoration: none;">
-            <ion-icon name="settings-outline" style="vertical-align: middle; margin-right: 6px;"></ion-icon>
-            Kelola Data Wajah
-        </a>
-        @else
-        <!-- Not Enrolled Yet -->
-        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-            <div style="width: 40px; height: 40px; background: rgba(239, 68, 68, 0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
-                <ion-icon name="alert-circle" style="font-size: 24px; color: #ef4444;"></ion-icon>
-            </div>
-            <div>
-                <p style="margin: 0; font-size: 14px; font-weight: 700; color: #ef4444;">
-                    Belum Terdaftar
-                </p>
-                <p style="margin: 0; font-size: 12px; color: #64748b;">
-                    Daftarkan wajah untuk keamanan lebih
-                </p>
-            </div>
-        </div>
-
-        <a href="{{ route('face-presensi.enrollment') }}" style="display: block; width: 100%; padding: 12px; background: linear-gradient(135deg, #0053C5 0%, #7c3aed 100%); border-radius: 12px; text-align: center; color: white; font-weight: 700; font-size: 14px; text-decoration: none; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);">
-            <ion-icon name="scan-outline" style="vertical-align: middle; margin-right: 6px;"></ion-icon>
-            Daftar Wajah Sekarang
-        </a>
-        @endif
-    </div>
-</div>
 
 @endsection
 
@@ -452,9 +635,17 @@
 $lokasi_parts = explode(',', $lok_kantor->lokasi_cabang);
 @endphp
 <script>
-window.OFFICE_LAT = {{ trim($lokasi_parts[0]) }};
-window.OFFICE_LNG = {{ trim($lokasi_parts[1]) }};
-window.OFFICE_NAME = "{{ $lok_kantor->nama_cabang }}";
+    window.OFFICE_LAT = {
+        {
+            trim($lokasi_parts[0])
+        }
+    };
+    window.OFFICE_LNG = {
+        {
+            trim($lokasi_parts[1])
+        }
+    };
+    window.OFFICE_NAME = "{{ $lok_kantor->nama_cabang }}";
 </script>
 @endif
 
@@ -534,11 +725,9 @@ window.OFFICE_NAME = "{{ $lok_kantor->nama_cabang }}";
         lokasi.value = latitude + "," + longitude;
         console.log('Location set:', lokasi.value);
 
-        // Update display
         document.getElementById('coords-display').textContent = latitude.toFixed(6) + ', ' + longitude.toFixed(6);
 
         try {
-            // Initialize map
             map = L.map('map').setView([latitude, longitude], 17);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -546,10 +735,9 @@ window.OFFICE_NAME = "{{ $lok_kantor->nama_cabang }}";
                 attribution: '© OpenStreetMap'
             }).addTo(map);
 
-            // User location marker
             var userIcon = L.divIcon({
                 className: 'custom-div-icon',
-                html: '<div style="background: linear-gradient(135deg, #0053C5 0%, #7c3aed 100%); width: 40px; height: 40px; border-radius: 50%; border: 4px solid white; box-shadow: 0 3px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;"><ion-icon name="person" style="color: white; font-size: 22px;"></ion-icon></div>',
+                html: '<div style="background: linear-gradient(135deg, #0053C5 0%, #003d94 100%); width: 40px; height: 40px; border-radius: 50%; border: 4px solid white; box-shadow: 0 3px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;"><ion-icon name="person" style="color: white; font-size: 22px;"></ion-icon></div>',
                 iconSize: [40, 40],
                 iconAnchor: [20, 20]
             });
@@ -557,13 +745,12 @@ window.OFFICE_NAME = "{{ $lok_kantor->nama_cabang }}";
             marker = L.marker([latitude, longitude], {
                 icon: userIcon
             }).addTo(map);
-            marker.bindPopup('<strong style="color: #0053C5;">Lokasi Anda Saat Ini</strong>').openPopup();
+            marker.bindPopup('<strong style="color: #0053C5;">Lokasi Anda</strong>').openPopup();
 
-            // Office location marker (optional - for reference)
             if (typeof window.OFFICE_LAT !== 'undefined' && typeof window.OFFICE_LNG !== 'undefined') {
                 var officeIcon = L.divIcon({
                     className: 'custom-div-icon',
-                    html: '<div style="background: linear-gradient(135deg, #0053C5 0%, #003d94 100%); width: 40px; height: 40px; border-radius: 50%; border: 4px solid white; box-shadow: 0 3px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;"><ion-icon name="business" style="color: white; font-size: 22px;"></ion-icon></div>',
+                    html: '<div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); width: 40px; height: 40px; border-radius: 50%; border: 4px solid white; box-shadow: 0 3px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;"><ion-icon name="business" style="color: white; font-size: 22px;"></ion-icon></div>',
                     iconSize: [40, 40],
                     iconAnchor: [20, 20]
                 });
@@ -571,9 +758,8 @@ window.OFFICE_NAME = "{{ $lok_kantor->nama_cabang }}";
                 var officeMarker = L.marker([window.OFFICE_LAT, window.OFFICE_LNG], {
                     icon: officeIcon
                 }).addTo(map);
-                officeMarker.bindPopup('<strong style="color: #0053C5;">' + window.OFFICE_NAME + '</strong>');
+                officeMarker.bindPopup('<strong style="color: #10b981;">' + window.OFFICE_NAME + '</strong>');
 
-                // Fit bounds to show both markers
                 var group = L.featureGroup([marker, officeMarker]);
                 map.fitBounds(group.getBounds().pad(0.2));
             }
@@ -594,13 +780,11 @@ window.OFFICE_NAME = "{{ $lok_kantor->nama_cabang }}";
         });
     }
 
-    // Load Face-API models
     async function loadFaceModels() {
         if (modelsLoaded) return true;
 
         try {
             console.log('Loading face-api models...');
-
             const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model';
 
             await Promise.all([
@@ -618,7 +802,6 @@ window.OFFICE_NAME = "{{ $lok_kantor->nama_cabang }}";
         }
     }
 
-    // Get reference face descriptor
     async function getReferenceFaceDescriptor() {
         try {
             const response = await fetch('/face-presensi/descriptor', {
@@ -641,91 +824,57 @@ window.OFFICE_NAME = "{{ $lok_kantor->nama_cabang }}";
         }
     }
 
-   // Verify face dengan info lebih detail
-async function verifyFace() {
-    try {
-        const video = document.querySelector('.webcam-capture video');
+    async function verifyFace() {
+        try {
+            const video = document.querySelector('.webcam-capture video');
 
-        if (!video) {
-            throw new Error('Video element not found');
+            if (!video) {
+                throw new Error('Video element not found');
+            }
+
+            const detection = await faceapi
+                .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+                .withFaceLandmarks()
+                .withFaceDescriptor();
+
+            if (!detection) {
+                throw new Error('Wajah tidak terdeteksi. Pastikan wajah terlihat jelas di dalam bingkai.');
+            }
+
+            const confidence = (detection.detection.score * 100).toFixed(1);
+            console.log('Face detection confidence:', confidence + '%');
+
+            if (detection.detection.score < 0.5) {
+                throw new Error('Deteksi wajah kurang jelas (' + confidence + '%). Coba posisikan lebih baik.');
+            }
+
+            const referenceDescriptor = await getReferenceFaceDescriptor();
+            const distance = faceapi.euclideanDistance(detection.descriptor, referenceDescriptor);
+            const similarity = ((1 - distance) * 100).toFixed(1);
+
+            console.log('=== FACE VERIFICATION ===');
+            console.log('Confidence:', confidence + '%');
+            console.log('Similarity:', similarity + '%');
+            console.log('Distance:', distance.toFixed(4));
+
+            const loadingDetail = document.getElementById('loading-detail');
+            loadingDetail.innerHTML = 'Kecocokan: <strong>' + similarity + '%</strong>';
+
+            if (distance > 0.6) {
+                throw new Error('Verifikasi gagal!<br>Kecocokan: <strong>' + similarity + '%</strong><br>Wajah tidak cocok dengan data terdaftar.');
+            }
+
+            return {
+                success: true,
+                confidence: confidence,
+                similarity: similarity
+            };
+
+        } catch (error) {
+            throw error;
         }
-
-        // ✅ Deteksi wajah
-        const detection = await faceapi
-            .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
-            .withFaceLandmarks()
-            .withFaceDescriptor();
-
-        if (!detection) {
-            throw new Error('Wajah tidak terdeteksi. Pastikan wajah terlihat jelas di dalam bingkai.');
-        }
-
-        // ✅ Cek confidence score
-        const confidence = (detection.detection.score * 100).toFixed(1);
-        console.log('Face detection confidence:', confidence + '%');
-
-        if (detection.detection.score < 0.5) {
-            throw new Error('Deteksi wajah kurang jelas (' + confidence + '%). Coba posisikan lebih baik.');
-        }
-
-        // ✅ Ambil descriptor wajah yang terdaftar
-        const referenceDescriptor = await getReferenceFaceDescriptor();
-        
-        // ✅ Hitung jarak (distance) antara wajah sekarang dengan yang terdaftar
-        const distance = faceapi.euclideanDistance(detection.descriptor, referenceDescriptor);
-        const similarity = ((1 - distance) * 100).toFixed(1); // Convert ke persentase similarity
-
-        console.log('=== FACE VERIFICATION RESULT ===');
-        console.log('Detection Confidence:', confidence + '%');
-        console.log('Euclidean Distance:', distance.toFixed(4));
-        console.log('Face Similarity:', similarity + '%');
-        console.log('Threshold:', '0.6 (max)');
-        console.log('Status:', distance <= 0.6 ? '✅ MATCH' : '❌ NOT MATCH');
-        console.log('================================');
-
-        // ✅ Tampilkan info di loading overlay
-        const loadingText = document.querySelector('.loading-text');
-        loadingText.innerHTML = `
-            Memverifikasi wajah...<br>
-            <small style="font-size: 13px; color: rgba(255,255,255,0.8); margin-top: 8px; display: block;">
-                Tingkat Kecocokan: <strong>${similarity}%</strong>
-            </small>
-        `;
-
-        // ✅ Cek apakah wajah cocok (threshold 0.6)
-        if (distance > 0.6) {
-            throw new Error(`
-                <div style="text-align: center;">
-                    <p style="margin: 0 0 12px 0; font-size: 15px;">Verifikasi wajah gagal!</p>
-                    <div style="background: rgba(239, 68, 68, 0.1); padding: 12px; border-radius: 8px; margin-bottom: 12px;">
-                        <p style="margin: 0; font-size: 13px; color: #ef4444;">
-                            <strong>Tingkat Kecocokan: ${similarity}%</strong><br>
-                            <span style="font-size: 12px; color: #64748b;">Minimal yang dibutuhkan: 40%</span>
-                        </p>
-                    </div>
-                    <p style="margin: 0; font-size: 13px; color: #64748b;">
-                        Wajah tidak cocok dengan data terdaftar.<br>
-                        Silakan ulangi atau hubungi admin.
-                    </p>
-                </div>
-            `);
-        }
-
-        // ✅ Jika cocok, return true
-        return {
-            success: true,
-            confidence: confidence,
-            similarity: similarity,
-            distance: distance
-        };
-
-    } catch (error) {
-        console.error('Verification error:', error);
-        throw error;
     }
-}
 
-    // Capture Button Event
     document.addEventListener('DOMContentLoaded', function() {
         const btnCapture = document.getElementById('btn-capture');
 
@@ -738,9 +887,7 @@ async function verifyFace() {
 
         btnCapture.addEventListener('click', async function(e) {
             e.preventDefault();
-            console.log('Button capture diklik');
 
-            // Validasi kamera
             if (!webcamReady) {
                 Swal.fire({
                     icon: 'error',
@@ -751,20 +898,13 @@ async function verifyFace() {
                 return;
             }
 
-            // ❌ HAPUS validasi lokasi GPS - tidak diperlukan lagi
-            // var lokasi_val = lokasi.value;
-            // if (!lokasi_val) { ... }
-
             try {
-                // Haptic feedback
                 if ('vibrate' in navigator) {
                     navigator.vibrate(20);
                 }
 
-                // Show loading
                 document.getElementById('loading-overlay').classList.add('show');
 
-                // Load models if not loaded
                 if (!modelsLoaded) {
                     const loaded = await loadFaceModels();
                     if (!loaded) {
@@ -772,17 +912,15 @@ async function verifyFace() {
                     }
                 }
 
-                // Verify face
                 await verifyFace();
 
-                // Send to server
                 $.ajax({
                     type: 'POST',
                     url: '/face-presensi/store',
                     data: {
                         _token: "{{ csrf_token() }}",
-                        // ❌ lokasi tidak perlu dikirim - diambil dari cabang
-                        verified: 'true'
+                        verified: 'true',
+                        shift_ke: $('#shift_ke_input').val() || null
                     },
                     cache: false,
                     success: function(respond) {
@@ -814,7 +952,6 @@ async function verifyFace() {
                     },
                     error: function(xhr, status, error) {
                         document.getElementById('loading-overlay').classList.remove('show');
-                        console.error('AJAX Error:', error);
 
                         Swal.fire({
                             icon: 'error',
@@ -827,7 +964,6 @@ async function verifyFace() {
 
             } catch (error) {
                 document.getElementById('loading-overlay').classList.remove('show');
-                console.error('Capture error:', error);
 
                 Swal.fire({
                     icon: 'error',
@@ -839,9 +975,7 @@ async function verifyFace() {
         });
     });
 
-    // Preload face-api models
     $(document).ready(function() {
-        console.log('Preloading face-api models...');
         loadFaceModels();
     });
 </script>

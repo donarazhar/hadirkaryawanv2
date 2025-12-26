@@ -22,6 +22,16 @@ return new class extends Migration
             $table->text('lokasi_in')->nullable();
             $table->text('lokasi_out')->nullable();
             $table->char('kode_jam_kerja', 10)->nullable();
+
+            // Multi-shift columns (NO ->after() in CREATE!)
+            $table->integer('shift_ke')
+                ->nullable()
+                ->comment('Shift ke berapa (untuk multi-shift). Null = regular');
+
+            $table->string('nama_shift', 50)
+                ->nullable()
+                ->comment('Nama shift (Subuh, Zuhur, dll)');
+
             $table->char('status', 1)->nullable();
             $table->char('kode_izin', 25)->nullable();
             $table->timestamps();

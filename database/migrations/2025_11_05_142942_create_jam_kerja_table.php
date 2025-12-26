@@ -12,13 +12,23 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('jam_kerja', function (Blueprint $table) {
-            $table->char('kode_jam_kerja', 10);
+            $table->string('kode_jam_kerja', 10)->primary();
             $table->string('nama_jam_kerja', 15);
             $table->time('awal_jam_masuk');
             $table->time('jam_masuk');
             $table->time('akhir_jam_masuk');
             $table->time('jam_pulang');
             $table->char('lintashari', 1)->default('0');
+
+            // Multi-shift columns (NO ->after() in CREATE!)
+            $table->enum('tipe_jam_kerja', ['regular', 'multi_shift'])
+                ->default('regular')
+                ->comment('regular = jam kerja biasa, multi_shift = untuk imam/muazin dll');
+
+            $table->integer('total_shift')
+                ->default(1)
+                ->comment('Jumlah shift dalam 1 hari (default 1 untuk regular)');
+
             $table->timestamps();
         });
     }

@@ -1,39 +1,28 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\AuthAdminController;
-
-// ==================== KARYAWAN CONTROLLERS ====================
 use App\Http\Controllers\Admin\CabangController;
 use App\Http\Controllers\Admin\DashboardAdminController;
 use App\Http\Controllers\Admin\DepartemenController;
+use App\Http\Controllers\Admin\FaceVerificationController;
 use App\Http\Controllers\Admin\IzinSakitController;
 use App\Http\Controllers\Admin\JamKerjaController;
 use App\Http\Controllers\Admin\KaryawanAdminController;
-
-// ==================== ADMIN CONTROLLERS ====================
 use App\Http\Controllers\Admin\KonfigurasiJkDeptController;
 use App\Http\Controllers\Admin\LaporanController;
 use App\Http\Controllers\Admin\MonitoringController;
+use App\Http\Controllers\Admin\PresensiFaceAdminController;
 use App\Http\Controllers\Admin\RekapController;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\DashboardKaryawanController;
-use App\Http\Controllers\FaceEnrollmentController;
-use App\Http\Controllers\HistoryKaryawanController;
-use App\Http\Controllers\IzinKaryawanController;
-use App\Http\Controllers\PresensiKaryawanController;
-use App\Http\Controllers\PresensiWithFaceController;
-use App\Http\Controllers\ProfileKaryawanController;
-use App\Http\Controllers\SimpleFacePresensiController;
+use App\Http\Controllers\Karyawan\DashboardKaryawanController;
+use App\Http\Controllers\Karyawan\FaceEnrollmentController;
+use App\Http\Controllers\Karyawan\HistoryKaryawanController;
+use App\Http\Controllers\Karyawan\IzinKaryawanController;
+use App\Http\Controllers\Karyawan\PresensiKaryawanController;
+use App\Http\Controllers\Karyawan\ProfileKaryawanController;
+use App\Http\Controllers\Karyawan\SimpleFacePresensiController;
 use Illuminate\Support\Facades\Route;
 
-
-
-
-/*
-|--------------------------------------------------------------------------
-| Web Routes - Hadir Karyawan YPI Al Azhar
-|--------------------------------------------------------------------------
-*/
 
 // Root redirect
 Route::get('/', fn() => redirect()->route('login'));
@@ -59,7 +48,6 @@ Route::middleware('auth:karyawan')->group(function () {
 
     // Show Map Presensi (bisa diakses karyawan dan admin)
     Route::post('/tampilkanpeta', [PresensiKaryawanController::class, 'showMap'])->name('presensi.showmap');
-
 
     // Histori
     Route::controller(HistoryKaryawanController::class)->prefix('presensi/histori')->name('histori.')->group(function () {
@@ -105,7 +93,7 @@ Route::middleware('auth:karyawan')->group(function () {
         Route::get('/dashboard', [SimpleFacePresensiController::class, 'dashboard'])->name('dashboard');
         Route::get('/create', [SimpleFacePresensiController::class, 'create'])->name('create');
         Route::post('/store', [SimpleFacePresensiController::class, 'store'])->name('store');
-        
+
         // Enrollment khusus simple-face
         Route::get('/enrollment', [SimpleFacePresensiController::class, 'enrollment'])->name('enrollment');
         Route::post('/enrollment/store', [SimpleFacePresensiController::class, 'enrollmentStore'])->name('enrollment.store');
@@ -162,6 +150,47 @@ Route::prefix('panel')->name('panel.')->group(function () {
             Route::get('/', 'index')->name('index');
             Route::post('/{kode_izin}/approve', 'approve')->name('approve');
             Route::get('/{kode_izin}/cancel', 'cancel')->name('cancel');
+        });
+
+        // Presensi Face Routes
+        Route::prefix('presensi-face')->name('presensi-face.')->group(function () {
+            Route::get('/', [PresensiFaceAdminController::class, 'index'])->name('index');
+            Route::get('/create', [PresensiFaceAdminController::class, 'create'])->name('create');
+            Route::post('/store', [PresensiFaceAdminController::class, 'store'])->name('store');
+            Route::get('/show/{id}', [PresensiFaceAdminController::class, 'show'])->name('show');
+            Route::get('/edit/{id}', [PresensiFaceAdminController::class, 'edit'])->name('edit');
+            Route::put('/update/{id}', [PresensiFaceAdminController::class, 'update'])->name('update');
+            Route::delete('/destroy/{id}', [PresensiFaceAdminController::class, 'destroy'])->name('destroy');
+            Route::get('/monitoring', [PresensiFaceAdminController::class, 'monitoring'])->name('monitoring');
+            Route::get('/rekap', [PresensiFaceAdminController::class, 'rekap'])->name('rekap');
+            Route::get('/export-data', [PresensiFaceAdminController::class, 'exportData'])->name('export-data');
+            Route::get('/export-rekap', [PresensiFaceAdminController::class, 'exportRekap'])->name('export-rekap');
+            Route::get('/api/stats', [PresensiFaceAdminController::class, 'getDashboardStats'])->name('api.stats');
+        });
+
+        // Face Verification Routes
+        Route::prefix('face-verification')->name('face-verification.')->group(function () {
+
+            Route::get('/', [FaceVerificationController::class, 'index'])
+                ->name('index');
+            Route::get('/show/{nik}', [FaceVerificationController::class, 'show'])
+                ->name('show');
+            Route::put('/activate/{nik}', [FaceVerificationController::class, 'activate'])
+                ->name('activate');
+            Route::put('/deactivate/{nik}', [FaceVerificationController::class, 'deactivate'])
+                ->name('deactivate');
+            Route::delete('/destroy/{nik}', [FaceVerificationController::class, 'destroy'])
+                ->name('destroy');
+            Route::post('/bulk-activate', [FaceVerificationController::class, 'bulkActivate'])
+                ->name('bulk-activate');
+            Route::post('/bulk-deactivate', [FaceVerificationController::class, 'bulkDeactivate'])
+                ->name('bulk-deactivate');
+            Route::get('/export', [FaceVerificationController::class, 'export'])
+                ->name('export');
+            Route::get('/api/stats', [FaceVerificationController::class, 'getStats'])
+                ->name('api.stats');
+            Route::get('/image/{nik}', [FaceVerificationController::class, 'viewImage'])
+                ->name('view-image');
         });
     });
 });

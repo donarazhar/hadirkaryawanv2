@@ -12,6 +12,8 @@ class DepartemenSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->command->info('📦 Seeding Departemen...');
+
         $departemen = [
             [
                 'kode_dept' => 'IT',
@@ -45,10 +47,22 @@ class DepartemenSeeder extends Seeder
                 'kode_dept' => 'SEC',
                 'nama_dept' => 'Security'
             ],
+            // Departemen baru untuk multi-shift
+            [
+                'kode_dept' => 'KEAG',
+                'nama_dept' => 'Keagamaan'
+            ],
         ];
 
+        $count = 0;
         foreach ($departemen as $item) {
             Departemen::create($item);
+            $count++;
+            $this->command->info("  ✓ {$item['kode_dept']} - {$item['nama_dept']}");
         }
+
+        $this->command->line('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        $this->command->info("✅ Selesai! Total {$count} departemen berhasil dibuat");
+        $this->command->line('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     }
 }

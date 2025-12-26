@@ -10,11 +10,16 @@ class KaryawanSeeder extends Seeder
 {
     /**
      * Run the database seeds.
+     * Include KARYAWAN REGULAR + IMAM & MUAZIN
      */
     public function run(): void
     {
+        $this->command->info('🧑‍💼 Seeding Karyawan...');
+
         $karyawan = [
-            // Jakarta - IT Department
+            // ========================================
+            // JAKARTA - IT Department
+            // ========================================
             [
                 'nik' => '2024001',
                 'nama_lengkap' => 'Ahmad Rizki',
@@ -36,7 +41,9 @@ class KaryawanSeeder extends Seeder
                 'kode_cabang' => 'CBG001'
             ],
 
-            // Jakarta - HRD Department
+            // ========================================
+            // JAKARTA - HRD Department
+            // ========================================
             [
                 'nik' => '2024003',
                 'nama_lengkap' => 'Siti Nurhaliza',
@@ -58,7 +65,9 @@ class KaryawanSeeder extends Seeder
                 'kode_cabang' => 'CBG001'
             ],
 
-            // Jakarta - Finance
+            // ========================================
+            // JAKARTA - Finance
+            // ========================================
             [
                 'nik' => '2024005',
                 'nama_lengkap' => 'Eko Prasetyo',
@@ -70,7 +79,9 @@ class KaryawanSeeder extends Seeder
                 'kode_cabang' => 'CBG001'
             ],
 
-            // Bandung - IT Department
+            // ========================================
+            // BANDUNG - IT Department
+            // ========================================
             [
                 'nik' => '2024006',
                 'nama_lengkap' => 'Faisal Rahman',
@@ -82,7 +93,9 @@ class KaryawanSeeder extends Seeder
                 'kode_cabang' => 'CBG002'
             ],
 
-            // Bandung - Education
+            // ========================================
+            // BANDUNG - Education
+            // ========================================
             [
                 'nik' => '2024007',
                 'nama_lengkap' => 'Gita Savitri',
@@ -104,7 +117,9 @@ class KaryawanSeeder extends Seeder
                 'kode_cabang' => 'CBG002'
             ],
 
-            // Surabaya - Marketing
+            // ========================================
+            // SURABAYA - Marketing
+            // ========================================
             [
                 'nik' => '2024009',
                 'nama_lengkap' => 'Indah Permata',
@@ -125,10 +140,91 @@ class KaryawanSeeder extends Seeder
                 'kode_dept' => 'MKT',
                 'kode_cabang' => 'CBG003'
             ],
+
+            // ========================================
+            // JAKARTA - KEAGAMAAN (MULTI-SHIFT)
+            // ========================================
+            [
+                'nik' => '2024101',
+                'nama_lengkap' => 'Ustadz Ahmad Syahid',
+                'jabatan' => 'Imam Masjid',
+                'no_hp' => '081234567901',
+                'password' => Hash::make('password123'),
+                'foto' => null,
+                'kode_dept' => 'KEAG',
+                'kode_cabang' => 'CBG001'
+            ],
+            [
+                'nik' => '2024102',
+                'nama_lengkap' => 'Ustadz Muhammad Rizki',
+                'jabatan' => 'Muazin',
+                'no_hp' => '081234567902',
+                'password' => Hash::make('password123'),
+                'foto' => null,
+                'kode_dept' => 'KEAG',
+                'kode_cabang' => 'CBG001'
+            ],
+
+            // ========================================
+            // BANDUNG - KEAGAMAAN (MULTI-SHIFT)
+            // ========================================
+            [
+                'nik' => '2024103',
+                'nama_lengkap' => 'Ustadz Abdullah Hakim',
+                'jabatan' => 'Imam Masjid',
+                'no_hp' => '081234567903',
+                'password' => Hash::make('password123'),
+                'foto' => null,
+                'kode_dept' => 'KEAG',
+                'kode_cabang' => 'CBG002'
+            ],
+            [
+                'nik' => '2024104',
+                'nama_lengkap' => 'Ustadz Fathur Rahman',
+                'jabatan' => 'Muazin',
+                'no_hp' => '081234567904',
+                'password' => Hash::make('password123'),
+                'foto' => null,
+                'kode_dept' => 'KEAG',
+                'kode_cabang' => 'CBG002'
+            ],
+
+            // ========================================
+            // SURABAYA - KEAGAMAAN (MULTI-SHIFT)
+            // ========================================
+            [
+                'nik' => '2024105',
+                'nama_lengkap' => 'Ustadz Yusuf Ali',
+                'jabatan' => 'Imam Masjid',
+                'no_hp' => '081234567905',
+                'password' => Hash::make('password123'),
+                'foto' => null,
+                'kode_dept' => 'KEAG',
+                'kode_cabang' => 'CBG003'
+            ],
         ];
+
+        $regularCount = 0;
+        $multiShiftCount = 0;
 
         foreach ($karyawan as $item) {
             Karyawan::create($item);
+            
+            if ($item['kode_dept'] === 'KEAG') {
+                $multiShiftCount++;
+                $this->command->info("  🕌 {$item['nama_lengkap']} ({$item['nik']}) - {$item['jabatan']} - Multi-Shift");
+            } else {
+                $regularCount++;
+                $this->command->info("  ✓ {$item['nama_lengkap']} ({$item['nik']}) - {$item['jabatan']}");
+            }
         }
+
+        $total = $regularCount + $multiShiftCount;
+
+        $this->command->line('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        $this->command->info("✅ Selesai! Total {$total} karyawan berhasil dibuat");
+        $this->command->info("   - {$regularCount} Karyawan Regular");
+        $this->command->info("   - {$multiShiftCount} Karyawan Multi-Shift (Imam & Muazin)");
+        $this->command->line('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     }
 }

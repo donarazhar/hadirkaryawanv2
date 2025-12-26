@@ -12,6 +12,8 @@ class CabangSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->command->info('📍 Seeding Cabang...');
+
         $cabang = [
             [
                 'kode_cabang' => 'CBG001',
@@ -45,8 +47,15 @@ class CabangSeeder extends Seeder
             ],
         ];
 
+        $count = 0;
         foreach ($cabang as $item) {
             Cabang::create($item);
+            $count++;
+            $this->command->info("  ✓ {$item['nama_cabang']} - Radius: {$item['radius_cabang']}m");
         }
+
+        $this->command->line('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        $this->command->info("✅ Selesai! Total {$count} cabang berhasil dibuat");
+        $this->command->line('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     }
 }

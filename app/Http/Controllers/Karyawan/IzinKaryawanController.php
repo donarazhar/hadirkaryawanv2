@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Karyawan;
 
+use App\Http\Controllers\Controller;
 use App\Models\PengajuanCuti;
 use Exception;
 use Illuminate\Http\Request;

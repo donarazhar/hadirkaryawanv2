@@ -23,14 +23,13 @@ class SimpleFacePresensiController extends Controller
     public function dashboard()
     {
         try {
-           
             $karyawan = Auth::guard('karyawan')->user();
             $nik = $karyawan->nik;
             $nama_lengkap = $karyawan->nama_lengkap;
 
             // ✅ Load karyawan dengan relasi lengkap
             $karyawan_model = Karyawan::where('nik', $nik)
-                ->with(['cabang', 'departemen', 'jamKerja'])
+                ->with(['cabang', 'departemen'])
                 ->first();
 
             // Check face data
@@ -41,17 +40,19 @@ class SimpleFacePresensiController extends Controller
 
             $hariini = Carbon::now('Asia/Jakarta')->format('Y-m-d');
 
-            // ✅ Get ALL presensi today (bisa multiple untuk multi-shift)
+            // ✅ Get ALL presensi today
             $presensi_hari_ini = PresensiFace::where('nik', $nik)
                 ->where('tanggal', $hariini)
-                ->orderBy('created_at', 'desc')
+                ->orderBy('shift_ke', 'asc')
+                ->orderBy('created_at', 'asc')
                 ->get();
 
             $histori = PresensiFace::where('nik', $nik)
                 ->where('tanggal', '<', $hariini)
                 ->orderBy('tanggal', 'DESC')
+                ->orderBy('shift_ke', 'ASC')
                 ->orderBy('created_at', 'DESC')
-                ->limit(10)
+                ->limit(30)
                 ->get();
 
             $bulan_ini = Carbon::now('Asia/Jakarta')->format('Y-m');
@@ -59,33 +60,58 @@ class SimpleFacePresensiController extends Controller
                 ->whereRaw('DATE_FORMAT(tanggal, "%Y-%m") = ?', [$bulan_ini])
                 ->count();
 
-            // ✅ MULTI-SHIFT DETECTION
-            $jam_kerja = $karyawan->jamKerja ?? null;
+            // ✅ MULTI-SHIFT DETECTION (NEW LOGIC)
+            $jam_kerja = $karyawan_model->getJamKerjaHariIni();
             $is_multi_shift = false;
             $shifts_available = collect();
             $total_shifts = 0;
 
-            if ($jam_kerja) {
-                $shifts_available = DB::table('jam_kerja_shifts')
-                    ->where('kode_jam_kerja', $jam_kerja->kode_jam_kerja)
-                    ->where('is_active', true)
-                    ->orderBy('shift_ke')
-                    ->get();
+            Log::info('Dashboard - Jam Kerja Check', [
+                'nik' => $nik,
+                'kode_dept' => $karyawan_model->kode_dept,
+                'kode_cabang' => $karyawan_model->kode_cabang,
+                'jam_kerja_found' => $jam_kerja ? 'YES' : 'NO',
+                'kode_jam_kerja' => $jam_kerja->kode_jam_kerja ?? 'NULL',
+                'tipe_jam_kerja' => $jam_kerja->tipe_jam_kerja ?? 'NULL'
+            ]);
 
-                $total_shifts = $shifts_available->count();
-                $is_multi_shift = $total_shifts > 0;
+            if ($jam_kerja) {
+                // Check if multi-shift
+                if ($jam_kerja->tipe_jam_kerja === 'multi_shift') {
+                    $shifts_available = DB::table('jam_kerja_shifts')
+                        ->where('kode_jam_kerja', $jam_kerja->kode_jam_kerja)
+                        ->where('is_active', true)
+                        ->orderBy('shift_ke')
+                        ->get();
+
+                    $total_shifts = $shifts_available->count();
+                    $is_multi_shift = $total_shifts >= 2;
+
+                    Log::info('Multi-Shift Detection', [
+                        'nik' => $nik,
+                        'total_shifts' => $total_shifts,
+                        'is_multi_shift' => $is_multi_shift,
+                        'shifts' => $shifts_available->pluck('nama_shift')->toArray()
+                    ]);
+                }
+            } else {
+                Log::warning('No Jam Kerja Configuration', [
+                    'nik' => $nik,
+                    'kode_dept' => $karyawan_model->kode_dept,
+                    'kode_cabang' => $karyawan_model->kode_cabang
+                ]);
             }
 
             // ✅ Check which shifts completed
             $completed_shifts = $presensi_hari_ini
                 ->whereNotNull('shift_ke')
-                ->where('jam_pulang', '!=', null)
+                ->whereNotNull('jam_pulang')
                 ->pluck('shift_ke')
                 ->toArray();
 
             $regular_done = $presensi_hari_ini
                 ->whereNull('shift_ke')
-                ->where('jam_pulang', '!=', null)
+                ->whereNotNull('jam_pulang')
                 ->count() > 0;
 
             return view('karyawan.simple-face.dashboard', compact(
@@ -94,25 +120,29 @@ class SimpleFacePresensiController extends Controller
                 'histori',
                 'statistik',
                 'nama_lengkap',
-                'karyawan_model', 
+                'karyawan_model',
                 'is_multi_shift',
                 'shifts_available',
                 'total_shifts',
                 'completed_shifts',
-                'regular_done'
+                'regular_done',
+                'jam_kerja'  // ← Pass jam_kerja untuk debugging
             ));
         } catch (Exception $e) {
-            Log::error('SimpleFace Dashboard Error: ' . $e->getMessage());
+            Log::error('SimpleFace Dashboard Error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
             return redirect()->route('dashboard')->with('error', 'Terjadi kesalahan sistem.');
         }
     }
 
-    public function create()
+    public function create(Request $request)
     {
         try {
-            $nik = Auth::guard('karyawan')->user()->nik;
-            $nama_lengkap = Auth::guard('karyawan')->user()->nama_lengkap;
-            $kode_cabang = Auth::guard('karyawan')->user()->kode_cabang;
+            $karyawan = Auth::guard('karyawan')->user();
+            $nik = $karyawan->nik;
+            $nama_lengkap = $karyawan->nama_lengkap;
+            $kode_cabang = $karyawan->kode_cabang;
 
             // Check face data
             $faceData = DB::table('face_data')
@@ -120,27 +150,58 @@ class SimpleFacePresensiController extends Controller
                 ->where('status', 'active')
                 ->first();
 
-            // Jika belum daftar face, redirect ke enrollment
             if (!$faceData) {
                 return redirect()->route('face-presensi.enrollment')
                     ->with('info', 'Silakan daftarkan wajah Anda terlebih dahulu.');
             }
 
-            // ✅ Get lokasi kantor dari cabang
+            // Get lokasi kantor
             $lok_kantor = DB::table('cabang')
                 ->where('kode_cabang', $kode_cabang)
                 ->first();
 
-            // ✅ Validasi lokasi cabang
             if (!$lok_kantor || empty($lok_kantor->lokasi_cabang)) {
                 return redirect()->route('face-presensi.dashboard')
                     ->with('error', 'Data lokasi cabang tidak ditemukan. Hubungi admin.');
             }
 
+            // ✅ MULTI-SHIFT DETECTION (NEW LOGIC)
+            $karyawan_model = Karyawan::where('nik', $nik)->first();
+            $jam_kerja = $karyawan_model->getJamKerjaHariIni();
+            $is_multi_shift = false;
+            $shifts_available = collect();
+            $shift_ke = null;
+            $current_shift = null;
+
+            if ($jam_kerja && $jam_kerja->tipe_jam_kerja === 'multi_shift') {
+                $shifts_available = DB::table('jam_kerja_shifts')
+                    ->where('kode_jam_kerja', $jam_kerja->kode_jam_kerja)
+                    ->where('is_active', true)
+                    ->orderBy('shift_ke')
+                    ->get();
+
+                $is_multi_shift = $shifts_available->count() >= 2;
+
+                // Get shift_ke from request
+                if ($is_multi_shift && $request->filled('shift_ke')) {
+                    $shift_ke = $request->shift_ke;
+                    $current_shift = $shifts_available->where('shift_ke', $shift_ke)->first();
+
+                    if (!$current_shift) {
+                        return redirect()->route('face-presensi.dashboard')
+                            ->with('error', 'Shift tidak valid.');
+                    }
+                }
+            }
+
             return view('karyawan.simple-face.create', compact(
                 'nama_lengkap',
                 'faceData',
-                'lok_kantor'
+                'lok_kantor',
+                'is_multi_shift',
+                'shifts_available',
+                'shift_ke',
+                'current_shift'
             ));
         } catch (Exception $e) {
             Log::error('SimpleFace Create Error: ' . $e->getMessage());
@@ -153,20 +214,18 @@ class SimpleFacePresensiController extends Controller
         try {
             $karyawan = Auth::guard('karyawan')->user();
             $nik = $karyawan->nik;
-            $nama_lengkap = $karyawan->nama_lengkap;
             $kode_cabang = $karyawan->kode_cabang;
 
             $tanggal = Carbon::now('Asia/Jakarta')->format('Y-m-d');
             $jam = Carbon::now('Asia/Jakarta')->format('H:i:s');
 
-            // Validasi verified flag
+            // Validasi
             if (!$request->verified || $request->verified !== 'true') {
                 return response("error|Presensi harus menggunakan verifikasi wajah|system", 200);
             }
 
-            // Get lokasi cabang
+            // Get cabang
             $cabang = DB::table('cabang')->where('kode_cabang', $kode_cabang)->first();
-
             if (!$cabang || empty($cabang->lokasi_cabang)) {
                 return response("error|Data lokasi cabang tidak ditemukan|system", 200);
             }
@@ -180,7 +239,7 @@ class SimpleFacePresensiController extends Controller
 
             if ($shift_ke) {
                 $karyawan_model = Karyawan::where('nik', $nik)->first();
-                $jam_kerja = $karyawan_model->jamKerja;
+                $jam_kerja = $karyawan_model->getJamKerjaHariIni();
 
                 if (!$jam_kerja) {
                     return response("error|Jam kerja tidak ditemukan|system", 200);
@@ -203,14 +262,13 @@ class SimpleFacePresensiController extends Controller
 
             try {
                 if ($shift_ke) {
-                    // === MULTI-SHIFT MODE ===
+                    // MULTI-SHIFT MODE
                     $presensi = PresensiFace::where('nik', $nik)
                         ->where('tanggal', $tanggal)
                         ->where('shift_ke', $shift_ke)
                         ->first();
 
                     if ($presensi) {
-                        // Update jam pulang
                         if (!empty($presensi->jam_pulang)) {
                             DB::rollBack();
                             return response("error|Shift {$shift_ke} sudah selesai|out", 200);
@@ -224,7 +282,6 @@ class SimpleFacePresensiController extends Controller
                         DB::commit();
                         return response("success|Absen Pulang Shift {$shift_ke} Berhasil! ✅ {$jam}|out", 200);
                     } else {
-                        // Create new
                         PresensiFace::create([
                             'nik' => $nik,
                             'tanggal' => $tanggal,
@@ -240,7 +297,7 @@ class SimpleFacePresensiController extends Controller
                         return response("success|Absen Masuk Shift {$shift_ke} Berhasil! ✅ {$jam}|in", 200);
                     }
                 } else {
-                    // === REGULAR MODE ===
+                    // REGULAR MODE
                     $presensi = PresensiFace::where('nik', $nik)
                         ->where('tanggal', $tanggal)
                         ->whereNull('shift_ke')
@@ -286,9 +343,7 @@ class SimpleFacePresensiController extends Controller
         }
     }
 
-    /**
-     * Enrollment Khusus Simple Face
-     */
+    // ... (enrollment methods sama seperti sebelumnya)
     public function enrollment()
     {
         $nik = Auth::guard('karyawan')->user()->nik;
@@ -302,9 +357,6 @@ class SimpleFacePresensiController extends Controller
         return view('karyawan.simple-face.enrollment', compact('faceData', 'nama_lengkap'));
     }
 
-    /**
-     * Store Enrollment
-     */
     public function enrollmentStore(Request $request)
     {
         try {
@@ -326,7 +378,7 @@ class SimpleFacePresensiController extends Controller
 
             Storage::put($file, $image_base64);
 
-            $faceData = DB::table('face_data')->updateOrInsert(
+            DB::table('face_data')->updateOrInsert(
                 ['nik' => $nik],
                 [
                     'face_descriptor' => $request->face_descriptor,
@@ -339,8 +391,6 @@ class SimpleFacePresensiController extends Controller
             );
 
             DB::commit();
-
-            Log::info('Simple Face Enrollment Success', ['nik' => $nik]);
 
             return response()->json([
                 'success' => true,
@@ -357,9 +407,6 @@ class SimpleFacePresensiController extends Controller
         }
     }
 
-    /**
-     * Get Descriptor untuk Verifikasi
-     */
     public function getDescriptor()
     {
         try {
@@ -391,9 +438,6 @@ class SimpleFacePresensiController extends Controller
         }
     }
 
-    /**
-     * Delete Enrollment
-     */
     public function deleteEnrollment()
     {
         try {

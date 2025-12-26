@@ -16,6 +16,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class Karyawan extends Authenticatable
 {
@@ -101,7 +104,7 @@ class Karyawan extends Authenticatable
     }
 
     // ========================================
-    // ✅ JAM KERJA RELATIONSHIPS (ADDED)
+    // ✅ JAM KERJA RELATIONSHIPS (IMPROVED)
     // ========================================
 
     /**
@@ -121,7 +124,7 @@ class Karyawan extends Authenticatable
 
     /**
      * ✅ Get jam kerja untuk karyawan ini (MAIN RELATIONSHIP)
-     * This is the missing relationship that caused the error!
+     * IMPROVED: Menggunakan accessor pattern
      */
     public function jamKerja()
     {
@@ -136,39 +139,183 @@ class Karyawan extends Authenticatable
             'kode_dept',                        // Local key on this model (karyawan)
             'kode_jam_kerja'                    // Local key on intermediate
         )
-        ->join('konfigurasi_jk_dept', function($join) {
-            $join->on('konfigurasi_jk_dept_detail.kode_jk_dept', '=', 'konfigurasi_jk_dept.kode_jk_dept')
-                 ->where('konfigurasi_jk_dept.kode_cabang', '=', $this->kode_cabang)
-                 ->where('konfigurasi_jk_dept.kode_dept', '=', $this->kode_dept);
-        })
-        ->where('konfigurasi_jk_dept_detail.hari', $namaHari)
-        ->with('shifts'); // Eager load shifts untuk multi-shift
+            ->join('konfigurasi_jk_dept', function ($join) {
+                $join->on('konfigurasi_jk_dept_detail.kode_jk_dept', '=', 'konfigurasi_jk_dept.kode_jk_dept')
+                    ->where('konfigurasi_jk_dept.kode_cabang', '=', $this->kode_cabang)
+                    ->where('konfigurasi_jk_dept.kode_dept', '=', $this->kode_dept);
+            })
+            ->where('konfigurasi_jk_dept_detail.hari', $namaHari);
+    }
+
+    // ========================================
+    // ✅ JAM KERJA HELPER METHODS (NEW & IMPROVED)
+    // ========================================
+
+    /**
+     * ✅ Get jam kerja hari ini (RECOMMENDED METHOD)
+     * Metode yang lebih reliable menggunakan raw query
+     */
+    public function getJamKerjaHariIni()
+    {
+        $hari = $this->getNamaHariIni();
+
+        Log::info('Getting Jam Kerja', [
+            'nik' => $this->nik,
+            'kode_dept' => $this->kode_dept,
+            'kode_cabang' => $this->kode_cabang,
+            'hari' => $hari
+        ]);
+
+        // Query kompleks untuk mendapatkan jam kerja
+        $jam_kerja = DB::table('konfigurasi_jk_dept as kjd')
+            ->join('konfigurasi_jk_dept_detail as kjdd', 'kjd.kode_jk_dept', '=', 'kjdd.kode_jk_dept')
+            ->join('jam_kerja as jk', 'kjdd.kode_jam_kerja', '=', 'jk.kode_jam_kerja')
+            ->where('kjd.kode_dept', $this->kode_dept)
+            ->where('kjd.kode_cabang', $this->kode_cabang)
+            ->where('kjdd.hari', $hari)
+            ->select('jk.*')
+            ->first();
+
+        if ($jam_kerja) {
+            Log::info('Jam Kerja Found', [
+                'kode_jam_kerja' => $jam_kerja->kode_jam_kerja,
+                'nama_jam_kerja' => $jam_kerja->nama_jam_kerja,
+                'tipe_jam_kerja' => $jam_kerja->tipe_jam_kerja,
+                'total_shift' => $jam_kerja->total_shift
+            ]);
+        } else {
+            Log::warning('Jam Kerja Not Found', [
+                'nik' => $this->nik,
+                'kode_dept' => $this->kode_dept,
+                'kode_cabang' => $this->kode_cabang,
+                'hari' => $hari
+            ]);
+        }
+
+        return $jam_kerja;
     }
 
     /**
-     * ✅ Alternative: Get jam kerja by specific hari
+     * ✅ Get jam kerja by specific hari
      */
     public function getJamKerjaByHari($hari)
     {
-        return KonfigurasiJkDeptDetail::query()
-            ->select('jam_kerja.*')
-            ->join('konfigurasi_jk_dept', 'konfigurasi_jk_dept_detail.kode_jk_dept', '=', 'konfigurasi_jk_dept.kode_jk_dept')
-            ->join('jam_kerja', 'konfigurasi_jk_dept_detail.kode_jam_kerja', '=', 'jam_kerja.kode_jam_kerja')
-            ->where('konfigurasi_jk_dept.kode_cabang', $this->kode_cabang)
-            ->where('konfigurasi_jk_dept.kode_dept', $this->kode_dept)
-            ->where('konfigurasi_jk_dept_detail.hari', $hari)
-            ->with('shifts') // Include shifts
+        $jam_kerja = DB::table('konfigurasi_jk_dept as kjd')
+            ->join('konfigurasi_jk_dept_detail as kjdd', 'kjd.kode_jk_dept', '=', 'kjdd.kode_jk_dept')
+            ->join('jam_kerja as jk', 'kjdd.kode_jam_kerja', '=', 'jk.kode_jam_kerja')
+            ->where('kjd.kode_dept', $this->kode_dept)
+            ->where('kjd.kode_cabang', $this->kode_cabang)
+            ->where('kjdd.hari', $hari)
+            ->select('jk.*')
             ->first();
+
+        return $jam_kerja;
     }
 
     /**
-     * ✅ Get current jam kerja (today)
-     * Simpler method for current day
+     * ✅ Get current jam kerja (alias for getJamKerjaHariIni)
      */
     public function getCurrentJamKerja()
     {
-        $namaHari = $this->getNamaHariIni();
-        return $this->getJamKerjaByHari($namaHari);
+        return $this->getJamKerjaHariIni();
+    }
+
+    /**
+     * ✅ Get ALL shifts untuk hari ini (if multi-shift)
+     * Returns Collection of shifts or empty collection
+     */
+    public function getShiftsHariIni()
+    {
+        $jam_kerja = $this->getJamKerjaHariIni();
+
+        if (!$jam_kerja) {
+            Log::warning('No Jam Kerja for Shifts', ['nik' => $this->nik]);
+            return collect();
+        }
+
+        // Cek apakah multi-shift
+        if ($jam_kerja->tipe_jam_kerja !== 'multi_shift') {
+            Log::info('Not Multi-Shift', [
+                'nik' => $this->nik,
+                'tipe_jam_kerja' => $jam_kerja->tipe_jam_kerja
+            ]);
+            return collect();
+        }
+
+        // Get shifts
+        $shifts = DB::table('jam_kerja_shifts')
+            ->where('kode_jam_kerja', $jam_kerja->kode_jam_kerja)
+            ->where('is_active', true)
+            ->orderBy('shift_ke')
+            ->get();
+
+        Log::info('Shifts Retrieved', [
+            'nik' => $this->nik,
+            'kode_jam_kerja' => $jam_kerja->kode_jam_kerja,
+            'total_shifts' => $shifts->count(),
+            'shifts' => $shifts->pluck('nama_shift')->toArray()
+        ]);
+
+        return $shifts;
+    }
+
+    /**
+     * ✅ Alias for getShiftsHariIni (backward compatibility)
+     */
+    public function getShifts()
+    {
+        return $this->getShiftsHariIni();
+    }
+
+    /**
+     * ✅ Check if karyawan uses multi-shift (RECOMMENDED)
+     * Returns boolean
+     */
+    public function isMultiShift()
+    {
+        $jam_kerja = $this->getJamKerjaHariIni();
+
+        if (!$jam_kerja) {
+            return false;
+        }
+
+        $is_multi = $jam_kerja->tipe_jam_kerja === 'multi_shift' && $jam_kerja->total_shift >= 2;
+
+        Log::info('Multi-Shift Check', [
+            'nik' => $this->nik,
+            'is_multi_shift' => $is_multi,
+            'tipe_jam_kerja' => $jam_kerja->tipe_jam_kerja,
+            'total_shift' => $jam_kerja->total_shift
+        ]);
+
+        return $is_multi;
+    }
+
+    /**
+     * ✅ Get total shifts count for today
+     */
+    public function getTotalShiftsHariIni()
+    {
+        $shifts = $this->getShiftsHariIni();
+        return $shifts->count();
+    }
+
+    /**
+     * ✅ Check if specific shift exists for this karyawan
+     */
+    public function hasShift($shift_ke)
+    {
+        $shifts = $this->getShiftsHariIni();
+        return $shifts->where('shift_ke', $shift_ke)->count() > 0;
+    }
+
+    /**
+     * ✅ Get specific shift detail
+     */
+    public function getShiftDetail($shift_ke)
+    {
+        $shifts = $this->getShiftsHariIni();
+        return $shifts->where('shift_ke', $shift_ke)->first();
     }
 
     // ========================================
@@ -176,44 +323,95 @@ class Karyawan extends Authenticatable
     // ========================================
 
     /**
-     * Get nama hari dalam bahasa Indonesia
+     * ✅ Get nama hari dalam bahasa Indonesia (IMPROVED)
+     * Support multiple formats and timezone
      */
     private function getNamaHariIni()
     {
-        $hariInggris = date('l');
+        // Gunakan Carbon untuk lebih reliable
+        $hari = Carbon::now('Asia/Jakarta')->locale('id')->isoFormat('dddd');
+
+        // Mapping to database format (lowercase)
         $namaHari = [
-            'Monday' => 'Senin',
-            'Tuesday' => 'Selasa',
-            'Wednesday' => 'Rabu',
-            'Thursday' => 'Kamis',
-            'Friday' => 'Jumat',
-            'Saturday' => 'Sabtu',
-            'Sunday' => 'Ahad'
+            'Senin' => 'senin',
+            'Selasa' => 'selasa',
+            'Rabu' => 'rabu',
+            'Kamis' => 'kamis',
+            'Jumat' => 'jumat',
+            'Sabtu' => 'sabtu',
+            'Minggu' => 'minggu',
+            'Ahad' => 'minggu' // Alternative for Sunday
         ];
 
-        return $namaHari[$hariInggris] ?? 'Senin';
+        $hari_db = $namaHari[$hari] ?? strtolower($hari);
+
+        Log::debug('Hari Conversion', [
+            'hari_indonesia' => $hari,
+            'hari_database' => $hari_db
+        ]);
+
+        return $hari_db;
     }
 
     /**
-     * ✅ Check if karyawan uses multi-shift
+     * ✅ Get nama hari by specific date
      */
-    public function isMultiShift()
+    public function getNamaHariByDate($date)
     {
-        $jamKerja = $this->getCurrentJamKerja();
-        return $jamKerja && $jamKerja->tipe_jam_kerja === 'multi_shift';
+        $hari = Carbon::parse($date)->locale('id')->isoFormat('dddd');
+
+        $namaHari = [
+            'Senin' => 'senin',
+            'Selasa' => 'selasa',
+            'Rabu' => 'rabu',
+            'Kamis' => 'kamis',
+            'Jumat' => 'jumat',
+            'Sabtu' => 'sabtu',
+            'Minggu' => 'minggu',
+            'Ahad' => 'minggu'
+        ];
+
+        return $namaHari[$hari] ?? strtolower($hari);
     }
 
-    /**
-     * ✅ Get all shifts for this karyawan (if multi-shift)
-     */
-    public function getShifts()
-    {
-        $jamKerja = $this->getCurrentJamKerja();
-        
-        if ($jamKerja && $jamKerja->tipe_jam_kerja === 'multi_shift') {
-            return $jamKerja->shifts;
-        }
+    // ========================================
+    // ✅ DEBUGGING METHODS (for development)
+    // ========================================
 
-        return collect();
+    /**
+     * Get comprehensive info about karyawan's shift configuration
+     */
+    public function getShiftInfo()
+    {
+        $jam_kerja = $this->getJamKerjaHariIni();
+        $shifts = $this->getShiftsHariIni();
+
+        return [
+            'nik' => $this->nik,
+            'nama_lengkap' => $this->nama_lengkap,
+            'kode_dept' => $this->kode_dept,
+            'nama_dept' => $this->departemen->nama_dept ?? 'N/A',
+            'kode_cabang' => $this->kode_cabang,
+            'nama_cabang' => $this->cabang->nama_cabang ?? 'N/A',
+            'hari' => $this->getNamaHariIni(),
+            'jam_kerja' => $jam_kerja ? [
+                'kode_jam_kerja' => $jam_kerja->kode_jam_kerja,
+                'nama_jam_kerja' => $jam_kerja->nama_jam_kerja,
+                'tipe_jam_kerja' => $jam_kerja->tipe_jam_kerja,
+                'total_shift' => $jam_kerja->total_shift,
+                'jam_masuk' => $jam_kerja->jam_masuk,
+                'jam_pulang' => $jam_kerja->jam_pulang,
+            ] : null,
+            'is_multi_shift' => $this->isMultiShift(),
+            'total_shifts' => $shifts->count(),
+            'shifts' => $shifts->map(function ($shift) {
+                return [
+                    'shift_ke' => $shift->shift_ke,
+                    'nama_shift' => $shift->nama_shift,
+                    'jam_masuk' => $shift->jam_masuk,
+                    'jam_pulang' => $shift->jam_pulang,
+                ];
+            })->toArray()
+        ];
     }
 }

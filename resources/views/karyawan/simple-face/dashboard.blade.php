@@ -85,6 +85,30 @@
         font-size: 16px;
     }
 
+    /* Shift Type Badge */
+    .shift-type-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(16, 185, 129, 0.3);
+        border: 1px solid rgba(16, 185, 129, 0.5);
+        padding: 6px 12px;
+        border-radius: 10px;
+        font-size: 12px;
+        font-weight: 700;
+        color: white;
+        margin-top: 8px;
+    }
+
+    .shift-type-badge.multi-shift {
+        background: rgba(245, 158, 11, 0.3);
+        border-color: rgba(245, 158, 11, 0.5);
+    }
+
+    .shift-type-badge ion-icon {
+        font-size: 16px;
+    }
+
     .btn-logout {
         width: 44px;
         height: 44px;
@@ -217,6 +241,13 @@
 
     .section-title ion-icon {
         font-size: 24px;
+    }
+
+    .section-subtitle {
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.8);
+        margin-top: 4px;
+        font-weight: 400;
     }
 
     /* ===== SHIFT CARDS ===== */
@@ -470,7 +501,7 @@
         color: #0053C5;
     }
 
-    /* ===== GROUPED PRESENSI ITEM (Multi-Shift in One Card) ===== */
+    /* ===== GROUPED PRESENSI ITEM ===== */
     .presensi-item-grouped {
         background: linear-gradient(135deg, rgba(0, 83, 197, 0.05) 0%, rgba(0, 61, 148, 0.02) 100%);
         border: 1px solid rgba(0, 83, 197, 0.15);
@@ -498,7 +529,6 @@
         font-size: 18px;
     }
 
-    /* Shift rows inside grouped card */
     .shift-row {
         background: white;
         border-radius: 12px;
@@ -781,7 +811,6 @@
         transform: rotate(180deg);
     }
 
-    /* History Detail (Expandable) */
     .history-detail {
         border-top: 1px solid #e2e8f0;
         background: #f8fafc;
@@ -893,7 +922,6 @@
         color: #f59e0b;
     }
 
-    /* Load More Button */
     .btn-load-more {
         display: inline-flex;
         align-items: center;
@@ -943,6 +971,19 @@
                         </div>
                         @endif
                     </div>
+
+                    <!-- ✅ SHIFT TYPE BADGE -->
+                    @if($is_multi_shift)
+                    <div class="shift-type-badge multi-shift">
+                        <ion-icon name="layers"></ion-icon>
+                        <span>Multi-Shift ({{ $total_shifts }} Shift)</span>
+                    </div>
+                    @else
+                    <div class="shift-type-badge">
+                        <ion-icon name="time"></ion-icon>
+                        <span>Shift Reguler</span>
+                    </div>
+                    @endif
                 </div>
             </div>
 
@@ -1024,7 +1065,10 @@
     <!-- MULTI-SHIFT MODE -->
     <h3 class="section-title">
         <ion-icon name="calendar-outline"></ion-icon>
-        Pilih Shift Presensi
+        <div>
+            Pilih Shift Presensi
+            <div class="section-subtitle">Anda memiliki {{ $total_shifts }} shift yang tersedia hari ini</div>
+        </div>
     </h3>
 
     <div class="shifts-grid">
@@ -1067,6 +1111,14 @@
     </div>
     @else
     <!-- REGULAR MODE -->
+    <h3 class="section-title">
+        <ion-icon name="scan-outline"></ion-icon>
+        <div>
+            Presensi Harian
+            <div class="section-subtitle">Satu kali masuk dan pulang per hari</div>
+        </div>
+    </h3>
+
     <a href="{{ route('face-presensi.create') }}" class="action-btn-large">
         <div class="action-icon-large">
             <ion-icon name="scan"></ion-icon>
@@ -1093,7 +1145,7 @@
         </a>
     </div>
 
-    <!-- Presensi Hari Ini (ALL IN ONE CARD) -->
+    <!-- Presensi Hari Ini -->
     <div class="section-card">
         <h3 class="section-card-title">
             <ion-icon name="today-outline"></ion-icon>
@@ -1101,14 +1153,12 @@
         </h3>
 
         @if($presensi_hari_ini->count() > 0)
-        <!-- Single Card Container -->
         <div class="presensi-item-grouped">
             <div class="presensi-date-header">
                 <ion-icon name="calendar"></ion-icon>
                 {{ \Carbon\Carbon::now('Asia/Jakarta')->isoFormat('dddd, D MMMM Y') }}
             </div>
 
-            <!-- All Shifts in One Card -->
             @foreach($presensi_hari_ini as $item)
             <div class="shift-row">
                 <div class="shift-row-header">
@@ -1167,7 +1217,6 @@
 
         @if($histori->count() > 0)
         @php
-        // Group by tanggal
         $grouped_history = $histori->groupBy('tanggal');
         @endphp
 
@@ -1203,15 +1252,18 @@
                     </div>
                 </div>
 
-                <!-- Detail (Hidden by default) -->
                 <div class="history-detail" id="history-{{ $tanggal }}" style="display: none;">
                     @foreach($items as $item)
                     <div class="shift-detail-row">
                         <div class="shift-info-compact">
-                            @if($item->nama_shift)
-                            <div class="shift-label">{{ $item->nama_shift }}</div>
+                            @if($item->shift_ke)
+                            <div class="shift-label">Shift {{ $item->shift_ke }}</div>
                             @else
                             <div class="shift-label regular">Regular</div>
+                            @endif
+
+                            @if($item->nama_shift)
+                            <div class="shift-name-small">{{ $item->nama_shift }}</div>
                             @endif
                         </div>
 
@@ -1253,11 +1305,9 @@
         @endif
     </div>
     @endif
-
 </div>
 
 <script>
-    // Update time setiap menit
     setInterval(function() {
         const now = new Date();
         const hours = String(now.getHours()).padStart(2, '0');
@@ -1265,7 +1315,6 @@
         document.getElementById('current-time').textContent = hours + ':' + minutes;
     }, 60000);
 
-    // Toggle History Detail
     function toggleHistory(tanggal) {
         const detail = document.getElementById('history-' + tanggal);
         const item = detail.closest('.history-item-compact');
@@ -1279,10 +1328,7 @@
         }
     }
 
-    // Load More History (Optional - jika ada pagination)
     function loadMoreHistory() {
-        // Implement AJAX load more if needed
-        // For now, just show alert
         Swal.fire({
             icon: 'info',
             title: 'Fitur Load More',

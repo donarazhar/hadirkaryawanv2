@@ -2,7 +2,20 @@
 
 namespace Database\Seeders;
 
+use Database\Seeders\CabangSeeder;
+use Database\Seeders\DepartemenSeeder;
+use Database\Seeders\FaceDataSeeder;
+use Database\Seeders\JamKerjaSeeder;
+use Database\Seeders\KaryawanSeeder;
+use Database\Seeders\KonfigurasiLokasiSeeder;
+use Database\Seeders\PengajuanCutiSeeder;
+use Database\Seeders\PengajuanIzinSeeder;
+use Database\Seeders\PresensiFaceSeeder;
+use Database\Seeders\PresensiSeeder;
+use Database\Seeders\SetupJamKerjaKaryawanSeeder;
+use Database\Seeders\UserSeeder;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class DatabaseSeeder extends Seeder
 {
@@ -88,10 +101,10 @@ class DatabaseSeeder extends Seeder
         // STEP 9: PRESENSI DATA
         // ========================================
         $this->command->info("\n📊 STEP 9: Seeding Presensi...");
-        $this->call([
-            PresensiSeeder::class,            // Presensi regular (14 hari)
-            PresensiFaceSeeder::class,        // Presensi face (multi-shift + regular, 7 hari)
-        ]);
+        // $this->call([
+        //     PresensiSeeder::class,            // Presensi regular (14 hari)
+        //     PresensiFaceSeeder::class,        // Presensi face (multi-shift + regular, 7 hari)
+        // ]);
 
         // ========================================
         // SUMMARY

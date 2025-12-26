@@ -2,20 +2,20 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\RekapPresensiFaceExport;
 use App\Http\Controllers\Controller;
-use App\Models\PresensiFace;
-use App\Models\Karyawan;
 use App\Models\Cabang;
 use App\Models\Departemen;
-use App\Models\JamKerja;
+use App\Models\Karyawan;
+use App\Models\PresensiFace;
+use Barryvdh\DomPDF\Facade\Pdf as PDF;
+use Carbon\Carbon;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Carbon\Carbon;
-use Barryvdh\DomPDF\Facade\Pdf as PDF;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\PresensiFaceExport;
-use App\Exports\RekapPresensiFaceExport;
 
 class PresensiFaceAdminController extends Controller
 {
@@ -67,15 +67,15 @@ class PresensiFaceAdminController extends Controller
         // ✅ FILTER BY SHIFT TYPE
         if ($request->filled('shift_type')) {
             if ($request->shift_type === 'multi') {
-                $query->multiShift();
+                $query->whereNotNull('shift_ke');
             } elseif ($request->shift_type === 'regular') {
-                $query->regularShift();
+                $query->whereNull('shift_ke');
             }
         }
 
         // ✅ FILTER BY SPECIFIC SHIFT
         if ($request->filled('shift_ke')) {
-            $query->byShift($request->shift_ke);
+            $query->where('shift_ke', $request->shift_ke);
         }
 
         // Sorting
@@ -98,219 +98,557 @@ class PresensiFaceAdminController extends Controller
             ->orderBy('shift_ke')
             ->get();
 
+        // ✅ NEW: Get all karyawan for export modal
+        $karyawan = Karyawan::with(['departemen', 'cabang'])
+            ->orderBy('nama_lengkap')
+            ->get();
+
         return view('admin.presensi-face.index', compact(
             'presensi',
             'cabang',
             'departemen',
-            'availableShifts'
+            'availableShifts',
+            'karyawan'
         ));
     }
 
     /**
-     * Show the form for creating new presensi
-     * Support: Shift selection for multi-shift
+     * ✅ FIXED: Create form - Load karyawan with jam_kerja
      */
     public function create()
     {
-        $karyawan = Karyawan::with(['cabang', 'departemen', 'jamKerja.shifts'])
-            ->orderBy('nama_lengkap')
-            ->get();
+        try {
+            // Load all karyawan
+            $karyawan = Karyawan::with(['departemen', 'cabang'])
+                ->orderBy('nama_lengkap')
+                ->get();
 
-        return view('admin.presensi-face.create', compact('karyawan'));
+            // Attach jam_kerja info to each karyawan
+            $karyawan = $karyawan->map(function ($k) {
+                // Get jam kerja untuk hari ini
+                $jam_kerja = $k->getJamKerjaHariIni();
+
+                if ($jam_kerja) {
+                    $k->jamKerja = (object)[
+                        'kode_jam_kerja' => $jam_kerja->kode_jam_kerja,
+                        'nama_jam_kerja' => $jam_kerja->nama_jam_kerja,
+                        'tipe_jam_kerja' => $jam_kerja->tipe_jam_kerja,
+                        'total_shift' => $jam_kerja->total_shift ?? 1,
+                        'is_multi_shift' => ($jam_kerja->tipe_jam_kerja === 'multi_shift' && ($jam_kerja->total_shift ?? 0) >= 2),
+                        'shifts' => []
+                    ];
+
+                    // Get shifts if multi-shift
+                    if ($k->jamKerja->is_multi_shift) {
+                        $shifts = DB::table('jam_kerja_shifts')
+                            ->where('kode_jam_kerja', $jam_kerja->kode_jam_kerja)
+                            ->where('is_active', true)
+                            ->orderBy('shift_ke')
+                            ->get();
+
+                        $k->jamKerja->shifts = $shifts;
+
+                        Log::info('Multi-shift loaded for karyawan', [
+                            'nik' => $k->nik,
+                            'nama' => $k->nama_lengkap,
+                            'jam_kerja' => $jam_kerja->kode_jam_kerja,
+                            'total_shifts' => $shifts->count()
+                        ]);
+                    }
+                } else {
+                    $k->jamKerja = null;
+
+                    Log::warning('No jam_kerja found for karyawan', [
+                        'nik' => $k->nik,
+                        'nama' => $k->nama_lengkap
+                    ]);
+                }
+
+                return $k;
+            });
+
+            Log::info('Create form loaded', [
+                'total_karyawan' => $karyawan->count(),
+                'multi_shift_karyawan' => $karyawan->filter(fn($k) => $k->jamKerja && $k->jamKerja->is_multi_shift)->count()
+            ]);
+
+            return view('admin.presensi-face.create', compact('karyawan'));
+        } catch (Exception $e) {
+            Log::error('Presensi Face Create Form Error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            return redirect()->route('panel.presensi-face.index')
+                ->with('error', 'Terjadi kesalahan saat memuat form: ' . $e->getMessage());
+        }
     }
 
     /**
-     * Store a newly created presensi
-     * Support: Multi-shift validation
+     * ✅ FIXED: Store - Handle both regular and multi-shift dengan validasi lengkap
      */
     public function store(Request $request)
     {
-        // Validation
-        $rules = [
-            'nik' => 'required|exists:karyawan,nik',
-            'tanggal' => 'required|date',
-            'jam_masuk' => 'nullable|date_format:H:i',
-            'jam_pulang' => 'nullable|date_format:H:i',
-            'lokasi' => 'nullable|string',
-            'status' => 'required|in:verified,failed',
-            'similarity_score' => 'nullable|numeric|min:0|max:1',
-            'foto' => 'nullable|image|max:2048',
-            'keterangan' => 'nullable|string',
-        ];
-
-        // ✅ MULTI-SHIFT VALIDATION
-        $karyawan = Karyawan::with('jamKerja')->find($request->nik);
-
-        if ($karyawan && $karyawan->jamKerja && $karyawan->jamKerja->isMultiShift()) {
-            // Multi-shift: shift_ke & nama_shift wajib
-            $rules['shift_ke'] = 'required|integer|min:1|max:' . $karyawan->jamKerja->total_shift;
-            $rules['nama_shift'] = 'required|string|max:50';
-
-            // Validate shift uniqueness (NIK + Tanggal + Shift)
-            $rules['shift_ke'] = [
-                'required',
-                'integer',
-                function ($attribute, $value, $fail) use ($request) {
-                    $exists = PresensiFace::where('nik', $request->nik)
-                        ->where('tanggal', $request->tanggal)
-                        ->where('shift_ke', $value)
-                        ->exists();
-
-                    if ($exists) {
-                        $fail('Presensi untuk shift ini sudah ada pada tanggal tersebut.');
-                    }
-                },
-            ];
-        } else {
-            // Regular: shift nullable
-            $rules['shift_ke'] = 'nullable';
-            $rules['nama_shift'] = 'nullable';
-
-            // Validate uniqueness (NIK + Tanggal only)
-            $exists = PresensiFace::where('nik', $request->nik)
-                ->where('tanggal', $request->tanggal)
-                ->whereNull('shift_ke')
-                ->exists();
-
-            if ($exists) {
-                return back()->withErrors(['tanggal' => 'Presensi regular sudah ada pada tanggal tersebut.'])
-                    ->withInput();
-            }
-        }
-
-        $validated = $request->validate($rules);
+        Log::info('=== STORE REQUEST STARTED ===', [
+            'all_data' => $request->all()
+        ]);
 
         try {
-            DB::beginTransaction();
+            // Base validation rules
+            $rules = [
+                'nik' => 'required|exists:karyawan,nik',
+                'tanggal' => 'required|date',
+                'jam_masuk' => 'nullable|date_format:H:i',
+                'jam_pulang' => 'nullable|date_format:H:i',
+                'status' => 'required|in:verified,failed',
+                'lokasi' => 'nullable|string'
+            ];
 
-            // Handle foto upload
-            if ($request->hasFile('foto')) {
-                $fotoPath = $request->file('foto')->store('uploads/presensi-face', 'public');
-                $validated['foto'] = $fotoPath;
+            // ✅ CRITICAL FIX: Get karyawan and check jam_kerja for the SELECTED DATE
+            $karyawan = Karyawan::find($request->nik);
+
+            if (!$karyawan) {
+                Log::error('Karyawan not found', ['nik' => $request->nik]);
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Karyawan tidak ditemukan.');
             }
 
-            // Create presensi
-            PresensiFace::create($validated);
+            // ✅ Get jam_kerja based on the selected date (not today)
+            $namaHari = Carbon::parse($request->tanggal)->locale('id')->isoFormat('dddd');
+            $namaHariMap = [
+                'Senin' => 'senin',
+                'Selasa' => 'selasa',
+                'Rabu' => 'rabu',
+                'Kamis' => 'kamis',
+                'Jumat' => 'jumat',
+                'Sabtu' => 'sabtu',
+                'Minggu' => 'minggu',
+                'Ahad' => 'minggu'
+            ];
+            $namaHariLowercase = $namaHariMap[$namaHari] ?? strtolower($namaHari);
+
+            Log::info('Getting jam_kerja for date', [
+                'tanggal' => $request->tanggal,
+                'hari' => $namaHari,
+                'hari_lowercase' => $namaHariLowercase
+            ]);
+
+            // Get jam_kerja using the correct method
+            $jam_kerja = DB::table('konfigurasi_jk_dept as kjd')
+                ->join('konfigurasi_jk_dept_detail as kjdd', 'kjd.kode_jk_dept', '=', 'kjdd.kode_jk_dept')
+                ->join('jam_kerja as jk', 'kjdd.kode_jam_kerja', '=', 'jk.kode_jam_kerja')
+                ->where('kjd.kode_dept', $karyawan->kode_dept)
+                ->where('kjd.kode_cabang', $karyawan->kode_cabang)
+                ->where('kjdd.hari', $namaHariLowercase)
+                ->select('jk.*')
+                ->first();
+
+            Log::info('Jam Kerja Check Result', [
+                'jam_kerja_found' => $jam_kerja ? 'YES' : 'NO',
+                'kode_jam_kerja' => $jam_kerja ? $jam_kerja->kode_jam_kerja : 'NULL',
+                'tipe_jam_kerja' => $jam_kerja ? $jam_kerja->tipe_jam_kerja : 'NULL',
+                'total_shift' => $jam_kerja ? $jam_kerja->total_shift : 'NULL'
+            ]);
+
+            // ✅ Add shift validation if multi-shift
+            $isMultiShift = false;
+            if ($jam_kerja && $jam_kerja->tipe_jam_kerja === 'multi_shift') {
+                $rules['shift_ke'] = 'required|integer|min:1';
+                $rules['nama_shift'] = 'required|string|max:50';
+                $isMultiShift = true;
+
+                Log::info('Multi-shift detected, shift validation added');
+            } else {
+                Log::info('Regular shift detected or no jam_kerja');
+            }
+
+            // Validate request
+            $validated = $request->validate($rules);
+
+            Log::info('Validation passed', [
+                'validated_data' => $validated
+            ]);
+
+            DB::beginTransaction();
+
+            // ✅ Prepare data
+            $data = [
+                'nik' => $validated['nik'],
+                'tanggal' => $validated['tanggal'],
+                'jam_masuk' => $validated['jam_masuk'] ?? null,
+                'jam_pulang' => $validated['jam_pulang'] ?? null,
+                'status' => $validated['status'],
+                'lokasi' => $validated['lokasi'] ?? null,
+                'shift_ke' => isset($validated['shift_ke']) ? $validated['shift_ke'] : null,
+                'nama_shift' => isset($validated['nama_shift']) ? $validated['nama_shift'] : null,
+            ];
+
+            Log::info('Data prepared for insert', $data);
+
+            // ✅ Check duplicate
+            if ($data['shift_ke']) {
+                // Check duplicate for multi-shift (same NIK, date, and shift)
+                $exists = PresensiFace::where('nik', $data['nik'])
+                    ->where('tanggal', $data['tanggal'])
+                    ->where('shift_ke', $data['shift_ke'])
+                    ->exists();
+
+                if ($exists) {
+                    DB::rollBack();
+                    Log::warning('Duplicate multi-shift entry detected', $data);
+                    return redirect()->back()
+                        ->withInput()
+                        ->with('error', 'Data presensi untuk Shift ' . $data['shift_ke'] . ' (' . $data['nama_shift'] . ') sudah ada pada tanggal tersebut.');
+                }
+            } else {
+                // Check duplicate for regular (same NIK and date, shift_ke is NULL)
+                $exists = PresensiFace::where('nik', $data['nik'])
+                    ->where('tanggal', $data['tanggal'])
+                    ->whereNull('shift_ke')
+                    ->exists();
+
+                if ($exists) {
+                    DB::rollBack();
+                    Log::warning('Duplicate regular entry detected', $data);
+                    return redirect()->back()
+                        ->withInput()
+                        ->with('error', 'Data presensi regular sudah ada pada tanggal tersebut.');
+                }
+            }
+
+            // ✅ Create presensi
+            $presensi = PresensiFace::create($data);
 
             DB::commit();
+
+            Log::info('=== PRESENSI CREATED SUCCESSFULLY ===', [
+                'id' => $presensi->id,
+                'nik' => $data['nik'],
+                'tanggal' => $data['tanggal'],
+                'shift_ke' => $data['shift_ke'] ?? 'regular',
+                'nama_shift' => $data['nama_shift'] ?? '-'
+            ]);
 
             return redirect()->route('panel.presensi-face.index')
                 ->with('success', 'Data presensi berhasil ditambahkan.');
-        } catch (\Exception $e) {
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Validation failed', [
+                'errors' => $e->errors()
+            ]);
+            return redirect()->back()
+                ->withInput()
+                ->withErrors($e->errors());
+        } catch (Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['error' => 'Gagal menyimpan data: ' . $e->getMessage()])
-                ->withInput();
+            Log::error('Store failed with exception', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
 
     /**
-     * Display the specified presensi
-     * Support: Multi-shift info
+     * Display the specified resource.
      */
-    public function show($id)
+    public function show(string $id)
     {
-        $presensi = PresensiFace::with([
-            'karyawan' => function ($q) {
-                $q->with(['cabang', 'departemen', 'jamKerja.shifts']);
-            }
-        ])->findOrFail($id);
+        try {
+            $presensi = PresensiFace::with(['karyawan.departemen', 'karyawan.cabang'])
+                ->findOrFail($id);
 
-        // ✅ Get shift detail if multi-shift
-        $shiftDetail = null;
-        if ($presensi->isMultiShift() && $presensi->karyawan->jamKerja) {
-            $shiftDetail = $presensi->karyawan->jamKerja->shifts()
-                ->where('shift_ke', $presensi->shift_ke)
+            // Get jam_kerja info for the presensi date
+            $namaHari = $presensi->tanggal->locale('id')->isoFormat('dddd');
+            $namaHariMap = [
+                'Senin' => 'senin',
+                'Selasa' => 'selasa',
+                'Rabu' => 'rabu',
+                'Kamis' => 'kamis',
+                'Jumat' => 'jumat',
+                'Sabtu' => 'sabtu',
+                'Minggu' => 'minggu',
+                'Ahad' => 'minggu'
+            ];
+            $namaHariLowercase = $namaHariMap[$namaHari] ?? strtolower($namaHari);
+
+            $jam_kerja = DB::table('konfigurasi_jk_dept as kjd')
+                ->join('konfigurasi_jk_dept_detail as kjdd', 'kjd.kode_jk_dept', '=', 'kjdd.kode_jk_dept')
+                ->join('jam_kerja as jk', 'kjdd.kode_jam_kerja', '=', 'jk.kode_jam_kerja')
+                ->where('kjd.kode_dept', $presensi->karyawan->kode_dept)
+                ->where('kjd.kode_cabang', $presensi->karyawan->kode_cabang)
+                ->where('kjdd.hari', $namaHariLowercase)
+                ->select('jk.*')
                 ->first();
-        }
 
-        return view('admin.presensi-face.show', compact('presensi', 'shiftDetail'));
-    }
-
-    /**
-     * Show the form for editing
-     * Support: Shift editing
-     */
-    public function edit($id)
-    {
-        $presensi = PresensiFace::with([
-            'karyawan' => function ($q) {
-                $q->with(['cabang', 'departemen', 'jamKerja.shifts']);
+            // Get shift detail if multi-shift
+            $shift_detail = null;
+            if ($presensi->shift_ke && $jam_kerja) {
+                $shift_detail = DB::table('jam_kerja_shifts')
+                    ->where('kode_jam_kerja', $jam_kerja->kode_jam_kerja)
+                    ->where('shift_ke', $presensi->shift_ke)
+                    ->first();
             }
-        ])->findOrFail($id);
 
-        return view('admin.presensi-face.edit', compact('presensi'));
+            return view('admin.presensi-face.show', compact('presensi', 'jam_kerja', 'shift_detail'));
+        } catch (Exception $e) {
+            Log::error('Presensi Face Show Error: ' . $e->getMessage());
+            return redirect()->route('panel.presensi-face.index')
+                ->with('error', 'Data tidak ditemukan.');
+        }
     }
 
     /**
-     * Update the specified presensi
-     * Support: Multi-shift update
+     * ✅ FIXED: Edit form - Load shift info correctly
      */
-    public function update(Request $request, $id)
+    public function edit(string $id)
     {
-        $presensi = PresensiFace::findOrFail($id);
+        try {
+            $presensi = PresensiFace::with(['karyawan.departemen', 'karyawan.cabang'])
+                ->findOrFail($id);
 
-        // Validation
-        $rules = [
-            'tanggal' => 'required|date',
-            'jam_masuk' => 'nullable|date_format:H:i',
-            'jam_pulang' => 'nullable|date_format:H:i',
-            'lokasi' => 'nullable|string',
-            'status' => 'required|in:verified,failed',
-            'similarity_score' => 'nullable|numeric|min:0|max:1',
-            'foto' => 'nullable|image|max:2048',
-            'keterangan' => 'nullable|string',
-        ];
+            Log::info('=== EDIT FORM LOADING ===', [
+                'id' => $id,
+                'nik' => $presensi->nik,
+                'tanggal' => $presensi->tanggal,
+                'shift_ke' => $presensi->shift_ke,
+                'nama_shift' => $presensi->nama_shift
+            ]);
 
-        // ✅ MULTI-SHIFT UPDATE VALIDATION
-        $karyawan = Karyawan::with('jamKerja')->find($presensi->nik);
+            // ✅ Get jam_kerja for the presensi date
+            $namaHari = $presensi->tanggal->locale('id')->isoFormat('dddd');
+            $namaHariMap = [
+                'Senin' => 'senin',
+                'Selasa' => 'selasa',
+                'Rabu' => 'rabu',
+                'Kamis' => 'kamis',
+                'Jumat' => 'jumat',
+                'Sabtu' => 'sabtu',
+                'Minggu' => 'minggu',
+                'Ahad' => 'minggu'
+            ];
+            $namaHariLowercase = $namaHariMap[$namaHari] ?? strtolower($namaHari);
 
-        if ($karyawan && $karyawan->jamKerja && $karyawan->jamKerja->isMultiShift()) {
-            $rules['shift_ke'] = [
-                'required',
-                'integer',
-                function ($attribute, $value, $fail) use ($request, $presensi) {
-                    // Check uniqueness excluding current record
+            $jam_kerja = DB::table('konfigurasi_jk_dept as kjd')
+                ->join('konfigurasi_jk_dept_detail as kjdd', 'kjd.kode_jk_dept', '=', 'kjdd.kode_jk_dept')
+                ->join('jam_kerja as jk', 'kjdd.kode_jam_kerja', '=', 'jk.kode_jam_kerja')
+                ->where('kjd.kode_dept', $presensi->karyawan->kode_dept)
+                ->where('kjd.kode_cabang', $presensi->karyawan->kode_cabang)
+                ->where('kjdd.hari', $namaHariLowercase)
+                ->select('jk.*')
+                ->first();
+
+            Log::info('Jam Kerja for Edit', [
+                'jam_kerja_found' => $jam_kerja ? 'YES' : 'NO',
+                'kode_jam_kerja' => $jam_kerja ? $jam_kerja->kode_jam_kerja : 'NULL',
+                'tipe_jam_kerja' => $jam_kerja ? $jam_kerja->tipe_jam_kerja : 'NULL'
+            ]);
+
+            // ✅ Attach jam_kerja dengan shifts
+            if ($jam_kerja && $jam_kerja->tipe_jam_kerja === 'multi_shift') {
+                $shifts = DB::table('jam_kerja_shifts')
+                    ->where('kode_jam_kerja', $jam_kerja->kode_jam_kerja)
+                    ->where('is_active', true)
+                    ->orderBy('shift_ke')
+                    ->get();
+
+                $presensi->karyawan->jamKerja = (object)[
+                    'kode_jam_kerja' => $jam_kerja->kode_jam_kerja,
+                    'nama_jam_kerja' => $jam_kerja->nama_jam_kerja,
+                    'tipe_jam_kerja' => $jam_kerja->tipe_jam_kerja,
+                    'total_shift' => $jam_kerja->total_shift ?? $shifts->count(),
+                    'shifts' => $shifts
+                ];
+
+                Log::info('Multi-Shift Data Attached for Edit', [
+                    'total_shifts' => $shifts->count(),
+                    'shifts' => $shifts->pluck('nama_shift')->toArray()
+                ]);
+            } else {
+                $presensi->karyawan->jamKerja = null;
+                Log::info('Regular shift or no jam_kerja for edit');
+            }
+
+            return view('admin.presensi-face.edit', compact('presensi'));
+        } catch (Exception $e) {
+            Log::error('Presensi Face Edit Form Error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            return redirect()->route('panel.presensi-face.index')
+                ->with('error', 'Data tidak ditemukan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * ✅ FIXED: Update - Handle both regular and multi-shift dengan validasi lengkap
+     */
+    public function update(Request $request, string $id)
+    {
+        Log::info('=== UPDATE REQUEST STARTED ===', [
+            'id' => $id,
+            'all_data' => $request->all()
+        ]);
+
+        try {
+            $presensi = PresensiFace::findOrFail($id);
+
+            // Base validation rules
+            $rules = [
+                'tanggal' => 'required|date',
+                'jam_masuk' => 'nullable|date_format:H:i',
+                'jam_pulang' => 'nullable|date_format:H:i',
+                'status' => 'required|in:verified,failed',
+                'lokasi' => 'nullable|string'
+            ];
+
+            // ✅ Get karyawan and check jam_kerja for the NEW DATE
+            $karyawan = Karyawan::find($presensi->nik);
+
+            if (!$karyawan) {
+                Log::error('Karyawan not found for update', ['nik' => $presensi->nik]);
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Karyawan tidak ditemukan.');
+            }
+
+            // ✅ Get jam_kerja based on the selected date
+            $namaHari = Carbon::parse($request->tanggal)->locale('id')->isoFormat('dddd');
+            $namaHariMap = [
+                'Senin' => 'senin',
+                'Selasa' => 'selasa',
+                'Rabu' => 'rabu',
+                'Kamis' => 'kamis',
+                'Jumat' => 'jumat',
+                'Sabtu' => 'sabtu',
+                'Minggu' => 'minggu',
+                'Ahad' => 'minggu'
+            ];
+            $namaHariLowercase = $namaHariMap[$namaHari] ?? strtolower($namaHari);
+
+            $jam_kerja = DB::table('konfigurasi_jk_dept as kjd')
+                ->join('konfigurasi_jk_dept_detail as kjdd', 'kjd.kode_jk_dept', '=', 'kjdd.kode_jk_dept')
+                ->join('jam_kerja as jk', 'kjdd.kode_jam_kerja', '=', 'jk.kode_jam_kerja')
+                ->where('kjd.kode_dept', $karyawan->kode_dept)
+                ->where('kjd.kode_cabang', $karyawan->kode_cabang)
+                ->where('kjdd.hari', $namaHariLowercase)
+                ->select('jk.*')
+                ->first();
+
+            Log::info('Jam Kerja Check for Update', [
+                'new_tanggal' => $request->tanggal,
+                'hari' => $namaHari,
+                'jam_kerja_found' => $jam_kerja ? 'YES' : 'NO',
+                'tipe' => $jam_kerja ? $jam_kerja->tipe_jam_kerja : 'NULL'
+            ]);
+
+            // ✅ Add shift validation if multi-shift
+            if ($jam_kerja && $jam_kerja->tipe_jam_kerja === 'multi_shift') {
+                $rules['shift_ke'] = 'required|integer|min:1';
+                $rules['nama_shift'] = 'required|string|max:50';
+                Log::info('Multi-shift validation added for update');
+            }
+
+            $validated = $request->validate($rules);
+
+            Log::info('Validation passed for update', [
+                'validated_data' => $validated
+            ]);
+
+            DB::beginTransaction();
+
+            // ✅ Check duplicate on update (if date or shift changed)
+            $dateChanged = $request->tanggal != $presensi->tanggal->format('Y-m-d');
+            $shiftChanged = ($request->shift_ke ?? null) != $presensi->shift_ke;
+
+            if ($dateChanged || $shiftChanged) {
+                Log::info('Checking duplicate (date or shift changed)', [
+                    'date_changed' => $dateChanged,
+                    'shift_changed' => $shiftChanged,
+                    'old_tanggal' => $presensi->tanggal->format('Y-m-d'),
+                    'new_tanggal' => $request->tanggal,
+                    'old_shift_ke' => $presensi->shift_ke,
+                    'new_shift_ke' => $request->shift_ke ?? null
+                ]);
+
+                if (isset($validated['shift_ke'])) {
                     $exists = PresensiFace::where('nik', $presensi->nik)
-                        ->where('tanggal', $request->tanggal)
-                        ->where('shift_ke', $value)
-                        ->where('id', '!=', $presensi->id)
+                        ->where('tanggal', $validated['tanggal'])
+                        ->where('shift_ke', $validated['shift_ke'])
+                        ->where('id', '!=', $id)
                         ->exists();
 
                     if ($exists) {
-                        $fail('Presensi untuk shift ini sudah ada pada tanggal tersebut.');
+                        DB::rollBack();
+                        Log::warning('Duplicate multi-shift entry on update', [
+                            'nik' => $presensi->nik,
+                            'tanggal' => $validated['tanggal'],
+                            'shift_ke' => $validated['shift_ke']
+                        ]);
+                        return redirect()->back()
+                            ->withInput()
+                            ->with('error', 'Data presensi untuk Shift ' . $validated['shift_ke'] . ' sudah ada pada tanggal tersebut.');
                     }
-                },
-            ];
-            $rules['nama_shift'] = 'required|string|max:50';
-        }
+                } else {
+                    $exists = PresensiFace::where('nik', $presensi->nik)
+                        ->where('tanggal', $validated['tanggal'])
+                        ->whereNull('shift_ke')
+                        ->where('id', '!=', $id)
+                        ->exists();
 
-        $validated = $request->validate($rules);
-
-        try {
-            DB::beginTransaction();
-
-            // Handle foto upload
-            if ($request->hasFile('foto')) {
-                // Delete old foto
-                if ($presensi->foto && Storage::disk('public')->exists($presensi->foto)) {
-                    Storage::disk('public')->delete($presensi->foto);
+                    if ($exists) {
+                        DB::rollBack();
+                        Log::warning('Duplicate regular entry on update', [
+                            'nik' => $presensi->nik,
+                            'tanggal' => $validated['tanggal']
+                        ]);
+                        return redirect()->back()
+                            ->withInput()
+                            ->with('error', 'Data presensi regular sudah ada pada tanggal tersebut.');
+                    }
                 }
-
-                $fotoPath = $request->file('foto')->store('uploads/presensi-face', 'public');
-                $validated['foto'] = $fotoPath;
             }
 
-            // Update presensi
-            $presensi->update($validated);
+            // ✅ Update data
+            $updateData = [
+                'tanggal' => $validated['tanggal'],
+                'jam_masuk' => $validated['jam_masuk'] ?? $presensi->jam_masuk,
+                'jam_pulang' => $validated['jam_pulang'] ?? $presensi->jam_pulang,
+                'status' => $validated['status'],
+                'lokasi' => $validated['lokasi'] ?? $presensi->lokasi,
+                'shift_ke' => isset($validated['shift_ke']) ? $validated['shift_ke'] : null,
+                'nama_shift' => isset($validated['nama_shift']) ? $validated['nama_shift'] : null,
+            ];
+
+            $presensi->update($updateData);
 
             DB::commit();
 
+            Log::info('=== PRESENSI UPDATED SUCCESSFULLY ===', [
+                'id' => $id,
+                'nik' => $presensi->nik,
+                'tanggal' => $updateData['tanggal'],
+                'shift_ke' => $updateData['shift_ke'] ?? 'regular',
+                'nama_shift' => $updateData['nama_shift'] ?? '-'
+            ]);
+
             return redirect()->route('panel.presensi-face.index')
                 ->with('success', 'Data presensi berhasil diupdate.');
-        } catch (\Exception $e) {
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Validation failed on update', [
+                'errors' => $e->errors()
+            ]);
+            return redirect()->back()
+                ->withInput()
+                ->withErrors($e->errors());
+        } catch (Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['error' => 'Gagal update data: ' . $e->getMessage()])
-                ->withInput();
+            Log::error('Update failed with exception', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
 
@@ -322,17 +660,30 @@ class PresensiFaceAdminController extends Controller
         try {
             $presensi = PresensiFace::findOrFail($id);
 
+            Log::info('Deleting presensi', [
+                'id' => $id,
+                'nik' => $presensi->nik,
+                'tanggal' => $presensi->tanggal
+            ]);
+
             // Delete foto if exists
             if ($presensi->foto && Storage::disk('public')->exists($presensi->foto)) {
                 Storage::disk('public')->delete($presensi->foto);
+                Log::info('Foto deleted', ['path' => $presensi->foto]);
             }
 
             $presensi->delete();
 
+            Log::info('Presensi deleted successfully', ['id' => $id]);
+
             return redirect()->route('panel.presensi-face.index')
                 ->with('success', 'Data presensi berhasil dihapus.');
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Gagal menghapus data: ' . $e->getMessage()]);
+            Log::error('Delete failed', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->with('error', 'Gagal menghapus data: ' . $e->getMessage());
         }
     }
 
@@ -409,7 +760,7 @@ class PresensiFaceAdminController extends Controller
         // Get filter options
         $cabang = \App\Models\Cabang::all();
         $departemen = \App\Models\Departemen::all();
-        $availableShifts = \DB::table('jam_kerja_shifts')
+        $availableShifts = DB::table('jam_kerja_shifts')
             ->where('is_active', true)
             ->orderBy('shift_ke')
             ->get();
@@ -503,145 +854,238 @@ class PresensiFaceAdminController extends Controller
     }
 
     public function exportRekap(Request $request)
-{
-    $bulan = $request->get('bulan', date('m'));
-    $tahun = $request->get('tahun', date('Y'));
-
-    $namabulan = [
-        '', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-    ];
-
-    // ✅ BUILD QUERY WITH FILTERS
-    $query = DB::table('presensi_face as pf')
-        ->join('karyawan as k', 'pf.nik', '=', 'k.nik')
-        ->leftJoin('departemen as d', 'k.kode_dept', '=', 'd.kode_dept')
-        ->leftJoin('cabang as c', 'k.kode_cabang', '=', 'c.kode_cabang')
-        ->select(
-            'k.nik',
-            'k.nama_lengkap',
-            'k.jabatan',
-            'd.nama_dept',
-            'c.nama_cabang',
-            DB::raw('COUNT(CASE WHEN pf.shift_ke IS NULL THEN 1 END) as total_hadir_regular'),
-            DB::raw('COUNT(CASE WHEN pf.shift_ke IS NOT NULL THEN 1 END) as total_hadir_multi'),
-            DB::raw('COUNT(*) as total_hadir'),
-            DB::raw('SUM(CASE WHEN pf.status = "verified" THEN 1 ELSE 0 END) as total_verified'),
-            DB::raw('SUM(CASE WHEN pf.status = "failed" THEN 1 ELSE 0 END) as total_failed')
-        )
-        ->whereYear('pf.tanggal', $tahun)
-        ->whereMonth('pf.tanggal', $bulan);
-
-    // ✅ APPLY FILTERS (same as rekap)
-    if ($request->filled('kode_cabang')) {
-        $query->where('k.kode_cabang', $request->kode_cabang);
-    }
-
-    if ($request->filled('kode_dept')) {
-        $query->where('k.kode_dept', $request->kode_dept);
-    }
-
-    // ✅ GET FILTERED DATA
-    $rekap = $query
-        ->groupBy('k.nik', 'k.nama_lengkap', 'k.jabatan', 'd.nama_dept', 'c.nama_cabang')
-        ->orderBy('k.nama_lengkap')
-        ->get();
-
-    // ✅ FILENAME WITH FILTER INFO
-    $filename = 'Rekap_Presensi_Face_' . $namabulan[$bulan] . '_' . $tahun;
-    
-    if ($request->filled('kode_cabang')) {
-        $filename .= '_' . $request->kode_cabang;
-    }
-    
-    if ($request->filled('kode_dept')) {
-        $filename .= '_' . $request->kode_dept;
-    }
-    
-    $filename .= '.xlsx';
-
-    // Export (Excel or CSV)
-    return Excel::download(new RekapPresensiFaceExport($rekap, $bulan, $tahun), $filename);
-}
-
-    /**
-     * Export data presensi to PDF/Excel
-     * Support: Multi-shift columns in export
-     */
-    public function exportData(Request $request)
     {
-        $query = PresensiFace::with([
-            'karyawan' => function ($q) {
-                $q->with(['cabang', 'departemen']);
-            }
-        ]);
+        $bulan = $request->get('bulan', date('m'));
+        $tahun = $request->get('tahun', date('Y'));
 
-        // Apply all filters
-        if ($request->filled('tanggal_awal')) {
-            $query->where('tanggal', '>=', $request->tanggal_awal);
-        }
+        $namabulan = [
+            '',
+            'Januari',
+            'Februari',
+            'Maret',
+            'April',
+            'Mei',
+            'Juni',
+            'Juli',
+            'Agustus',
+            'September',
+            'Oktober',
+            'November',
+            'Desember'
+        ];
 
-        if ($request->filled('tanggal_akhir')) {
-            $query->where('tanggal', '<=', $request->tanggal_akhir);
-        }
+        // ✅ BUILD QUERY WITH FILTERS
+        $query = DB::table('presensi_face as pf')
+            ->join('karyawan as k', 'pf.nik', '=', 'k.nik')
+            ->leftJoin('departemen as d', 'k.kode_dept', '=', 'd.kode_dept')
+            ->leftJoin('cabang as c', 'k.kode_cabang', '=', 'c.kode_cabang')
+            ->select(
+                'k.nik',
+                'k.nama_lengkap',
+                'k.jabatan',
+                'd.nama_dept',
+                'c.nama_cabang',
+                DB::raw('COUNT(CASE WHEN pf.shift_ke IS NULL THEN 1 END) as total_hadir_regular'),
+                DB::raw('COUNT(CASE WHEN pf.shift_ke IS NOT NULL THEN 1 END) as total_hadir_multi'),
+                DB::raw('COUNT(*) as total_hadir'),
+                DB::raw('SUM(CASE WHEN pf.status = "verified" THEN 1 ELSE 0 END) as total_verified'),
+                DB::raw('SUM(CASE WHEN pf.status = "failed" THEN 1 ELSE 0 END) as total_failed')
+            )
+            ->whereYear('pf.tanggal', $tahun)
+            ->whereMonth('pf.tanggal', $bulan);
 
+        // ✅ APPLY FILTERS (same as rekap)
         if ($request->filled('kode_cabang')) {
-            $query->whereHas('karyawan', function ($q) use ($request) {
-                $q->where('kode_cabang', $request->kode_cabang);
-            });
+            $query->where('k.kode_cabang', $request->kode_cabang);
         }
 
         if ($request->filled('kode_dept')) {
-            $query->whereHas('karyawan', function ($q) use ($request) {
-                $q->where('kode_dept', $request->kode_dept);
-            });
+            $query->where('k.kode_dept', $request->kode_dept);
         }
 
-        if ($request->filled('nik')) {
-            $query->where('nik', 'LIKE', '%' . $request->nik . '%');
+        // ✅ GET FILTERED DATA
+        $rekap = $query
+            ->groupBy('k.nik', 'k.nama_lengkap', 'k.jabatan', 'd.nama_dept', 'c.nama_cabang')
+            ->orderBy('k.nama_lengkap')
+            ->get();
+
+        // ✅ FILENAME WITH FILTER INFO
+        $filename = 'Rekap_Presensi_Face_' . $namabulan[$bulan] . '_' . $tahun;
+
+        if ($request->filled('kode_cabang')) {
+            $filename .= '_' . $request->kode_cabang;
         }
 
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
+        if ($request->filled('kode_dept')) {
+            $filename .= '_' . $request->kode_dept;
         }
 
-        // ✅ FILTER BY SHIFT
-        if ($request->filled('shift_type')) {
-            if ($request->shift_type === 'multi') {
-                $query->multiShift();
-            } elseif ($request->shift_type === 'regular') {
-                $query->regularShift();
+        $filename .= '.xlsx';
+
+        // Export (Excel or CSV)
+        return Excel::download(new RekapPresensiFaceExport($rekap, $bulan, $tahun), $filename);
+    }
+
+    /**
+     * ✅ UPDATED: Export data presensi dengan detail per karyawan
+     * Support: Multi-shift columns, Jam Kerja Configuration
+     */
+    public function exportData(Request $request)
+    {
+        try {
+            Log::info('Export Data Started', $request->all());
+
+            // ✅ Prepare filters
+            $filters = [
+                'tanggal_awal' => $request->filled('tanggal_awal') ? $request->tanggal_awal : null,
+                'tanggal_akhir' => $request->filled('tanggal_akhir') ? $request->tanggal_akhir : null,
+                'kode_cabang' => $request->filled('kode_cabang') ? $request->kode_cabang : null,
+                'kode_dept' => $request->filled('kode_dept') ? $request->kode_dept : null,
+                'nik_list' => $request->filled('nik_list') ? $request->nik_list : null, // ← NEW
+                'nik' => $request->filled('nik') ? $request->nik : null,
+                'status' => $request->filled('status') ? $request->status : null,
+                'shift_type' => $request->filled('shift_type') ? $request->shift_type : null,
+                'shift_ke' => $request->filled('shift_ke') ? $request->shift_ke : null,
+            ];
+
+            // ✅ Build query for statistics
+            $query = PresensiFace::with([
+                'karyawan' => function ($q) {
+                    $q->with(['cabang', 'departemen']);
+                }
+            ]);
+
+            // Apply filters to query
+            if ($filters['tanggal_awal']) {
+                $query->where('tanggal', '>=', $filters['tanggal_awal']);
+            }
+
+            if ($filters['tanggal_akhir']) {
+                $query->where('tanggal', '<=', $filters['tanggal_akhir']);
+            }
+
+            if ($filters['kode_cabang']) {
+                $query->whereHas('karyawan', function ($q) use ($filters) {
+                    $q->where('kode_cabang', $filters['kode_cabang']);
+                });
+            }
+
+            if ($filters['kode_dept']) {
+                $query->whereHas('karyawan', function ($q) use ($filters) {
+                    $q->where('kode_dept', $filters['kode_dept']);
+                });
+            }
+
+            if ($filters['nik']) {
+                $query->where('nik', 'LIKE', '%' . $filters['nik'] . '%');
+            }
+
+            if ($filters['status']) {
+                $query->where('status', $filters['status']);
+            }
+
+            if ($filters['shift_type']) {
+                if ($filters['shift_type'] === 'multi') {
+                    $query->whereNotNull('shift_ke');
+                } elseif ($filters['shift_type'] === 'regular') {
+                    $query->whereNull('shift_ke');
+                }
+            }
+
+            if ($filters['shift_ke']) {
+                $query->where('shift_ke', $filters['shift_ke']);
+            }
+
+            $presensi = $query->orderBy('tanggal', 'desc')
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            // ✅ Calculate statistics
+            $stats = [
+                'total_data' => $presensi->count(),
+                'total_hadir' => $presensi->whereNotNull('jam_masuk')->count(),
+                'total_pulang' => $presensi->whereNotNull('jam_pulang')->count(),
+                'total_verified' => $presensi->where('status', 'verified')->count(),
+                'total_failed' => $presensi->where('status', 'failed')->count(),
+                'total_multi_shift' => $presensi->whereNotNull('shift_ke')->count(),
+                'total_regular' => $presensi->whereNull('shift_ke')->count(),
+            ];
+
+            Log::info('Export Statistics', $stats);
+
+            // ✅ Determine export format
+            $format = $request->get('format', 'excel');
+
+            if ($format === 'excel') {
+                // ✅ EXCEL EXPORT - Detailed with multiple sheets per employee
+                $filename = $this->generateFilename($filters, 'xlsx');
+
+                Log::info('Generating Excel Export', [
+                    'filename' => $filename,
+                    'filters' => $filters
+                ]);
+
+                return Excel::download(
+                    new \App\Exports\PresensiFaceDetailedExport($filters),
+                    $filename
+                );
+            } else {
+                // ✅ PDF EXPORT - Summary view
+                $filename = $this->generateFilename($filters, 'pdf');
+
+                Log::info('Generating PDF Export', [
+                    'filename' => $filename
+                ]);
+
+                $pdf = PDF::loadView('admin.presensi-face.export-data', compact(
+                    'presensi',
+                    'stats',
+                    'request'
+                ));
+
+                $pdf->setPaper('A4', 'landscape');
+
+                return $pdf->download($filename);
+            }
+        } catch (Exception $e) {
+            Log::error('Export Data Error', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->back()->with('error', 'Gagal export data: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * ✅ Generate filename berdasarkan filter
+     */
+    private function generateFilename($filters, $extension)
+    {
+        $filename = 'Presensi_Face';
+
+        if ($filters['kode_cabang']) {
+            $cabang = \App\Models\Cabang::find($filters['kode_cabang']);
+            if ($cabang) {
+                $filename .= '_' . str_replace(' ', '_', $cabang->nama_cabang);
             }
         }
 
-        if ($request->filled('shift_ke')) {
-            $query->byShift($request->shift_ke);
+        if ($filters['kode_dept']) {
+            $dept = \App\Models\Departemen::where('kode_dept', $filters['kode_dept'])->first();
+            if ($dept) {
+                $filename .= '_' . str_replace(' ', '_', $dept->nama_dept);
+            }
         }
 
-        $presensi = $query->orderBy('tanggal', 'desc')
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        // ✅ CALCULATE STATS INCLUDING MULTI-SHIFT
-        $stats = [
-            'total_data' => $presensi->count(),
-            'total_hadir' => $presensi->whereNotNull('jam_masuk')->count(),
-            'total_pulang' => $presensi->whereNotNull('jam_pulang')->count(),
-            'total_verified' => $presensi->where('status', 'verified')->count(),
-            'total_failed' => $presensi->where('status', 'failed')->count(),
-            'total_multi_shift' => $presensi->whereNotNull('shift_ke')->count(),
-            'total_regular' => $presensi->whereNull('shift_ke')->count(),
-        ];
-
-        // Generate PDF or Excel based on request
-        if ($request->get('format') === 'excel') {
-            $filename = 'Data_Presensi_Face_' . date('Y-m-d_His') . '.xlsx';
-            return Excel::download(new PresensiFaceExport($presensi, $stats, $request), $filename);
-        } else {
-            // Default: PDF
-            $pdf = PDF::loadView('admin.presensi-face.export-data', compact('presensi', 'stats', 'request'));
-            return $pdf->download('Data_Presensi_Face_' . date('Y-m-d_His') . '.pdf');
+        if ($filters['tanggal_awal'] && $filters['tanggal_akhir']) {
+            $filename .= '_' . date('Ymd', strtotime($filters['tanggal_awal']));
+            $filename .= '-' . date('Ymd', strtotime($filters['tanggal_akhir']));
         }
+
+        $filename .= '_' . date('YmdHis') . '.' . $extension;
+
+        return $filename;
     }
 
     /**

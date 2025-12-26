@@ -489,94 +489,368 @@
     </div>
 </div>
 
-<!-- Export Modal - COMPACT VERSION -->
+<!-- Export Modal - WITH NIK SELECTION -->
 <div class="modal fade" id="exportModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header bg-light">
-                <h5 class="modal-title">
-                    <i class="mdi mdi-download"></i> Export Data Presensi
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form action="{{ route('panel.presensi-face.export-data') }}" method="GET">
+            <form action="{{ route('panel.presensi-face.export-data') }}" method="GET" id="exportForm">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">
+                        <i class="mdi mdi-download"></i> Export Data Presensi Face
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
                 <div class="modal-body">
-                    <!-- Format Export -->
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Format Export</label>
-                        <div class="btn-group w-100" role="group">
-                            <input type="radio" class="btn-check" name="format" id="formatExcel" value="excel" checked>
-                            <label class="btn btn-outline-success" for="formatExcel">
-                                <i class="mdi mdi-file-excel"></i> Excel
-                            </label>
+                    <!-- Export Info -->
+                    <div class="alert alert-info">
+                        <i class="mdi mdi-information"></i>
+                        <strong>Info Export:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li><strong>Excel:</strong> Export detail per karyawan (Multiple Sheets)</li>
+                            <li><strong>PDF:</strong> Export ringkasan semua data presensi (Single Page)</li>
+                            <li>Pilih karyawan spesifik atau export semua karyawan sesuai filter</li>
+                        </ul>
+                    </div>
 
-                            <input type="radio" class="btn-check" name="format" id="formatPdf" value="pdf">
-                            <label class="btn btn-outline-danger" for="formatPdf">
-                                <i class="mdi mdi-file-pdf-box"></i> PDF
-                            </label>
+                    <!-- Format Selection -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">
+                            <i class="mdi mdi-file-document"></i> Format Export <span class="text-danger">*</span>
+                        </label>
+                        <div class="d-flex gap-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="format" id="formatExcel" value="excel" checked>
+                                <label class="form-check-label" for="formatExcel">
+                                    <i class="mdi mdi-microsoft-excel text-success"></i> Excel (.xlsx)
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="format" id="formatPdf" value="pdf">
+                                <label class="form-check-label" for="formatPdf">
+                                    <i class="mdi mdi-file-pdf text-danger"></i> PDF (.pdf)
+                                </label>
+                            </div>
+                        </div>
+                        <small class="text-muted">Excel direkomendasikan untuk data detail per karyawan</small>
+                    </div>
+
+                    <hr>
+
+                    <!-- Filters Section -->
+                    <h6 class="mb-3">
+                        <i class="mdi mdi-filter"></i> Filter Data Export
+                    </h6>
+
+                    <!-- Periode -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Tanggal Awal</label>
+                            <input type="date" name="tanggal_awal" class="form-control"
+                                value="{{ request('tanggal_awal') }}">
+                            <small class="text-muted">Kosongkan untuk semua tanggal</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tanggal Akhir</label>
+                            <input type="date" name="tanggal_akhir" class="form-control"
+                                value="{{ request('tanggal_akhir') }}">
+                            <small class="text-muted">Kosongkan untuk semua tanggal</small>
                         </div>
                     </div>
 
-                    <!-- Date Range - Compact -->
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Periode (Opsional)</label>
-                        <div class="row g-2">
-                            <div class="col-6">
-                                <input type="date"
-                                    name="tanggal_awal"
-                                    class="form-control form-control-sm"
-                                    placeholder="Dari"
-                                    value="{{ request('tanggal_awal') }}">
-                                <small class="text-muted">Dari</small>
-                            </div>
-                            <div class="col-6">
-                                <input type="date"
-                                    name="tanggal_akhir"
-                                    class="form-control form-control-sm"
-                                    placeholder="Sampai"
-                                    value="{{ request('tanggal_akhir') }}">
-                                <small class="text-muted">Sampai</small>
-                            </div>
+                    <!-- Cabang & Departemen -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                <i class="mdi mdi-office-building"></i> Cabang
+                            </label>
+                            <select name="kode_cabang" class="form-select" id="exportCabang">
+                                <option value="">Semua Cabang</option>
+                                @foreach($cabang as $item)
+                                <option value="{{ $item->kode_cabang }}"
+                                    {{ request('kode_cabang') == $item->kode_cabang ? 'selected' : '' }}>
+                                    {{ $item->nama_cabang }}
+                                </option>
+                                @endforeach
+                            </select>
+                            <small class="text-muted">Pilih cabang untuk export per cabang</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                <i class="mdi mdi-account-group"></i> Departemen
+                            </label>
+                            <select name="kode_dept" class="form-select" id="exportDepartemen">
+                                <option value="">Semua Departemen</option>
+                                @foreach($departemen as $item)
+                                <option value="{{ $item->kode_dept }}"
+                                    {{ request('kode_dept') == $item->kode_dept ? 'selected' : '' }}>
+                                    {{ $item->nama_dept }}
+                                </option>
+                                @endforeach
+                            </select>
+                            <small class="text-muted">Pilih departemen untuk export per departemen</small>
                         </div>
                     </div>
 
-                    <!-- Preserve Active Filters - COMPACT LOOP -->
-                    @php
-                    $filterParams = ['nik', 'kode_cabang', 'kode_dept', 'status', 'shift_type', 'shift_ke'];
-                    @endphp
-                    @foreach($filterParams as $param)
-                    @if(request($param))
-                    <input type="hidden" name="{{ $param }}" value="{{ request($param) }}">
-                    @endif
-                    @endforeach
+                    <!-- ✅ NEW: Pilih Karyawan Spesifik -->
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label">
+                                <i class="mdi mdi-account-multiple"></i> Pilih Karyawan Spesifik
+                            </label>
+                            <select name="nik_list[]" class="form-select" id="exportNikSelect" multiple>
+                                <option value="">-- Pilih Karyawan (Kosongkan untuk semua) --</option>
+                                @foreach($karyawan as $k)
+                                <option value="{{ $k->nik }}"
+                                    data-dept="{{ $k->departemen->nama_dept ?? '-' }}"
+                                    data-cabang="{{ $k->cabang->nama_cabang ?? '-' }}">
+                                    {{ $k->nik }} - {{ $k->nama_lengkap }}
+                                    ({{ $k->departemen->nama_dept ?? '-' }})
+                                </option>
+                                @endforeach
+                            </select>
+                            <small class="text-muted">
+                                <i class="mdi mdi-information-outline"></i>
+                                Kosongkan untuk export semua karyawan sesuai filter cabang/departemen.
+                                Pilih satu atau lebih untuk export karyawan tertentu saja.
+                            </small>
+                        </div>
+                    </div>
 
-                    <!-- Active Filters Info - COMPACT -->
-                    @php
-                    $activeFilters = collect($filterParams)->filter(fn($p) => request($p))->count();
-                    @endphp
-                    @if($activeFilters > 0)
-                    <div class="alert alert-success alert-dismissible fade show small mb-0">
-                        <i class="mdi mdi-check-circle"></i>
-                        <strong>{{ $activeFilters }}</strong> filter aktif akan diterapkan
-                        <button type="button" class="btn-close btn-close-sm" data-bs-dismiss="alert"></button>
+                    <!-- Status & Shift -->
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">
+                                <i class="mdi mdi-check-circle"></i> Status
+                            </label>
+                            <select name="status" class="form-select">
+                                <option value="">Semua Status</option>
+                                <option value="verified" {{ request('status') == 'verified' ? 'selected' : '' }}>Verified</option>
+                                <option value="failed" {{ request('status') == 'failed' ? 'selected' : '' }}>Failed</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">
+                                <i class="mdi mdi-layers"></i> Tipe Shift
+                            </label>
+                            <select name="shift_type" class="form-select">
+                                <option value="">Semua Tipe</option>
+                                <option value="multi" {{ request('shift_type') == 'multi' ? 'selected' : '' }}>Multi-Shift</option>
+                                <option value="regular" {{ request('shift_type') == 'regular' ? 'selected' : '' }}>Regular</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">
+                                <i class="mdi mdi-numeric"></i> Shift Tertentu
+                            </label>
+                            <select name="shift_ke" class="form-select">
+                                <option value="">Semua Shift</option>
+                                @foreach($availableShifts as $shift)
+                                <option value="{{ $shift->shift_ke }}" {{ request('shift_ke') == $shift->shift_ke ? 'selected' : '' }}>
+                                    Shift {{ $shift->shift_ke }} - {{ $shift->nama_shift }}
+                                </option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
-                    @else
-                    <div class="alert alert-info small mb-0">
-                        <i class="mdi mdi-information-outline"></i>
-                        Semua data akan di-export
+
+                    <!-- Preview Info -->
+                    <div class="alert alert-light border" id="exportPreview">
+                        <strong><i class="mdi mdi-information"></i> Preview:</strong>
+                        <ul class="mb-0 mt-2 small" id="exportPreviewList">
+                            <li>Export akan mencakup semua data sesuai filter yang dipilih</li>
+                        </ul>
                     </div>
-                    @endif
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">
-                        Batal
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="mdi mdi-close"></i> Batal
                     </button>
-                    <button type="submit" class="btn btn-sm btn-success">
-                        <i class="mdi mdi-download"></i> Download
+                    <button type="submit" class="btn btn-success">
+                        <i class="mdi mdi-download"></i> Export Sekarang
                     </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+@push('styles')
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+<style>
+    .select2-container--bootstrap-5 .select2-selection {
+        min-height: 38px;
+    }
+
+    .select2-container {
+        width: 100% !important;
+    }
+</style>
+@endpush
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // ✅ Initialize Select2 for NIK selection
+        $('#exportNikSelect').select2({
+            theme: 'bootstrap-5',
+            placeholder: '-- Pilih Karyawan (Kosongkan untuk semua) --',
+            allowClear: true,
+            closeOnSelect: false,
+            dropdownParent: $('#exportModal'),
+            width: '100%'
+        });
+
+        // ✅ Filter karyawan based on cabang/dept selection
+        function filterKaryawan() {
+            const selectedCabang = $('#exportCabang').val();
+            const selectedDept = $('#exportDepartemen').val();
+
+            $('#exportNikSelect option').each(function() {
+                const $option = $(this);
+                if ($option.val() === '') return; // Skip placeholder
+
+                const optionCabang = $option.data('cabang');
+                const optionDept = $option.data('dept');
+
+                let show = true;
+
+                if (selectedCabang && optionCabang !== $('#exportCabang option:selected').text()) {
+                    show = false;
+                }
+
+                if (selectedDept && optionDept !== $('#exportDepartemen option:selected').text()) {
+                    show = false;
+                }
+
+                if (show) {
+                    $option.show();
+                } else {
+                    $option.hide();
+                }
+            });
+
+            // Refresh Select2
+            $('#exportNikSelect').select2('destroy').select2({
+                theme: 'bootstrap-5',
+                placeholder: '-- Pilih Karyawan (Kosongkan untuk semua) --',
+                allowClear: true,
+                closeOnSelect: false,
+                dropdownParent: $('#exportModal'),
+                width: '100%'
+            });
+        }
+
+        // Trigger filter when cabang/dept changes
+        $('#exportCabang, #exportDepartemen').on('change', function() {
+            filterKaryawan();
+            updateExportPreview();
+        });
+
+        // ✅ Update preview saat filter berubah
+        function updateExportPreview() {
+            const format = $('input[name="format"]:checked').val();
+            const cabang = $('#exportCabang option:selected').text();
+            const dept = $('#exportDepartemen option:selected').text();
+            const tanggalAwal = $('input[name="tanggal_awal"]').val();
+            const tanggalAkhir = $('input[name="tanggal_akhir"]').val();
+            const selectedNiks = $('#exportNikSelect').val();
+            const status = $('select[name="status"] option:selected').text();
+            const shiftType = $('select[name="shift_type"] option:selected').text();
+
+            let preview = '<li>Format: <strong>' + (format === 'excel' ? 'Excel (.xlsx)' : 'PDF (.pdf)') + '</strong></li>';
+
+            if (selectedNiks && selectedNiks.length > 0) {
+                preview += '<li>Karyawan Terpilih: <strong>' + selectedNiks.length + ' karyawan</strong></li>';
+                preview += '<ul class="mt-1">';
+                selectedNiks.forEach(function(nik) {
+                    const karyawanName = $('#exportNikSelect option[value="' + nik + '"]').text();
+                    preview += '<li><small>' + karyawanName + '</small></li>';
+                });
+                preview += '</ul>';
+            } else {
+                if (cabang !== 'Semua Cabang') {
+                    preview += '<li>Cabang: <strong>' + cabang + '</strong></li>';
+                }
+
+                if (dept !== 'Semua Departemen') {
+                    preview += '<li>Departemen: <strong>' + dept + '</strong></li>';
+                }
+
+                preview += '<li class="text-warning"><i class="mdi mdi-alert"></i> Semua karyawan sesuai filter akan di-export</li>';
+            }
+
+            if (tanggalAwal && tanggalAkhir) {
+                preview += '<li>Periode: <strong>' + tanggalAwal + ' s/d ' + tanggalAkhir + '</strong></li>';
+            }
+
+            if (status !== 'Semua Status') {
+                preview += '<li>Status: <strong>' + status + '</strong></li>';
+            }
+
+            if (shiftType !== 'Semua Tipe') {
+                preview += '<li>Tipe Shift: <strong>' + shiftType + '</strong></li>';
+            }
+
+            if (format === 'excel') {
+                preview += '<li class="text-primary"><i class="mdi mdi-check"></i> Export akan membuat sheet terpisah untuk setiap karyawan</li>';
+            }
+
+            $('#exportPreviewList').html(preview);
+        }
+
+        // Update preview saat modal dibuka
+        $('#exportModal').on('shown.bs.modal', function() {
+            updateExportPreview();
+        });
+
+        // Update preview saat filter berubah
+        $('#exportForm input, #exportForm select').on('change', function() {
+            updateExportPreview();
+        });
+
+        // ✅ Validasi sebelum submit
+        $('#exportForm').on('submit', function(e) {
+            const format = $('input[name="format"]:checked').val();
+            const selectedNiks = $('#exportNikSelect').val();
+            const cabang = $('#exportCabang option:selected').text();
+            const dept = $('#exportDepartemen option:selected').text();
+
+            let confirmMsg = 'Export data dalam format ' + (format === 'excel' ? 'Excel' : 'PDF') + '?\n\n';
+
+            if (selectedNiks && selectedNiks.length > 0) {
+                confirmMsg += 'Karyawan yang dipilih: ' + selectedNiks.length + ' karyawan\n';
+            } else {
+                confirmMsg += 'Export SEMUA karyawan';
+                if (cabang !== 'Semua Cabang' || dept !== 'Semua Departemen') {
+                    confirmMsg += ' di:\n';
+                    if (cabang !== 'Semua Cabang') confirmMsg += '- Cabang: ' + cabang + '\n';
+                    if (dept !== 'Semua Departemen') confirmMsg += '- Departemen: ' + dept + '\n';
+                } else {
+                    confirmMsg += '\n';
+                }
+            }
+
+            if (!confirm(confirmMsg)) {
+                e.preventDefault();
+                return false;
+            }
+
+            // Show loading
+            const btn = $(this).find('button[type="submit"]');
+            btn.prop('disabled', true);
+            btn.html('<i class="mdi mdi-loading mdi-spin"></i> Generating...');
+
+            // Close modal after 1 second
+            setTimeout(function() {
+                $('#exportModal').modal('hide');
+                btn.prop('disabled', false);
+                btn.html('<i class="mdi mdi-download"></i> Export Sekarang');
+            }, 1000);
+        });
+    });
+</script>
+@endpush
+
 @endsection

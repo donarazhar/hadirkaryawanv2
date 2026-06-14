@@ -938,34 +938,81 @@
         }
     }
 
+    // Helper function to calculate Eye Aspect Ratio (EAR)
+    function calculateEAR(eye) {
+        // eye is an array of 6 points: [p1, p2, p3, p4, p5, p6]
+        const p2_p6 = Math.sqrt(Math.pow(eye[1].x - eye[5].x, 2) + Math.pow(eye[1].y - eye[5].y, 2));
+        const p3_p5 = Math.sqrt(Math.pow(eye[2].x - eye[4].x, 2) + Math.pow(eye[2].y - eye[4].y, 2));
+        const p1_p4 = Math.sqrt(Math.pow(eye[0].x - eye[3].x, 2) + Math.pow(eye[0].y - eye[3].y, 2));
+        return (p2_p6 + p3_p5) / (2.0 * p1_p4);
+    }
+
+    let blinkDetected = false;
+
     // Verify face from webcam SILENTLY for auto-scan
     async function verifyFaceSilent() {
         try {
             const video = document.querySelector('.webcam-capture video');
-            if (!video) return false;
+            if (!video) return { matched: false };
 
-            // Detect face in current frame
+            // Deteksi landmark dulu (lebih ringan dari descriptor)
             const detection = await faceapi
                 .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
-                .withFaceLandmarks()
-                .withFaceDescriptor();
+                .withFaceLandmarks();
 
             if (!detection || detection.detection.score < 0.5) {
-                return { matched: false }; // Wajah tidak jelas atau tidak terdeteksi
+                return { matched: false }; // Wajah tidak jelas
             }
 
-            // Get reference descriptor
-            const referenceDescriptor = await getReferenceFaceDescriptor();
+            const landmarks = detection.landmarks;
+            const leftEye = landmarks.getLeftEye();
+            const rightEye = landmarks.getRightEye();
 
-            // Calculate distance
-            const distance = faceapi.euclideanDistance(detection.descriptor, referenceDescriptor);
-            
-            // Threshold: 0.6
-            const threshold = 0.6;
-            
-            if (distance <= threshold) {
-                console.log('Face matched automatically! Distance:', distance);
-                return { matched: true, descriptor: Array.from(detection.descriptor) };
+            const leftEAR = calculateEAR(leftEye);
+            const rightEAR = calculateEAR(rightEye);
+            const avgEAR = (leftEAR + rightEAR) / 2.0;
+
+            // Threshold mata tertutup
+            if (avgEAR < 0.25) {
+                if (!blinkDetected) {
+                    console.log('Blink detected! EAR:', avgEAR);
+                    blinkDetected = true;
+                    $("#auto-scan-status").html(`
+                        <div style="display: flex; align-items: center; gap: 8px; color: var(--warning);">
+                            <ion-icon name="eye-outline" style="font-size: 20px;"></ion-icon>
+                            <span>Kedipan Terdeteksi! Memverifikasi wajah...</span>
+                        </div>
+                    `);
+                }
+            }
+
+            // Jika sudah berkedip dan mata sudah terbuka kembali
+            if (blinkDetected && avgEAR > 0.25) {
+                // Ekstrak descriptor
+                const descriptorDetection = await faceapi
+                    .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+                    .withFaceLandmarks()
+                    .withFaceDescriptor();
+
+                if (descriptorDetection) {
+                    const referenceDescriptor = await getReferenceFaceDescriptor();
+                    const distance = faceapi.euclideanDistance(descriptorDetection.descriptor, referenceDescriptor);
+                    
+                    const threshold = 0.6;
+                    if (distance <= threshold) {
+                        console.log('Face matched automatically! Distance:', distance);
+                        return { matched: true, descriptor: Array.from(descriptorDetection.descriptor) };
+                    } else {
+                        // Reset blink status if fail to match
+                        blinkDetected = false;
+                        $("#auto-scan-status").html(`
+                            <div style="display: flex; align-items: center; gap: 8px; color: var(--danger);">
+                                <ion-icon name="close-circle-outline" style="font-size: 20px;"></ion-icon>
+                                <span>Wajah tidak cocok. Silakan coba lagi.</span>
+                            </div>
+                        `);
+                    }
+                }
             }
 
             return { matched: false };

@@ -118,6 +118,11 @@ class KaryawanAdminController extends Controller
 
             Karyawan::create($data);
 
+            \App\Helpers\LogHelper::record(
+                'CREATE_KARYAWAN',
+                "Menambahkan data karyawan baru dengan NIK: {$request->nik} ({$request->nama_lengkap})"
+            );
+
             return redirect()->route('panel.karyawan.index')
                 ->with(['success' => 'Data Karyawan berhasil ditambahkan']);
         } catch (\Exception $e) {
@@ -203,6 +208,11 @@ class KaryawanAdminController extends Controller
 
             $karyawan->update($data);
 
+            \App\Helpers\LogHelper::record(
+                'UPDATE_KARYAWAN',
+                "Mengubah data karyawan dengan NIK: {$nik}"
+            );
+
             return redirect()->route('panel.karyawan.index')
                 ->with(['success' => 'Data Karyawan berhasil diupdate']);
         } catch (\Exception $e) {
@@ -226,6 +236,11 @@ class KaryawanAdminController extends Controller
             }
 
             $karyawan->delete();
+
+            \App\Helpers\LogHelper::record(
+                'DELETE_KARYAWAN',
+                "Menghapus data karyawan dengan NIK: {$nik}"
+            );
 
             return redirect()->route('panel.karyawan.index')
                 ->with(['success' => 'Data Karyawan berhasil dihapus']);

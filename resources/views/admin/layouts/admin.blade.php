@@ -770,6 +770,11 @@
                             <i class="mdi mdi-account-cog"></i>
                             <span>Data User</span>
                         </a>
+                        <a href="{{ route('panel.activity-logs.index') }}"
+                            class="menu-item {{ Request::is('panel/activity-logs*') ? 'active' : '' }}">
+                            <i class="mdi mdi-history"></i>
+                            <span>Audit Trail</span>
+                        </a>
                         @endif
                         <a href="{{ route('panel.jamkerja.index') }}"
                             class="menu-item {{ Request::is('panel/jamkerja*') ? 'active' : '' }}">

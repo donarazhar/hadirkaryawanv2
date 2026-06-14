@@ -81,6 +81,13 @@ class IzinSakitController extends Controller
                 ]);
             }
 
+            // Catat log
+            $statusTeks = $request->status_approved == '1' ? 'Disetujui' : 'Ditolak';
+            \App\Helpers\LogHelper::record(
+                'APPROVE_PENGJUAN', 
+                "Melakukan approval pengajuan ($statusTeks) dengan kode: $kode_izin"
+            );
+
             // Notifikasi WA ke Karyawan
             $karyawan = \App\Models\Karyawan::where('nik', $izin->nik)->first();
             if ($karyawan && $karyawan->no_hp) {
@@ -122,6 +129,11 @@ class IzinSakitController extends Controller
                     'catatan_admin' => null
                 ]);
             }
+
+            \App\Helpers\LogHelper::record(
+                'CANCEL_PENGJUAN', 
+                "Membatalkan persetujuan pengajuan dengan kode: $kode_izin"
+            );
 
             return redirect()->back()->with('success', 'Status pengajuan berhasil dibatalkan (dikembalikan ke status Menunggu)');
         } catch (\Exception $e) {

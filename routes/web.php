@@ -127,6 +127,7 @@ Route::prefix('panel')->name('panel.')->group(function () {
         // Superadmin only
         Route::middleware('role:superadmin')->group(function () {
             Route::resource('user', UserController::class);
+            Route::get('/activity-logs', [App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('activity-logs.index');
         });
 
         // Monitoring

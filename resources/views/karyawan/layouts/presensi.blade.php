@@ -10,9 +10,9 @@
     <title>YPI Al Azhar - E-Presensi</title>
     <meta name="description" content="Sistem Presensi YPI Al Azhar">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="manifest" href="{{ asset('manifest.json') }}">
-    <link rel="shortcut icon" href="{{ asset('assets/img/logoypia.png') }}" type="image/png" />
-    <link rel="apple-touch-icon" href="{{ asset('assets/img/logoypia.png') }}">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="shortcut icon" href="/assets/img/logoypia.png" type="image/png" />
+    <link rel="apple-touch-icon" href="/assets/img/logoypia.png">
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
 
     <style>

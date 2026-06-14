@@ -89,10 +89,7 @@ class IzinKaryawanController extends Controller
 
             $user = Auth::guard('karyawan')->user();
 
-            // Untuk sementara, cuti diset kosong
-            // Nanti bisa dikembangkan kalau fitur cuti sudah siap
-            $cuti = collect([]);
-
+            // Meneruskan variabel $cuti ke view
             Log::info('=== IzinKaryawan@create SUCCESS ===');
             return view('karyawan.izin.create', compact('cuti'));
         } catch (\Exception $e) {
@@ -198,6 +195,15 @@ class IzinKaryawanController extends Controller
                     'kode_izin' => $kode_izin,
                     'nik' => $nik
                 ]);
+
+                // Notifikasi WA ke HRD/Admin
+                $karyawan = \App\Models\Karyawan::where('nik', $nik)->first();
+                $nama_karyawan = $karyawan ? $karyawan->nama_lengkap : 'Karyawan';
+                
+                $tipe = $request->status == 'i' ? 'Izin' : ($request->status == 's' ? 'Sakit' : 'Cuti');
+                $pesan = "Halo Admin,\n\nTerdapat pengajuan *{$tipe}* baru.\n\n*NIK:* {$nik}\n*Nama:* {$nama_karyawan}\n*Tgl:* {$request->tgl_izin_dari} s/d {$request->tgl_izin_sampai}\n*Alasan:* {$request->keterangan}\n\nMohon segera diproses di panel admin.\nTerima kasih.";
+                
+                \App\Services\WhatsAppService::send('081234567890', $pesan); // Ganti dengan nomor HRD
 
                 return redirect('/presensi/izin')->with('success', 'Pengajuan izin berhasil dikirim dan menunggu persetujuan');
             } else {

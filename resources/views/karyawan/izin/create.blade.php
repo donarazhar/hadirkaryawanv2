@@ -471,6 +471,25 @@
             </div>
         </div>
 
+        <!-- Pilihan Cuti -->
+        <div class="form-card" id="form-cuti" style="display: none;">
+            <div class="form-card-title">
+                <ion-icon name="list"></ion-icon>
+                Jenis Cuti
+            </div>
+            <div class="form-group">
+                <label class="form-label">
+                    Pilih Cuti <span class="required">*</span>
+                </label>
+                <select name="kode_cuti" id="kode_cuti" class="form-control">
+                    <option value="">-- Pilih Jenis Cuti --</option>
+                    @foreach($cuti as $c)
+                        <option value="{{ $c->kode_cuti }}">{{ $c->nama_cuti }} (Max: {{ $c->jml_hari }} Hari)</option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
+
         <!-- Tanggal -->
         <div class="form-card">
             <div class="form-card-title">
@@ -613,6 +632,24 @@
             btnSubmit.prop('disabled', true);
             btnSubmit.html('<ion-icon name="hourglass-outline"></ion-icon> <span>Mengirim...</span>');
         });
+
+        // Toggle Cuti Dropdown
+        $('input[name="status"]').on('change', function() {
+            if ($(this).val() == 'c') {
+                $('#form-cuti').slideDown();
+                $('#kode_cuti').prop('required', true);
+            } else {
+                $('#form-cuti').slideUp();
+                $('#kode_cuti').prop('required', false);
+                $('#kode_cuti').val('');
+            }
+        });
+
+        // Trigger on load for old input
+        if ($('input[name="status"]:checked').val() == 'c') {
+            $('#form-cuti').show();
+            $('#kode_cuti').prop('required', true);
+        }
 
         // Auto set tanggal sampai = tanggal dari
         $('[name="tgl_izin_dari"]').on('change', function() {

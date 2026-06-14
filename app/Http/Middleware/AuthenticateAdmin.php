@@ -15,7 +15,7 @@ class AuthenticateAdmin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        Log::info('AuthenticateAdmin Middleware', [
+        Log::debug('AuthenticateAdmin Middleware', [
             'authenticated' => Auth::guard('admin')->check(),
             'url' => $request->fullUrl()
         ]);
@@ -49,7 +49,7 @@ class AuthenticateAdmin
                 ->with('error', 'Anda tidak memiliki akses sebagai administrator.');
         }
 
-        Log::info('Admin authenticated', [
+        Log::debug('Admin authenticated', [
             'user_id' => $user->id,
             'role' => $user->role
         ]);

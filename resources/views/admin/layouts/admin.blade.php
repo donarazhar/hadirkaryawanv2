@@ -10,6 +10,11 @@
     <!-- Favicon -->
     <link rel="shortcut icon" href="{{ asset('assets/img/logoypia.png') }}" type="image/png" />
 
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
@@ -35,7 +40,7 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background-color: #f5f7fa;
         }
 
@@ -700,6 +705,7 @@
                 <span>Dashboard</span>
             </a>
 
+            @if(in_array(Auth::guard('user')->user()->role, ['admin', 'superadmin']))
             <!-- Master Data Group (Collapsible) -->
             <div class="menu-group">
                 <div class="menu-group-header"
@@ -731,10 +737,17 @@
                             <i class="mdi mdi-account-group"></i>
                             <span>Data Karyawan</span>
                         </a>
+                        <a href="{{ route('panel.cuti.index') }}"
+                            class="menu-item {{ Request::is('panel/cuti*') ? 'active' : '' }}">
+                            <i class="mdi mdi-calendar-text"></i>
+                            <span>Data Cuti</span>
+                        </a>
                     </div>
                 </div>
             </div>
+            @endif
 
+            @if(in_array(Auth::guard('user')->user()->role, ['admin', 'superadmin']))
             <!-- Konfigurasi Group (Collapsible) -->
             <div class="menu-group">
                 <div class="menu-group-header"
@@ -751,11 +764,13 @@
                 <div class="collapse {{ Request::is('panel/jamkerja*') || Request::is('panel/konfigurasi-jk-dept*') || Request::is('panel/user*') ? 'show' : '' }}"
                     id="konfigurasiMenu">
                     <div class="menu-group-content">
+                        @if(Auth::guard('user')->user()->role == 'superadmin')
                         <a href="{{ route('panel.user.index') }}"
                             class="menu-item {{ Request::is('panel/user*') ? 'active' : '' }}">
                             <i class="mdi mdi-account-cog"></i>
                             <span>Data User</span>
                         </a>
+                        @endif
                         <a href="{{ route('panel.jamkerja.index') }}"
                             class="menu-item {{ Request::is('panel/jamkerja*') ? 'active' : '' }}">
                             <i class="mdi mdi-clock-outline"></i>
@@ -769,6 +784,7 @@
                     </div>
                 </div>
             </div>
+            @endif
 
             <!-- Presensi & Laporan Group (Collapsible) -->
             <div class="menu-group">
@@ -801,6 +817,7 @@
                             <i class="mdi mdi-calendar-month"></i>
                             <span>Rekap Kehadiran</span>
                         </a>
+                        @if(in_array(Auth::guard('user')->user()->role, ['admin', 'superadmin']))
                         <a href="{{ route('panel.izinsakit.index') }}"
                             class="menu-item {{ Request::is('panel/izinsakit*') ? 'active' : '' }}">
                             <i class="mdi mdi-hospital-box-outline"></i>
@@ -811,6 +828,7 @@
                             <i class="mdi mdi-face-recognition"></i>
                             <span>Verifikasi Wajah</span>
                         </a>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -825,7 +843,7 @@
             <div class="user-menu">
                 <div class="user-info">
                     <div class="name">{{ Auth::guard('user')->user()->name }}</div>
-                    <div class="role">Administrator</div>
+                    <div class="role">{{ ucfirst(Auth::guard('user')->user()->role) }}</div>
                 </div>
                 <form action="{{ route('panel.logout') }}" method="POST">
                     @csrf

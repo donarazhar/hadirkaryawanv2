@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\AuthAdminController;
 use App\Http\Controllers\Admin\CabangController;
+use App\Http\Controllers\Admin\CutiController;
 use App\Http\Controllers\Admin\DashboardAdminController;
 use App\Http\Controllers\Admin\DepartemenController;
 use App\Http\Controllers\Admin\FaceVerificationController;
@@ -38,7 +39,7 @@ Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name
 
 Route::middleware('guest:karyawan')->group(function () {
     Route::get('/login', [AuthController::class, 'login'])->name('login');
-    Route::post('/proseslogin', [AuthController::class, 'proseslogin'])->name('proseslogin');
+    Route::post('/proseslogin', [AuthController::class, 'proseslogin'])->name('proseslogin')->middleware('throttle:5,1');
 });
 
 Route::middleware('auth:karyawan')->group(function () {
@@ -48,7 +49,7 @@ Route::middleware('auth:karyawan')->group(function () {
     // Presensi
     Route::controller(PresensiKaryawanController::class)->prefix('presensi')->name('presensi.')->group(function () {
         Route::get('/create', 'create')->name('create');
-        Route::post('/store', 'store')->name('store');
+        Route::post('/store', 'store')->name('store')->middleware('throttle:10,1');
     });
 
     // Show Map Presensi (bisa diakses karyawan dan admin)
@@ -105,7 +106,7 @@ Route::prefix('panel')->name('panel.')->group(function () {
     // Guest routes
     Route::middleware('guest:user')->group(function () {
         Route::get('/', [AuthAdminController::class, 'login'])->name('login');
-        Route::post('/login', [AuthAdminController::class, 'proseslogin'])->name('login.process');
+        Route::post('/login', [AuthAdminController::class, 'proseslogin'])->name('login.process')->middleware('throttle:5,1');
     });
 
     // Authenticated routes
@@ -113,13 +114,20 @@ Route::prefix('panel')->name('panel.')->group(function () {
         Route::post('/logout', [AuthAdminController::class, 'logout'])->name('logout');
         Route::get('/dashboard', [DashboardAdminController::class, 'index'])->name('dashboard');
 
-        // Master Data - sudah ada controllernya
-        Route::resource('cabang', CabangController::class);
-        Route::resource('departemen', DepartemenController::class);
-        Route::resource('jamkerja', JamKerjaController::class);
-        Route::resource('karyawan', KaryawanAdminController::class);
-        Route::resource('konfigurasi-jk-dept', KonfigurasiJkDeptController::class);
-        Route::resource('user', UserController::class);
+        // Master Data - admin & superadmin
+        Route::middleware('role:superadmin,admin')->group(function () {
+            Route::resource('cabang', CabangController::class);
+            Route::resource('departemen', DepartemenController::class);
+            Route::resource('jamkerja', JamKerjaController::class);
+            Route::resource('karyawan', KaryawanAdminController::class);
+            Route::resource('konfigurasi-jk-dept', KonfigurasiJkDeptController::class);
+            Route::resource('cuti', CutiController::class)->except(['create', 'show', 'edit']);
+        });
+
+        // Superadmin only
+        Route::middleware('role:superadmin')->group(function () {
+            Route::resource('user', UserController::class);
+        });
 
         // Monitoring
         Route::controller(MonitoringController::class)->prefix('monitoring')->name('monitoring.')->group(function () {
@@ -145,35 +153,37 @@ Route::prefix('panel')->name('panel.')->group(function () {
         });
 
         // Izin/Sakit
-        Route::controller(IzinSakitController::class)->prefix('izinsakit')->name('izinsakit.')->group(function () {
-            Route::get('/', 'index')->name('index');
-            Route::post('/{kode_izin}/approve', 'approve')->name('approve');
-            Route::get('/{kode_izin}/cancel', 'cancel')->name('cancel');
-        });
+        Route::middleware('role:superadmin,admin')->group(function () {
+            Route::controller(IzinSakitController::class)->prefix('izinsakit')->name('izinsakit.')->group(function () {
+                Route::get('/', 'index')->name('index');
+                Route::post('/{kode_izin}/approve', 'approve')->name('approve');
+                Route::post('/{kode_izin}/cancel', 'cancel')->name('cancel');
+            });
 
-        // Face Verification Routes
-        Route::prefix('face-verification')->name('face-verification.')->group(function () {
+            // Face Verification Routes
+            Route::prefix('face-verification')->name('face-verification.')->group(function () {
 
-            Route::get('/', [FaceVerificationController::class, 'index'])
-                ->name('index');
-            Route::get('/show/{nik}', [FaceVerificationController::class, 'show'])
-                ->name('show');
-            Route::put('/activate/{nik}', [FaceVerificationController::class, 'activate'])
-                ->name('activate');
-            Route::put('/deactivate/{nik}', [FaceVerificationController::class, 'deactivate'])
-                ->name('deactivate');
-            Route::delete('/destroy/{nik}', [FaceVerificationController::class, 'destroy'])
-                ->name('destroy');
-            Route::post('/bulk-activate', [FaceVerificationController::class, 'bulkActivate'])
-                ->name('bulk-activate');
-            Route::post('/bulk-deactivate', [FaceVerificationController::class, 'bulkDeactivate'])
-                ->name('bulk-deactivate');
-            Route::get('/export', [FaceVerificationController::class, 'export'])
-                ->name('export');
-            Route::get('/api/stats', [FaceVerificationController::class, 'getStats'])
-                ->name('api.stats');
-            Route::get('/image/{nik}', [FaceVerificationController::class, 'viewImage'])
-                ->name('view-image');
+                Route::get('/', [FaceVerificationController::class, 'index'])
+                    ->name('index');
+                Route::get('/show/{nik}', [FaceVerificationController::class, 'show'])
+                    ->name('show');
+                Route::put('/activate/{nik}', [FaceVerificationController::class, 'activate'])
+                    ->name('activate');
+                Route::put('/deactivate/{nik}', [FaceVerificationController::class, 'deactivate'])
+                    ->name('deactivate');
+                Route::delete('/destroy/{nik}', [FaceVerificationController::class, 'destroy'])
+                    ->name('destroy');
+                Route::post('/bulk-activate', [FaceVerificationController::class, 'bulkActivate'])
+                    ->name('bulk-activate');
+                Route::post('/bulk-deactivate', [FaceVerificationController::class, 'bulkDeactivate'])
+                    ->name('bulk-deactivate');
+                Route::get('/export', [FaceVerificationController::class, 'export'])
+                    ->name('export');
+                Route::get('/api/stats', [FaceVerificationController::class, 'getStats'])
+                    ->name('api.stats');
+                Route::get('/image/{nik}', [FaceVerificationController::class, 'viewImage'])
+                    ->name('view-image');
+            });
         });
     });
 });

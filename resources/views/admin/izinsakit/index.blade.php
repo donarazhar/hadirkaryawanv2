@@ -86,7 +86,7 @@
         <div class="card mt-3">
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-vcenter card-table table-striped">
+                    <table class="table table-vcenter card-table table-striped table-mobile-md text-nowrap">
                         <thead>
                             <tr>
                                 <th>No</th>
@@ -153,7 +153,8 @@
                                         Action
                                     </button>
                                     @else
-                                    <form action="{{ route('panel.izinsakit.cancel', $item->kode_izin) }}" method="GET" class="d-inline">
+                                    <form action="{{ route('panel.izinsakit.cancel', $item->kode_izin) }}" method="POST" class="d-inline">
+                                        @csrf
                                         <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Yakin ingin membatalkan status pengajuan ini?')">
                                             Batalkan
                                         </button>

@@ -951,7 +951,7 @@
                 .withFaceDescriptor();
 
             if (!detection || detection.detection.score < 0.5) {
-                return false; // Wajah tidak jelas atau tidak terdeteksi
+                return { matched: false }; // Wajah tidak jelas atau tidak terdeteksi
             }
 
             // Get reference descriptor
@@ -965,13 +965,13 @@
             
             if (distance <= threshold) {
                 console.log('Face matched automatically! Distance:', distance);
-                return true;
+                return { matched: true, descriptor: Array.from(detection.descriptor) };
             }
 
-            return false;
+            return { matched: false };
         } catch (error) {
             console.error('Silent face verification error:', error);
-            return false;
+            return { matched: false };
         }
     }
 
@@ -993,9 +993,9 @@
             if (!lokasi_val) return; // Jangan scan jika lokasi belum terdeteksi
 
             // Mulai scan silent
-            var isMatched = await verifyFaceSilent();
+            var result = await verifyFaceSilent();
             
-            if (isMatched) {
+            if (result.matched) {
                 // Wajah cocok! Hentikan loop sementara.
                 isProcessing = true;
                 clearInterval(autoScanInterval);
@@ -1032,6 +1032,7 @@
                             image: image,
                             lokasi: lokasi_val,
                             verified: true,
+                            face_descriptor: JSON.stringify(result.descriptor),
                             shift_ke: shift_ke_val,
                             shift_nama: shift_nama_val,
                             shift_jam_masuk: shift_jam_masuk_val,

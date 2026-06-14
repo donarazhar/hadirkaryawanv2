@@ -16,7 +16,7 @@ class Authenticate
     public function handle(Request $request, Closure $next, string $guard = 'karyawan'): Response
     {
         // Log untuk debugging
-        Log::info('Authenticate Middleware', [
+        Log::debug('Authenticate Middleware', [
             'guard' => $guard,
             'authenticated' => Auth::guard($guard)->check(),
             'url' => $request->fullUrl()
@@ -49,7 +49,7 @@ class Authenticate
         }
 
         // User is authenticated, continue
-        Log::info('User authenticated', [
+        Log::debug('User authenticated', [
             'guard' => $guard,
             'user' => Auth::guard($guard)->user()->nik ?? 'unknown'
         ]);

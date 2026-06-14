@@ -9,7 +9,10 @@
     <meta name="theme-color" content="#0053C5">
     <title>YPI Al Azhar - E-Presensi</title>
     <meta name="description" content="Sistem Presensi YPI Al Azhar">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
     <link rel="shortcut icon" href="{{ asset('assets/img/logoypia.png') }}" type="image/png" />
+    <link rel="apple-touch-icon" href="{{ asset('assets/img/logoypia.png') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
 
     <style>
@@ -149,6 +152,25 @@
             .dock-fab:hover {
                 transform: translateY(-12px) scale(1.1);
                 box-shadow: 0 12px 32px rgba(0, 83, 197, 0.5);
+            }
+        }
+
+        /* Visible label on mobile */
+        @media (max-width: 768px) {
+            .dock-item span {
+                position: static;
+                opacity: 1;
+                transform: none;
+                background: transparent;
+                box-shadow: none;
+                padding: 0;
+                margin-top: 4px;
+                font-size: 10px;
+            }
+            .dock-item {
+                justify-content: flex-end;
+                padding-bottom: 4px;
+                height: 60px;
             }
         }
 
@@ -451,8 +473,6 @@
     <!-- Ionicons -->
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
-    <script src="{{ asset('assets/js/lib/popper.min.js') }}"></script>
-    <script src="{{ asset('assets/js/lib/bootstrap.min.js') }}"></script>
     <!-- App JS -->
     <script src="{{ asset('assets/js/plugins.js') }}"></script>
     <script src="{{ asset('assets/js/base.js') }}"></script>
@@ -490,14 +510,16 @@
         });
     </script>
     @stack('myscript')
-    <!-- REMOVE atau COMMENT service worker registration -->
-    {{-- <script>
+    <!-- Service Worker Registration for PWA -->
+    <script>
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/service-worker.js')
-                .then(reg => console.log('Service Worker registered'))
-                .catch(err => console.log('Service Worker registration failed'));
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(reg => console.log('Service Worker registered'))
+                    .catch(err => console.log('Service Worker registration failed: ', err));
+            });
         }
-    </script> --}}
+    </script>
 </body>
 
 </html>

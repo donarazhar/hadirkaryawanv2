@@ -61,6 +61,20 @@ class IzinSakitController extends Controller
                 'catatan_admin' => $request->catatan_admin
             ]);
 
+            // Notifikasi WA ke Karyawan
+            $karyawan = \App\Models\Karyawan::where('nik', $izin->nik)->first();
+            if ($karyawan && $karyawan->no_hp) {
+                $status_teks = $request->status_approved == '1' ? 'DISETUJUI' : 'DITOLAK';
+                $tipe = $izin->status == 'i' ? 'Izin' : ($izin->status == 's' ? 'Sakit' : 'Cuti');
+                $pesan = "Halo {$karyawan->nama_lengkap},\n\nPengajuan *{$tipe}* Anda untuk tanggal {$izin->tgl_izin_dari} s/d {$izin->tgl_izin_sampai} telah *{$status_teks}* oleh Admin.\n";
+                if ($request->catatan_admin) {
+                    $pesan .= "Catatan: {$request->catatan_admin}\n";
+                }
+                $pesan .= "\nTerima kasih.";
+
+                \App\Services\WhatsAppService::send($karyawan->no_hp, $pesan);
+            }
+
             DB::commit();
             return redirect()->back()->with('success', 'Status pengajuan berhasil diupdate');
         } catch (\Exception $e) {

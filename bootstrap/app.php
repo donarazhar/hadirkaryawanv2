@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'auth' => \App\Http\Middleware\Authenticate::class,
             'auth.admin' => \App\Http\Middleware\AuthenticateAdmin::class,
+            'role' => \App\Http\Middleware\RoleMiddleware::class,
         ]);
 
         // Priority middleware

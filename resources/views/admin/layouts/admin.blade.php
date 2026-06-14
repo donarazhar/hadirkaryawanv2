@@ -8,7 +8,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <!-- Favicon -->
-    <link rel="shortcut icon" href="https://siap.al-azhar.id/upload/favicon.ico" type="image/x-icon" />
+    <link rel="shortcut icon" href="{{ asset('assets/img/logoypia.png') }}" type="image/png" />
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -95,8 +95,9 @@
             left: 0;
             height: 100vh;
             width: var(--sidebar-width);
-            background: linear-gradient(180deg, #0053C5 0%, #003d94 100%);
-            color: white;
+            background: #ffffff;
+            color: #333;
+            border-right: 1px solid #e5e7eb;
             overflow-y: auto;
             overflow-x: hidden;
             z-index: 999;
@@ -121,12 +122,13 @@
         .sidebar-header {
             padding: 25px 20px;
             text-align: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid #e5e7eb;
             transition: all 0.3s;
         }
 
-        .sidebar-header i {
-            font-size: 48px;
+        .sidebar-header img.sidebar-logo {
+            width: 48px;
+            height: auto;
             margin-bottom: 10px;
             transition: all 0.3s;
         }
@@ -143,7 +145,7 @@
         .sidebar-header p {
             margin: 5px 0 0 0;
             font-size: 12px;
-            opacity: 0.8;
+            color: #6b7280;
             transition: all 0.3s;
         }
 
@@ -152,8 +154,8 @@
             padding: 20px 10px;
         }
 
-        .sidebar.collapsed .sidebar-header i {
-            font-size: 32px;
+        .sidebar.collapsed .sidebar-header img.sidebar-logo {
+            width: 32px;
             margin-bottom: 0;
         }
 
@@ -185,7 +187,8 @@
         }
 
         .menu-group-header:hover {
-            background: rgba(255, 255, 255, 0.05);
+            background: #f8f9fa;
+            color: var(--primary-color);
         }
 
         .menu-group-title {
@@ -194,7 +197,7 @@
             gap: 10px;
             font-size: 14px;
             font-weight: 600;
-            color: rgba(255, 255, 255, 0.9);
+            color: #4b5563;
             flex: 1;
             white-space: nowrap;
         }
@@ -239,7 +242,7 @@
 
         .menu-item {
             padding: 12px 20px 12px 50px;
-            color: rgba(255, 255, 255, 0.75);
+            color: #6b7280;
             text-decoration: none;
             display: flex;
             align-items: center;
@@ -250,15 +253,14 @@
         }
 
         .menu-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border-left-color: white;
+            background: #f8f9fa;
+            color: var(--primary-color);
         }
 
         .menu-item.active {
-            background: rgba(255, 255, 255, 0.15);
-            color: white;
-            border-left-color: white;
+            background: #eff6ff;
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
             font-weight: 600;
         }
 
@@ -294,7 +296,7 @@
         /* Single Menu Item (No Group) */
         .menu-single {
             padding: 12px 20px;
-            color: rgba(255, 255, 255, 0.8);
+            color: #4b5563;
             text-decoration: none;
             display: flex;
             align-items: center;
@@ -305,15 +307,14 @@
         }
 
         .menu-single:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border-left-color: white;
+            background: #f8f9fa;
+            color: var(--primary-color);
         }
 
         .menu-single.active {
-            background: rgba(255, 255, 255, 0.15);
-            color: white;
-            border-left-color: white;
+            background: #eff6ff;
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
             font-weight: 600;
         }
 
@@ -386,17 +387,18 @@
 
         /* ===== TOPBAR ===== */
         .topbar {
-            background: white;
+            background: #ffffff;
             padding: 15px 30px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border-bottom: 1px solid #e5e7eb;
         }
 
         .topbar h5 {
             margin: 0;
-            color: #333;
+            color: #111827;
             font-weight: 600;
         }
 
@@ -412,13 +414,13 @@
 
         .user-info .name {
             font-weight: 600;
-            color: #333;
+            color: #111827;
             font-size: 14px;
         }
 
         .user-info .role {
             font-size: 12px;
-            color: #999;
+            color: #6b7280;
         }
 
         .btn-logout {
@@ -684,7 +686,7 @@
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <i class="mdi mdi-shield-star"></i>
+            <img src="{{ asset('assets/img/logoypia.png') }}" alt="Logo YPI" class="sidebar-logo">
             <h4>YPI Al Azhar</h4>
             <p>Sistem Presensi</p>
         </div>
@@ -739,16 +741,21 @@
                     data-bs-toggle="collapse"
                     data-bs-target="#konfigurasiMenu"
                     data-tooltip="Konfigurasi"
-                    aria-expanded="{{ Request::is('panel/jamkerja*') || Request::is('panel/konfigurasi-jk-dept*') ? 'true' : 'false' }}">
+                    aria-expanded="{{ Request::is('panel/jamkerja*') || Request::is('panel/konfigurasi-jk-dept*') || Request::is('panel/user*') ? 'true' : 'false' }}">
                     <div class="menu-group-title">
                         <i class="mdi mdi-cog"></i>
                         <span>Konfigurasi</span>
                     </div>
                     <i class="mdi mdi-chevron-down menu-group-icon"></i>
                 </div>
-                <div class="collapse {{ Request::is('panel/jamkerja*') || Request::is('panel/konfigurasi-jk-dept*') ? 'show' : '' }}"
+                <div class="collapse {{ Request::is('panel/jamkerja*') || Request::is('panel/konfigurasi-jk-dept*') || Request::is('panel/user*') ? 'show' : '' }}"
                     id="konfigurasiMenu">
                     <div class="menu-group-content">
+                        <a href="{{ route('panel.user.index') }}"
+                            class="menu-item {{ Request::is('panel/user*') ? 'active' : '' }}">
+                            <i class="mdi mdi-account-cog"></i>
+                            <span>Data User</span>
+                        </a>
                         <a href="{{ route('panel.jamkerja.index') }}"
                             class="menu-item {{ Request::is('panel/jamkerja*') ? 'active' : '' }}">
                             <i class="mdi mdi-clock-outline"></i>

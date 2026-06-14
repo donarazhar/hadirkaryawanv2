@@ -71,7 +71,7 @@
         Silakan hubungi HRD atau admin untuk informasi lebih lanjut.
     </p>
 
-    <a href="{{ route('presensi-face.dashboard') }}" class="btn-back-dashboard">
+    <a href="{{ route('face-presensi.dashboard') }}" class="btn-back-dashboard">
         <ion-icon name="arrow-back"></ion-icon>
         Kembali ke Dashboard
     </a>

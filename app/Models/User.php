@@ -15,6 +15,8 @@ class User extends Authenticatable
         'password',
         'role',
         'kode_cabang',
+        'kode_dept',
+        'google_id',
     ];
 
     protected $hidden = [
@@ -31,6 +33,11 @@ class User extends Authenticatable
     public function cabang()
     {
         return $this->belongsTo(Cabang::class, 'kode_cabang', 'kode_cabang');
+    }
+
+    public function departemen()
+    {
+        return $this->belongsTo(Departemen::class, 'kode_dept', 'kode_dept');
     }
 
     // Check if user is superadmin

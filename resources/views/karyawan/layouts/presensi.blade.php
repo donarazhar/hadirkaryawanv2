@@ -9,7 +9,7 @@
     <meta name="theme-color" content="#0053C5">
     <title>YPI Al Azhar - E-Presensi</title>
     <meta name="description" content="Sistem Presensi YPI Al Azhar">
-    <link rel="shortcut icon" href="https://siap.al-azhar.id/upload/favicon.ico" type="image/x-icon" />
+    <link rel="shortcut icon" href="{{ asset('assets/img/logoypia.png') }}" type="image/png" />
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
 
     <style>

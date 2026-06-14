@@ -33,12 +33,14 @@ class Karyawan extends Authenticatable
     protected $fillable = [
         'nik',
         'nama_lengkap',
+        'email',
         'jabatan',
         'no_hp',
         'password',
         'foto',
         'kode_dept',
-        'kode_cabang'
+        'kode_cabang',
+        'google_id'
     ];
 
     protected $hidden = [

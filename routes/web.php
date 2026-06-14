@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\LaporanController;
 use App\Http\Controllers\Admin\MonitoringController;
 use App\Http\Controllers\Admin\PresensiFaceAdminController;
 use App\Http\Controllers\Admin\RekapController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Karyawan\DashboardKaryawanController;
 use App\Http\Controllers\Karyawan\FaceEnrollmentController;
 use App\Http\Controllers\Karyawan\HistoryKaryawanController;
@@ -21,11 +22,16 @@ use App\Http\Controllers\Karyawan\IzinKaryawanController;
 use App\Http\Controllers\Karyawan\PresensiKaryawanController;
 use App\Http\Controllers\Karyawan\ProfileKaryawanController;
 use App\Http\Controllers\Karyawan\SimpleFacePresensiController;
+use App\Http\Controllers\Auth\GoogleController;
 use Illuminate\Support\Facades\Route;
 
 
 // Root redirect
 Route::get('/', fn() => redirect()->route('login'));
+
+// Google Auth Routes
+Route::get('/auth/google', [GoogleController::class, 'redirect'])->name('auth.google');
+Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name('auth.google.callback');
 
 // ========================================
 // KARYAWAN ROUTES
@@ -125,6 +131,7 @@ Route::prefix('panel')->name('panel.')->group(function () {
         Route::resource('jamkerja', JamKerjaController::class);
         Route::resource('karyawan', KaryawanAdminController::class);
         Route::resource('konfigurasi-jk-dept', KonfigurasiJkDeptController::class);
+        Route::resource('user', UserController::class);
 
         // Monitoring
         Route::controller(MonitoringController::class)->prefix('monitoring')->name('monitoring.')->group(function () {

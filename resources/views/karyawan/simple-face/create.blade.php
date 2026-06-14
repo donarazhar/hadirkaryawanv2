@@ -813,12 +813,7 @@
     </div>
 </div>
 
-<!-- Capture Button -->
-<div class="capture-container">
-    <button class="btn-capture" id="btn-capture" type="button" disabled>
-        <ion-icon name="scan"></ion-icon>
-    </button>
-</div>
+<!-- Capture Button is now in the Bottom Menu -->
 
 <!-- Loading Overlay -->
 <div class="loading-overlay" id="loading-overlay">
@@ -882,7 +877,7 @@
 
         // ===== DOM ELEMENTS =====
         const elements = {
-            btnCapture: document.getElementById('btn-capture'),
+            btnCapture: document.getElementById('bottom-nav-capture-btn'),
             lokasiInput: document.getElementById('lokasi'),
             coordsDisplay: document.getElementById('coords-display'),
             distanceStatus: document.getElementById('distance-status'),
@@ -947,7 +942,17 @@
             const timeCheck = validateTime();
             const canCapture = webcamReady && withinRadius && timeCheck.valid;
 
-            elements.btnCapture.disabled = !canCapture;
+            if (elements.btnCapture) {
+                if (!canCapture) {
+                    elements.btnCapture.classList.add('disabled');
+                    elements.btnCapture.style.opacity = '0.5';
+                    elements.btnCapture.style.pointerEvents = 'none';
+                } else {
+                    elements.btnCapture.classList.remove('disabled');
+                    elements.btnCapture.style.opacity = '1';
+                    elements.btnCapture.style.pointerEvents = 'auto';
+                }
+            }
 
             console.log('[Button State]', {
                 webcamReady,
@@ -1486,8 +1491,22 @@
         if (elements.btnCapture) {
             elements.btnCapture.addEventListener('click', function(e) {
                 e.preventDefault();
-                e.stopPropagation();
-                handleCapture();
+                const timeCheck = validateTime();
+                if (!timeCheck.valid) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Belum Waktunya',
+                        text: timeCheck.message,
+                        confirmButtonColor: '#0053C5'
+                    });
+                    return;
+                }
+                
+                if (webcamReady && withinRadius) {
+                    handleCapture();
+                } else {
+                    handleCapture();
+                }
             });
         }
 

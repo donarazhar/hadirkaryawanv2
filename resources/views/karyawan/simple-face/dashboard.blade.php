@@ -344,8 +344,13 @@
     <div class="hero-banner">
         <div class="hero-top">
             <div class="user-info">
-                <div class="user-avatar">
-                    <ion-icon name="person"></ion-icon>
+                <div class="user-avatar" style="overflow: hidden;">
+                    @php $userFoto = Auth::guard('karyawan')->user()->foto; @endphp
+                    @if($userFoto)
+                        <img src="{{ Storage::url('uploads/karyawan/'.$userFoto) }}" alt="avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: 14px;">
+                    @else
+                        <ion-icon name="person"></ion-icon>
+                    @endif
                 </div>
                 <div class="user-details">
                     <h2>{{ $nama_lengkap }}</h2>

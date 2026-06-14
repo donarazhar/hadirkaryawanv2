@@ -50,15 +50,15 @@
             <div class="card-body">
                 <form action="{{ route('panel.izinsakit.index') }}" method="GET">
                     <div class="row g-3">
-                        <div class="col-md-3">
+                        <div class="col-sm-6 col-md-3">
                             <label class="form-label">Dari Tanggal</label>
                             <input type="date" name="dari" class="form-control" value="{{ request('dari') }}">
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-sm-6 col-md-3">
                             <label class="form-label">Sampai Tanggal</label>
                             <input type="date" name="sampai" class="form-control" value="{{ request('sampai') }}">
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-sm-6 col-md-2">
                             <label class="form-label">Status Approve</label>
                             <select name="status_approved" class="form-select">
                                 <option value="">Semua</option>
@@ -67,12 +67,11 @@
                                 <option value="2" {{ request('status_approved') === '2' ? 'selected' : '' }}>Ditolak</option>
                             </select>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-sm-6 col-md-3">
                             <label class="form-label">Pencarian</label>
                             <input type="text" name="nik_nama" class="form-control" placeholder="NIK / Nama Karyawan..." value="{{ request('nik_nama') }}">
                         </div>
-                        <div class="col-md-1">
-                            <label class="form-label">&nbsp;</label>
+                        <div class="col-sm-12 col-md-1 d-flex align-items-end">
                             <button type="submit" class="btn btn-primary w-100">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><circle cx="10" cy="10" r="7" /><line x1="21" y1="21" x2="15" y2="15" /></svg>
                             </button>

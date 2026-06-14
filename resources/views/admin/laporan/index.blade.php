@@ -25,8 +25,8 @@
             </div>
             <div class="card-body">
                 <form action="/panel/laporan" method="GET">
-                    <div class="row align-items-end">
-                        <div class="col-md-3 mb-3 mb-md-0">
+                    <div class="row align-items-end g-3">
+                        <div class="col-sm-6 col-md-2">
                             <label class="form-label">Bulan</label>
                             <select name="bulan" id="bulan" class="form-select">
                                 <option value="">Semua Bulan</option>
@@ -37,7 +37,7 @@
                                 @endfor
                             </select>
                         </div>
-                        <div class="col-md-2 mb-3 mb-md-0">
+                        <div class="col-sm-6 col-md-2">
                             <label class="form-label">Tahun</label>
                             <select name="tahun" id="tahun" class="form-select">
                                 @php
@@ -51,7 +51,7 @@
                                 @endfor
                             </select>
                         </div>
-                        <div class="col-md-3 mb-3 mb-md-0">
+                        <div class="col-sm-6 col-md-2">
                             <label class="form-label">Cabang</label>
                             <select name="kode_cabang" id="kode_cabang" class="form-select">
                                 <option value="">Semua Cabang</option>
@@ -62,7 +62,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-md-3 mb-3 mb-md-0">
+                        <div class="col-sm-6 col-md-2">
                             <label class="form-label">Departemen</label>
                             <select name="kode_dept" id="kode_dept" class="form-select">
                                 <option value="">Semua Departemen</option>
@@ -73,7 +73,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-md-4 mt-3 mt-md-0 d-flex gap-2">
+                        <div class="col-sm-12 col-md-4 d-flex gap-2">
                             <button type="submit" class="btn btn-primary flex-grow-1">
                                 <i class="mdi mdi-magnify me-1"></i> Tampilkan
                             </button>

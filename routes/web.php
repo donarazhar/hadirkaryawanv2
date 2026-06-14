@@ -154,15 +154,17 @@ Route::prefix('panel')->name('panel.')->group(function () {
             Route::post('/getkaryawan', 'getKaryawan')->name('getkaryawan');
         });
 
-        // Izin/Sakit
-        Route::middleware('role:superadmin,admin')->group(function () {
+        // Izin/Sakit (Pimpinan juga butuh untuk Approval Berjenjang)
+        Route::middleware('role:superadmin,admin,pimpinan')->group(function () {
             Route::controller(IzinSakitController::class)->prefix('izinsakit')->name('izinsakit.')->group(function () {
                 Route::get('/', 'index')->name('index');
                 Route::post('/{kode_izin}/approve', 'approve')->name('approve');
                 Route::post('/{kode_izin}/cancel', 'cancel')->name('cancel');
             });
+        });
 
-            // Face Verification Routes
+        // Face Verification Routes (Hanya Admin)
+        Route::middleware('role:superadmin,admin')->group(function () {
             Route::prefix('face-verification')->name('face-verification.')->group(function () {
 
                 Route::get('/', [FaceVerificationController::class, 'index'])

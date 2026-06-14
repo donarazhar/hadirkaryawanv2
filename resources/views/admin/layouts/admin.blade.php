@@ -817,12 +817,14 @@
                             <i class="mdi mdi-calendar-month"></i>
                             <span>Rekap Kehadiran</span>
                         </a>
-                        @if(in_array(Auth::guard('user')->user()->role, ['admin', 'superadmin']))
+                        @if(in_array(Auth::guard('user')->user()->role, ['admin', 'superadmin', 'pimpinan']))
                         <a href="{{ route('panel.izinsakit.index') }}"
                             class="menu-item {{ Request::is('panel/izinsakit*') ? 'active' : '' }}">
                             <i class="mdi mdi-hospital-box-outline"></i>
                             <span>Data Izin / Sakit</span>
                         </a>
+                        @endif
+                        @if(in_array(Auth::guard('user')->user()->role, ['admin', 'superadmin']))
                         <a href="{{ route('panel.face-verification.index') }}"
                             class="menu-item {{ Request::is('panel/face-verification*') ? 'active' : '' }}">
                             <i class="mdi mdi-face-recognition"></i>

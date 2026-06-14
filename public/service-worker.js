@@ -1,9 +1,11 @@
 // Service Worker untuk PWA
-const CACHE_NAME = 'presensi-cache-v1';
+const CACHE_NAME = 'presensigps-cache-v1';
 const urlsToCache = [
-    '/',
-    '/assets/css/style.css',
-    '/assets/js/base.js'
+  '/',
+  '/manifest.json',
+  '/assets/css/inc/bootstrap/bootstrap.min.css',
+  '/assets/js/lib/bootstrap.min.js',
+  '/assets/img/logoypia.png'
 ];
 
 // Install Service Worker

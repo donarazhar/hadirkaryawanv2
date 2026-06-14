@@ -10,23 +10,16 @@
     "scope": "/",
     "icons": [
       {
-        "src": "/assets/img/logo-ypi.png",
+        "src": "/assets/img/logoypia.png",
         "sizes": "192x192",
         "type": "image/png",
         "purpose": "any maskable"
       },
       {
-        "src": "/assets/img/logo-ypi.png",
+        "src": "/assets/img/logoypia.png",
         "sizes": "512x512",
         "type": "image/png",
         "purpose": "any maskable"
-      }
-    ],
-    "screenshots": [
-      {
-        "src": "/assets/img/screenshot-1.png",
-        "sizes": "540x720",
-        "type": "image/png"
       }
     ],
     "categories": ["productivity", "business"],
@@ -38,7 +31,7 @@
         "url": "/presensi/create",
         "icons": [
           {
-            "src": "/assets/img/logo-ypi.png",
+            "src": "/assets/img/logoypia.png",
             "sizes": "96x96"
           }
         ]
@@ -50,7 +43,7 @@
         "url": "/dashboard",
         "icons": [
           {
-            "src": "/assets/img/logo-ypi.png",
+            "src": "/assets/img/logoypia.png",
             "sizes": "96x96"
           }
         ]
@@ -62,7 +55,7 @@
         "url": "/presensi/histori",
         "icons": [
           {
-            "src": "/assets/img/logo-ypi.png",
+            "src": "/assets/img/logoypia.png",
             "sizes": "96x96"
           }
         ]

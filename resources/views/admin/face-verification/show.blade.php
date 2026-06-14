@@ -195,7 +195,7 @@
                                 <h4 class="card-title">Foto Referensi Wajah</h4>
                             </div>
                             <div class="card-body text-center">
-                                <img src="{{ Storage::url('uploads/faces/'.$karyawan->faceData->face_image) }}"
+                                <img src="{{ route('panel.face-verification.view-image', $karyawan->nik) }}"
                                     class="img-fluid rounded"
                                     style="max-height: 300px;"
                                     alt="Face Reference">

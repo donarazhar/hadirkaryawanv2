@@ -50,6 +50,8 @@ Route::middleware('auth:karyawan')->group(function () {
     Route::controller(PresensiKaryawanController::class)->prefix('presensi')->name('presensi.')->group(function () {
         Route::get('/create', 'create')->name('create');
         Route::post('/store', 'store')->name('store')->middleware('throttle:10,1');
+        Route::get('/qr-scan', 'qrScan')->name('qrScan');
+        Route::post('/store-qr', 'storeQr')->name('storeQr')->middleware('throttle:10,1');
     });
 
     // Show Map Presensi (bisa diakses karyawan dan admin)
@@ -116,9 +118,12 @@ Route::prefix('panel')->name('panel.')->group(function () {
 
         // Master Data - admin & superadmin
         Route::middleware('role:superadmin,admin')->group(function () {
+            Route::get('cabang/{kode_cabang}/qr', [App\Http\Controllers\Admin\CabangController::class, 'cetakQr'])->name('cabang.cetakQr');
             Route::resource('cabang', CabangController::class);
             Route::resource('departemen', DepartemenController::class);
             Route::resource('jamkerja', JamKerjaController::class);
+            Route::post('karyawan/import', [App\Http\Controllers\Admin\KaryawanAdminController::class, 'importExcel'])->name('karyawan.import');
+            Route::get('karyawan/download-template', [App\Http\Controllers\Admin\KaryawanAdminController::class, 'downloadTemplate'])->name('karyawan.downloadTemplate');
             Route::resource('karyawan', KaryawanAdminController::class);
             Route::resource('konfigurasi-jk-dept', KonfigurasiJkDeptController::class);
             Route::resource('cuti', CutiController::class)->except(['create', 'show', 'edit']);

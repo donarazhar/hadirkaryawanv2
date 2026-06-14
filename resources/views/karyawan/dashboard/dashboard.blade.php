@@ -921,6 +921,13 @@
         @endforeach
     </div>
     @endif
+
+    <div style="padding: 0 20px; margin-top: 15px; margin-bottom: -15px;">
+        <a href="{{ route('presensi.qrScan') }}" style="display: flex; align-items: center; justify-content: center; gap: 8px; background: white; border: 1.5px dashed #0053C5; color: #0053C5; padding: 12px; border-radius: 12px; text-decoration: none; font-weight: 600; font-size: 14px; transition: all 0.2s;">
+            <ion-icon name="qr-code-outline" style="font-size: 20px;"></ion-icon>
+            Absen via QR Code
+        </a>
+    </div>
 </div>
 
 <!-- Stats Section -->

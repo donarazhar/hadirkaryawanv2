@@ -156,4 +156,13 @@ class CabangController extends Controller
                 ->with(['error' => 'Terjadi kesalahan: ' . $e->getMessage()]);
         }
     }
+
+    /**
+     * Print QR Code for Cabang
+     */
+    public function cetakQr($kode_cabang)
+    {
+        $cabang = Cabang::findOrFail($kode_cabang);
+        return view('admin.cabang.qr', compact('cabang'));
+    }
 }

@@ -13,6 +13,16 @@
                 <h2 class="page-title">Data Karyawan</h2>
             </div>
             <div class="col-auto ms-auto d-print-none">
+                <a href="#" class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#modal-import">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M14 3v4a1 1 0 0 0 1 1h4" />
+                        <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" />
+                        <path d="M12 11v6" />
+                        <path d="M9.5 13.5l2.5 2.5l2.5 -2.5" />
+                    </svg>
+                    Import
+                </a>
                 <a href="{{ route('panel.karyawan.create') }}" class="btn btn-primary">
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                         <path stroke="none" d="M0 0h24v24H0z" fill="none" />
@@ -22,6 +32,50 @@
                     Tambah Karyawan
                 </a>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Import -->
+<div class="modal modal-blur fade" id="modal-import" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Import Data Karyawan</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ route('panel.karyawan.import') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Upload File Excel/CSV</label>
+                        <input type="file" name="file" class="form-control" accept=".xlsx,.xls,.csv" required>
+                        <div class="form-hint mt-2">
+                            Pastikan format file sesuai dengan template.
+                            <br>
+                            <a href="{{ route('panel.karyawan.downloadTemplate') }}" class="text-primary font-weight-bold">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-download" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                    <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"></path>
+                                    <polyline points="7 11 12 16 17 11"></polyline>
+                                    <line x1="12" y1="4" x2="12" y2="16"></line>
+                                </svg>
+                                Download Template
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-link link-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                            <path d="M5 12l5 5l10 -10" />
+                        </svg>
+                        Mulai Import
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

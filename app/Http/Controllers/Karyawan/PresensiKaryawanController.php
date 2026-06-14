@@ -573,4 +573,73 @@ class PresensiKaryawanController extends Controller
         }
     }
 
+    public function qrScan()
+    {
+        $hariini = date("Y-m-d");
+        $nik = Auth::guard('karyawan')->user()->nik;
+        
+        $cek = DB::table('presensi')->where('tgl_presensi', $hariini)->where('nik', $nik)->count();
+        $lok_kantor = DB::table('cabang')->where('kode_cabang', Auth::guard('karyawan')->user()->kode_cabang)->first();
+        
+        return view('karyawan.presensi.qr-scan', compact('cek', 'lok_kantor'));
+    }
+
+    public function storeQr(Request $request)
+    {
+        try {
+            $nik = Auth::guard('karyawan')->user()->nik;
+            $karyawan = DB::table('karyawan')->where('nik', $nik)->first();
+            $qr_code = $request->qr_code;
+            
+            if ($qr_code !== $karyawan->kode_cabang) {
+                return response()->json(['success' => false, 'message' => 'QR Code tidak valid atau bukan untuk cabang Anda!']);
+            }
+
+            $tgl_presensi = date("Y-m-d");
+            $jam = date("H:i:s");
+            
+            // Simplified check-in logic for QR
+            $cek = DB::table('presensi')->where('tgl_presensi', $tgl_presensi)->where('nik', $nik)->count();
+            
+            if ($cek > 0) {
+                // Pulang
+                DB::table('presensi')
+                    ->where('tgl_presensi', $tgl_presensi)
+                    ->where('nik', $nik)
+                    ->update([
+                        'jam_out' => $jam,
+                        'lokasi_out' => $request->lokasi ?? 'QR_SCAN',
+                        'updated_at' => \Carbon\Carbon::now('Asia/Jakarta')
+                    ]);
+                return response()->json(['success' => true, 'message' => "Absen Pulang QR Berhasil!"]);
+            } else {
+                // Masuk (default jam kerja)
+                $jamkerja = DB::table('konfigurasi_jk_dept')
+                    ->join('jam_kerja', 'konfigurasi_jk_dept.kode_jam_kerja', '=', 'jam_kerja.kode_jam_kerja')
+                    ->where('kode_dept', $karyawan->kode_dept)
+                    ->where('kode_cabang', $karyawan->kode_cabang)
+                    ->first();
+
+                if(!$jamkerja) {
+                     $jamkerja = DB::table('jam_kerja')->first(); // fallback
+                }
+
+                DB::table('presensi')->insert([
+                    'nik' => $nik,
+                    'tgl_presensi' => $tgl_presensi,
+                    'jam_in' => $jam,
+                    'lokasi_in' => $request->lokasi ?? 'QR_SCAN',
+                    'kode_jam_kerja' => $jamkerja ? $jamkerja->kode_jam_kerja : '01',
+                    'status' => 'h',
+                    'created_at' => \Carbon\Carbon::now('Asia/Jakarta'),
+                    'updated_at' => \Carbon\Carbon::now('Asia/Jakarta')
+                ]);
+                return response()->json(['success' => true, 'message' => "Absen Masuk QR Berhasil!"]);
+            }
+            
+        } catch (\Exception $e) {
+            Log::error('QR Store Error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Terjadi kesalahan sistem.']);
+        }
+    }
 }

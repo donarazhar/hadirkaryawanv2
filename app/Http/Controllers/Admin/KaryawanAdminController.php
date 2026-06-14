@@ -249,4 +249,63 @@ class KaryawanAdminController extends Controller
                 ->with(['error' => 'Terjadi kesalahan: ' . $e->getMessage()]);
         }
     }
+
+    /**
+     * Import Karyawan via Excel
+     */
+    public function importExcel(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv'
+        ], [
+            'file.required' => 'File Excel/CSV wajib diupload',
+            'file.mimes' => 'Format file harus .xlsx, .xls, atau .csv'
+        ]);
+
+        try {
+            \Maatwebsite\Excel\Facades\Excel::import(new \App\Imports\KaryawanImport, $request->file('file'));
+            
+            \App\Helpers\LogHelper::record(
+                'IMPORT_KARYAWAN',
+                "Melakukan import massal data karyawan via Excel"
+            );
+
+            return redirect()->route('panel.karyawan.index')
+                ->with(['success' => 'Data Karyawan berhasil diimport. Data dengan NIK yang sudah ada akan dilewati.']);
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with(['error' => 'Terjadi kesalahan saat import: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Download Excel Template
+     */
+    public function downloadTemplate()
+    {
+        // Path ke template (kita akan menyediakannya atau generate secara dinamis)
+        // Karena generate lebih cepat, mari buat temporary csv/excel
+        $headers = [
+            'Cache-Control'       => 'must-revalidate, post-check=0, pre-check=0',
+            'Content-type'        => 'text/csv',
+            'Content-Disposition' => 'attachment; filename=Template_Karyawan.csv',
+            'Expires'             => '0',
+            'Pragma'              => 'public'
+        ];
+
+        $list = [
+            ['nik', 'nama_lengkap', 'jabatan', 'no_hp', 'email', 'kode_dept', 'kode_cabang'],
+            ['1234567890', 'Jhon Doe', 'Staff', '08123456789', 'jhon@example.com', 'IT', 'JKT'],
+        ];
+
+        $callback = function() use ($list) {
+            $FH = fopen('php://output', 'w');
+            foreach ($list as $row) {
+                fputcsv($FH, $row);
+            }
+            fclose($FH);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
 }

@@ -172,7 +172,7 @@
                                 </td>
                                 <td>
                                     <div class="btn-group" role="group">
-                                        <a href="{{ route('cabang.cetakQr', $item->kode_cabang) }}"
+                                        <a href="{{ route('panel.cabang.cetakQr', $item->kode_cabang) }}"
                                             target="_blank"
                                             class="btn btn-sm btn-info"
                                             title="Cetak QR Code">

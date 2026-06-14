@@ -73,9 +73,15 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-md-2">
-                            <button type="submit" class="btn btn-primary w-100">
+                        <div class="col-md-4 mt-3 mt-md-0 d-flex gap-2">
+                            <button type="submit" class="btn btn-primary flex-grow-1">
                                 <i class="mdi mdi-magnify me-1"></i> Tampilkan
+                            </button>
+                            <button type="submit" name="export" value="pdf" formaction="{{ route('panel.laporan.export.pdf') }}" formtarget="_blank" class="btn btn-danger flex-grow-1">
+                                <i class="mdi mdi-file-pdf-box me-1"></i> PDF
+                            </button>
+                            <button type="submit" name="export" value="excel" formaction="{{ route('panel.laporan.export.excel') }}" class="btn btn-success flex-grow-1">
+                                <i class="mdi mdi-file-excel-box me-1"></i> Excel
                             </button>
                         </div>
                     </div>

@@ -414,8 +414,8 @@
     /* ===== STATS SECTION ===== */
     .stats-grid {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 10px;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 8px;
     }
 
     .stat-card {
@@ -486,6 +486,11 @@
     .stat-card.sick {
         --color: var(--warning);
         --bg-color: #fef3c7;
+    }
+
+    .stat-card.leave {
+        --color: var(--purple);
+        --bg-color: #ede9fe;
     }
 
     /* ===== LEADERBOARD ===== */
@@ -959,6 +964,14 @@
             </div>
             <div class="stat-value">{{ $rekapizin != null ? $rekapizin->jmlsakit : 0 }}</div>
             <div class="stat-label">Sakit</div>
+        </div>
+
+        <div class="stat-card leave">
+            <div class="stat-icon">
+                <ion-icon name="calendar-number"></ion-icon>
+            </div>
+            <div class="stat-value">{{ $rekapizin != null ? $rekapizin->jmlcuti : 0 }}</div>
+            <div class="stat-label">Cuti</div>
         </div>
     </div>
 </div>

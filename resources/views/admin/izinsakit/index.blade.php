@@ -133,32 +133,64 @@
                                     @endif
                                 </td>
                                 <td>
-                                    @if($item->status_approved == '0')
-                                        <span class="badge bg-warning text-white"><svg xmlns="http://www.w3.org/2000/svg" class="icon" width="14" height="14" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><circle cx="12" cy="12" r="9" /><polyline points="12 7 12 12 15 15" /></svg> Menunggu</span>
-                                    @elseif($item->status_approved == '1')
-                                        <span class="badge bg-success text-white"><svg xmlns="http://www.w3.org/2000/svg" class="icon" width="14" height="14" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M5 12l5 5l10 -10" /></svg> Disetujui</span>
-                                    @elseif($item->status_approved == '2')
-                                        <span class="badge bg-danger text-white"><svg xmlns="http://www.w3.org/2000/svg" class="icon" width="14" height="14" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg> Ditolak</span>
-                                    @endif
-
-                                    @if($item->catatan_admin)
-                                        <div class="mt-1">
-                                            <small class="text-muted d-block"><b>Catatan:</b> {{ $item->catatan_admin }}</small>
-                                        </div>
-                                    @endif
+                                    <div class="mb-1">
+                                        <small class="text-muted d-block">Pimpinan:</small>
+                                        @if($item->status_approved_atasan == '0')
+                                            <span class="badge bg-warning text-white">Menunggu</span>
+                                        @elseif($item->status_approved_atasan == '1')
+                                            <span class="badge bg-success text-white">Disetujui</span>
+                                        @elseif($item->status_approved_atasan == '2')
+                                            <span class="badge bg-danger text-white">Ditolak</span>
+                                        @endif
+                                        @if($item->catatan_atasan)
+                                            <br><small class="text-muted"><b>Catatan:</b> {{ $item->catatan_atasan }}</small>
+                                        @endif
+                                    </div>
+                                    <div>
+                                        <small class="text-muted d-block">HRD:</small>
+                                        @if($item->status_approved == '0')
+                                            <span class="badge bg-warning text-white">Menunggu</span>
+                                        @elseif($item->status_approved == '1')
+                                            <span class="badge bg-success text-white">Disetujui</span>
+                                        @elseif($item->status_approved == '2')
+                                            <span class="badge bg-danger text-white">Ditolak</span>
+                                        @endif
+                                        @if($item->catatan_admin)
+                                            <br><small class="text-muted"><b>Catatan:</b> {{ $item->catatan_admin }}</small>
+                                        @endif
+                                    </div>
                                 </td>
                                 <td class="text-center">
-                                    @if($item->status_approved == '0')
-                                    <button class="btn btn-sm btn-primary" onclick="openApprovalModal('{{ $item->kode_izin }}')">
-                                        Action
-                                    </button>
-                                    @else
-                                    <form action="{{ route('panel.izinsakit.cancel', $item->kode_izin) }}" method="POST" class="d-inline">
-                                        @csrf
-                                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Yakin ingin membatalkan status pengajuan ini?')">
-                                            Batalkan
+                                    @php
+                                        $userRole = \Illuminate\Support\Facades\Auth::guard('user')->user()->role ?? 'admin';
+                                    @endphp
+                                    
+                                    @if($userRole == 'pimpinan')
+                                        @if($item->status_approved_atasan == '0')
+                                        <button class="btn btn-sm btn-primary" onclick="openApprovalModal('{{ $item->kode_izin }}')">
+                                            Action
                                         </button>
-                                    </form>
+                                        @else
+                                        <form action="{{ route('panel.izinsakit.cancel', $item->kode_izin) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Yakin ingin membatalkan status pengajuan ini?')">
+                                                Batalkan
+                                            </button>
+                                        </form>
+                                        @endif
+                                    @else
+                                        @if($item->status_approved == '0')
+                                        <button class="btn btn-sm btn-primary" onclick="openApprovalModal('{{ $item->kode_izin }}')" {{ $item->status_approved_atasan != '1' ? 'disabled title="Menunggu Atasan"' : '' }}>
+                                            Action
+                                        </button>
+                                        @else
+                                        <form action="{{ route('panel.izinsakit.cancel', $item->kode_izin) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Yakin ingin membatalkan status pengajuan ini?')">
+                                                Batalkan
+                                            </button>
+                                        </form>
+                                        @endif
                                     @endif
                                 </td>
                             </tr>

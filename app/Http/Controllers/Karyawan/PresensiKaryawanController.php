@@ -265,24 +265,6 @@ class PresensiKaryawanController extends Controller
             $ceklintashari = $cekpresensi_sebelumnya != null ? $cekpresensi_sebelumnya->lintashari : 0;
             $tgl_presensi = ($ceklintashari == 1 && $jamsekarang < "08:00") ? $tgl_sebelumnya : $hariini;
 
-            // Get lokasi kantor
-            $lok_kantor = DB::table('cabang')->where('kode_cabang', $kode_cabang)->first();
-
-            if (!$lok_kantor) {
-                Log::error('Cabang not found', ['kode_cabang' => $kode_cabang]);
-                return response("error|Data cabang tidak ditemukan|system", 200);
-            }
-
-            // Parse lokasi kantor
-            $lok = explode(",", $lok_kantor->lokasi_cabang);
-            if (count($lok) < 2) {
-                Log::error('Invalid cabang location format', ['lokasi' => $lok_kantor->lokasi_cabang]);
-                return response("error|Format lokasi kantor tidak valid|system", 200);
-            }
-
-            $latitudekantor = trim($lok[0]);
-            $longitudekantor = trim($lok[1]);
-
             // Parse lokasi user
             $lokasi = $request->lokasi;
             $lokasiuser = explode(",", $lokasi);
@@ -294,25 +276,39 @@ class PresensiKaryawanController extends Controller
             $latitudeuser = trim($lokasiuser[0]);
             $longitudeuser = trim($lokasiuser[1]);
 
-            // Hitung jarak
-            $jarak = $this->distance($latitudekantor, $longitudekantor, $latitudeuser, $longitudeuser);
-            $radius = round($jarak["meters"]);
+            // Geofencing Multi-Lokasi
+            $semua_cabang = DB::table('cabang')->get();
+            $within_geofence = false;
+            $cabang_presensi = null;
+            $radius = 0;
 
-            Log::info('Distance calculated', [
-                'nik' => $nik,
-                'radius' => $radius,
-                'max_radius' => $lok_kantor->radius_cabang
-            ]);
+            foreach ($semua_cabang as $c) {
+                $lok = explode(",", $c->lokasi_cabang);
+                if (count($lok) >= 2) {
+                    $latitudekantor = trim($lok[0]);
+                    $longitudekantor = trim($lok[1]);
+                    $jarak = $this->distance($latitudekantor, $longitudekantor, $latitudeuser, $longitudeuser);
+                    $radius_calc = round($jarak["meters"]);
 
-            // Validasi radius
-            if ($radius > $lok_kantor->radius_cabang) {
-                Log::warning('Outside radius', [
-                    'nik' => $nik,
-                    'distance' => $radius,
-                    'max' => $lok_kantor->radius_cabang
-                ]);
-                return response("error|Maaf, Anda berada diluar radius kantor. Jarak Anda: {$radius}m dari kantor (Max: {$lok_kantor->radius_cabang}m)|radius", 200);
+                    if ($radius_calc <= $c->radius_cabang) {
+                        $within_geofence = true;
+                        $cabang_presensi = $c;
+                        $radius = $radius_calc;
+                        break;
+                    }
+                }
             }
+
+            if (!$within_geofence) {
+                Log::warning('Outside all radius', [
+                    'nik' => $nik,
+                    'lokasi' => $lokasi
+                ]);
+                return response("error|Maaf, Anda berada diluar radius seluruh kantor/cabang.|radius", 200);
+            }
+
+            // Gunakan cabang presensi terpilih untuk sisa fungsi jika diperlukan
+            $lok_kantor = $cabang_presensi;
 
             // Get jam kerja berdasarkan cabang dan departemen
             $namahari = $this->getHari(date("D", strtotime($tgl_presensi)));

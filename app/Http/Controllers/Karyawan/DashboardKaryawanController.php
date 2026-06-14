@@ -56,10 +56,11 @@ class DashboardKaryawanController extends Controller
             ->whereRaw('YEAR(presensi.tgl_presensi) = ?', [$tahunini])
             ->first();
 
-        // Rekap izin/sakit dari tabel pengajuan_izin
+        // Rekap izin/sakit/cuti dari tabel pengajuan_izin
         $rekapizin = DB::table('pengajuan_izin')
             ->selectRaw('SUM(IF(status="i", 1, 0)) as jmlizin')
             ->selectRaw('SUM(IF(status="s", 1, 0)) as jmlsakit')
+            ->selectRaw('SUM(IF(status="c", 1, 0)) as jmlcuti')
             ->where('nik', $nik)
             ->whereRaw('MONTH(tgl_izin_dari) = ?', [$bulanini])
             ->whereRaw('YEAR(tgl_izin_dari) = ?', [$tahunini])

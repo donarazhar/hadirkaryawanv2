@@ -15,6 +15,11 @@ class IzinSakitController extends Controller
             ->select('pengajuan_izin.*')
             ->join('karyawan', 'pengajuan_izin.nik', '=', 'karyawan.nik');
 
+        $user = \Illuminate\Support\Facades\Auth::guard('user')->user();
+        if ($user && $user->role == 'pimpinan') {
+            $query->where('karyawan.kode_cabang', $user->kode_cabang);
+        }
+
         // Filter Tanggal
         if ($request->filled('dari') && $request->filled('sampai')) {
             $query->whereBetween('tgl_izin_dari', [$request->dari, $request->sampai]);
@@ -30,7 +35,11 @@ class IzinSakitController extends Controller
 
         // Filter Status Approved
         if ($request->filled('status_approved')) {
-            $query->where('status_approved', $request->status_approved);
+            if ($user && $user->role == 'pimpinan') {
+                $query->where('status_approved_atasan', $request->status_approved);
+            } else {
+                $query->where('status_approved', $request->status_approved);
+            }
         }
 
         $izinsakit = $query->orderBy('tgl_izin_dari', 'desc')->paginate(15);
@@ -50,16 +59,27 @@ class IzinSakitController extends Controller
 
             $izin = PengajuanIzin::findOrFail($kode_izin);
             
-            // Logika khusus Cuti
-            if ($izin->status == 'c' && $request->status_approved == '1') {
-                // Kurangi jatah cuti jika disetujui (opsional/tergantung business logic yang ada)
-                // Sementara dibiarkan mengikuti logic yang sudah ada di aplikasi
+            $user = \Illuminate\Support\Facades\Auth::guard('user')->user();
+            $userRole = $user ? $user->role : 'admin';
+            
+            if ($userRole == 'pimpinan') {
+                $izin->update([
+                    'status_approved_atasan' => $request->status_approved,
+                    'catatan_atasan' => $request->catatan_admin
+                ]);
+            } else {
+                if ($izin->status_approved_atasan == '0') {
+                    return redirect()->back()->with('error', 'Menunggu persetujuan Pimpinan terlebih dahulu.');
+                }
+                if ($izin->status_approved_atasan == '2') {
+                    return redirect()->back()->with('error', 'Pengajuan ini sudah ditolak oleh Pimpinan.');
+                }
+                
+                $izin->update([
+                    'status_approved' => $request->status_approved,
+                    'catatan_admin' => $request->catatan_admin
+                ]);
             }
-
-            $izin->update([
-                'status_approved' => $request->status_approved,
-                'catatan_admin' => $request->catatan_admin
-            ]);
 
             // Notifikasi WA ke Karyawan
             $karyawan = \App\Models\Karyawan::where('nik', $izin->nik)->first();
@@ -88,10 +108,20 @@ class IzinSakitController extends Controller
         try {
             $izin = PengajuanIzin::findOrFail($kode_izin);
             
-            $izin->update([
-                'status_approved' => '0',
-                'catatan_admin' => null
-            ]);
+            $user = \Illuminate\Support\Facades\Auth::guard('user')->user();
+            $userRole = $user ? $user->role : 'admin';
+            
+            if ($userRole == 'pimpinan') {
+                $izin->update([
+                    'status_approved_atasan' => '0',
+                    'catatan_atasan' => null
+                ]);
+            } else {
+                $izin->update([
+                    'status_approved' => '0',
+                    'catatan_admin' => null
+                ]);
+            }
 
             return redirect()->back()->with('success', 'Status pengajuan berhasil dibatalkan (dikembalikan ke status Menunggu)');
         } catch (\Exception $e) {

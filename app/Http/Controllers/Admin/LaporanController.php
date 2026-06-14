@@ -40,6 +40,63 @@ class LaporanController extends Controller
         return view('admin.laporan.index', compact('namabulan', 'cabang', 'departemen', 'bulan', 'tahun', 'kode_cabang', 'kode_dept', 'presensi'));
     }
 
+    public function exportPdf(Request $request)
+    {
+        $bulan = $request->bulan != null ? $request->bulan : date('m');
+        $tahun = $request->tahun != null ? $request->tahun : date('Y');
+        $kode_cabang = $request->kode_cabang != null ? $request->kode_cabang : '';
+        $kode_dept = $request->kode_dept != null ? $request->kode_dept : '';
+
+        $query = DB::table('presensi')
+            ->select('presensi.*', 'karyawan.nama_lengkap', 'karyawan.kode_dept', 'jam_kerja.nama_jam_kerja')
+            ->join('karyawan', 'presensi.nik', '=', 'karyawan.nik')
+            ->leftJoin('jam_kerja', 'presensi.kode_jam_kerja', '=', 'jam_kerja.kode_jam_kerja')
+            ->whereRaw('MONTH(tgl_presensi)="' . $bulan . '"')
+            ->whereRaw('YEAR(tgl_presensi)="' . $tahun . '"');
+
+        if (!empty($kode_cabang)) {
+            $query->where('karyawan.kode_cabang', $kode_cabang);
+        }
+        
+        if (!empty($kode_dept)) {
+            $query->where('karyawan.kode_dept', $kode_dept);
+        }
+
+        $presensi = $query->orderBy('tgl_presensi', 'desc')->orderBy('karyawan.nama_lengkap')->get();
+        $namabulan = ["", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+        $namabulan = $namabulan[(int)$bulan];
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.excel', compact('presensi', 'namabulan', 'tahun'));
+        return $pdf->download("Laporan_Presensi_{$namabulan}_{$tahun}.pdf");
+    }
+
+    public function exportExcel(Request $request)
+    {
+        $bulan = $request->bulan != null ? $request->bulan : date('m');
+        $tahun = $request->tahun != null ? $request->tahun : date('Y');
+        $kode_cabang = $request->kode_cabang != null ? $request->kode_cabang : '';
+        $kode_dept = $request->kode_dept != null ? $request->kode_dept : '';
+
+        $query = DB::table('presensi')
+            ->select('presensi.*', 'karyawan.nama_lengkap', 'karyawan.kode_dept', 'jam_kerja.nama_jam_kerja')
+            ->join('karyawan', 'presensi.nik', '=', 'karyawan.nik')
+            ->leftJoin('jam_kerja', 'presensi.kode_jam_kerja', '=', 'jam_kerja.kode_jam_kerja')
+            ->whereRaw('MONTH(tgl_presensi)="' . $bulan . '"')
+            ->whereRaw('YEAR(tgl_presensi)="' . $tahun . '"');
+
+        if (!empty($kode_cabang)) {
+            $query->where('karyawan.kode_cabang', $kode_cabang);
+        }
+        
+        if (!empty($kode_dept)) {
+            $query->where('karyawan.kode_dept', $kode_dept);
+        }
+
+        $presensi = $query->orderBy('tgl_presensi', 'desc')->orderBy('karyawan.nama_lengkap')->get();
+
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\LaporanPresensiExport($presensi, (int)$bulan, $tahun), "Laporan_Presensi_{$bulan}_{$tahun}.xlsx");
+    }
+
     public function getKaryawan(Request $request)
     {
         $kode_cabang = $request->kode_cabang;

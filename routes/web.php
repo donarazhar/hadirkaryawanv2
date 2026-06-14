@@ -139,6 +139,8 @@ Route::prefix('panel')->name('panel.')->group(function () {
         // Laporan
         Route::controller(LaporanController::class)->prefix('laporan')->name('laporan.')->group(function () {
             Route::get('/', 'index')->name('index');
+            Route::post('/export-pdf', 'exportPdf')->name('export.pdf');
+            Route::post('/export-excel', 'exportExcel')->name('export.excel');
             Route::post('/edit', 'edit')->name('edit');
             Route::post('/update', 'update')->name('update');
             Route::post('/getkaryawan', 'getKaryawan')->name('getkaryawan');

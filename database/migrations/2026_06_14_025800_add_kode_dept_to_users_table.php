@@ -11,14 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->char('kode_dept', 10)->nullable()->after('kode_cabang');
-
-            // Set foreign key
-            $table->foreign('kode_dept')
-                  ->references('kode_dept')->on('departemen')
-                  ->onDelete('set null');
-        });
+        if (!Schema::hasColumn('users', 'kode_dept')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->char('kode_dept', 10)->nullable()->after('kode_cabang');
+            });
+        }
     }
 
     /**
@@ -27,8 +24,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropForeign(['kode_dept']);
-            $table->dropColumn('kode_dept');
+            if (Schema::hasColumn('users', 'kode_dept')) {
+                $table->dropColumn('kode_dept');
+            }
         });
     }
 };

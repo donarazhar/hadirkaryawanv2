@@ -1341,10 +1341,12 @@
             }
 
             // Get reference descriptor
-            const referenceDescriptor = await getReferenceFaceDescriptor();
+            if (!window.referenceDescriptorCache) {
+                window.referenceDescriptorCache = await getReferenceFaceDescriptor();
+            }
 
             // Calculate distance/similarity
-            const distance = faceapi.euclideanDistance(detection.descriptor, referenceDescriptor);
+            const distance = faceapi.euclideanDistance(detection.descriptor, window.referenceDescriptorCache);
             const similarity = ((1 - distance) * 100).toFixed(1);
 
             console.log('[FaceAPI] Similarity:', similarity + '%', 'Distance:', distance.toFixed(4));
@@ -1364,7 +1366,180 @@
             };
         }
 
-        // ===== CAPTURE HANDLER =====
+        // ===== AUTO VERIFY =====
+        let isAutoVerifying = false;
+        let autoVerifyInterval = null;
+
+        async function startAutoVerify() {
+            if (autoVerifyInterval) clearInterval(autoVerifyInterval);
+            
+            // Wait for webcam and location
+            if (!webcamReady || !withinRadius) {
+                setTimeout(startAutoVerify, 1000);
+                return;
+            }
+
+            // Check time
+            const timeCheck = validateTime();
+            if (!timeCheck.valid) {
+                setTimeout(startAutoVerify, 1000);
+                return;
+            }
+
+            if (!modelsLoaded) {
+                setTimeout(startAutoVerify, 1000);
+                return;
+            }
+
+            try {
+                if (!window.referenceDescriptorCache) {
+                    if (elements.cameraHint) {
+                        elements.cameraHint.innerHTML = `
+                            <div class="hint-box">
+                                <ion-icon name="cloud-download-outline"></ion-icon>
+                                <span>Mengambil Data Wajah...</span>
+                            </div>
+                        `;
+                    }
+                    window.referenceDescriptorCache = await getReferenceFaceDescriptor();
+                }
+
+                const video = document.querySelector('.webcam-capture video');
+                if (!video) {
+                    setTimeout(startAutoVerify, 1000);
+                    return;
+                }
+                
+                if (elements.cameraHint) {
+                    elements.cameraHint.innerHTML = `
+                        <div class="hint-box">
+                            <ion-icon name="scan-outline"></ion-icon>
+                            <span>Mendeteksi Wajah Otomatis...</span>
+                        </div>
+                    `;
+                }
+
+                // Sembunyikan tombol absen manual agar rapi
+                if (elements.btnCapture) {
+                    elements.btnCapture.style.display = 'none';
+                }
+
+                autoVerifyInterval = setInterval(async () => {
+                    if (isAutoVerifying) return;
+                    isAutoVerifying = true;
+
+                    try {
+                        const detection = await faceapi
+                            .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+                            .withFaceLandmarks()
+                            .withFaceDescriptor();
+
+                        if (detection && detection.detection.score >= 0.5) {
+                            const distance = faceapi.euclideanDistance(detection.descriptor, window.referenceDescriptorCache);
+                            
+                            if (distance <= 0.6) {
+                                // Match found!
+                                clearInterval(autoVerifyInterval);
+                                
+                                if (elements.cameraHint) {
+                                    elements.cameraHint.innerHTML = `
+                                        <div class="hint-box" style="background: rgba(16, 185, 129, 0.9);">
+                                            <ion-icon name="checkmark-circle-outline"></ion-icon>
+                                            <span>Wajah Terverifikasi! Memproses...</span>
+                                        </div>
+                                    `;
+                                }
+                                
+                                await processPresensi(true);
+                            }
+                        }
+                    } catch (e) {
+                        // ignore error during loop
+                    }
+
+                    isAutoVerifying = false;
+                }, 1000); // Check every 1 second
+                
+            } catch (error) {
+                console.error('[AutoVerify]', error);
+                // Jika gagal mengambil data, fallback ke manual
+                if (elements.btnCapture) {
+                    elements.btnCapture.style.display = 'flex';
+                }
+                if (elements.cameraHint) {
+                    elements.cameraHint.innerHTML = `
+                        <div class="hint-box" style="background: rgba(239, 68, 68, 0.9);">
+                            <ion-icon name="warning-outline"></ion-icon>
+                            <span>Auto Deteksi Gagal, Klik Tombol</span>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        async function processPresensi(isAuto = false) {
+            try {
+                if ('vibrate' in navigator) navigator.vibrate(20);
+
+                showLoading('Menyimpan presensi...', 'Hampir selesai');
+
+                const formData = new FormData();
+                formData.append('_token', '{{ csrf_token() }}');
+                formData.append('verified', 'true');
+                formData.append('lokasi', elements.lokasiInput.value);
+
+                const shiftKe = document.getElementById('shift_ke_input')?.value;
+                if (shiftKe) {
+                    formData.append('shift_ke', shiftKe);
+                }
+
+                const response = await fetch('/face-presensi/store', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const responseText = await response.text();
+                hideLoading();
+
+                const [status, message] = responseText.split('|');
+
+                if (status === 'success') {
+                    if (elements.successSound) elements.successSound.play().catch(() => {});
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        html: `<strong>${message}</strong>`,
+                        confirmButtonColor: '#0053C5',
+                        timer: 3000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.href = '/face-presensi/dashboard';
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: message || 'Terjadi kesalahan',
+                        confirmButtonColor: '#0053C5'
+                    }).then(() => {
+                        if (isAuto) setTimeout(startAutoVerify, 2000);
+                    });
+                }
+            } catch (error) {
+                hideLoading();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: error.message || 'Terjadi kesalahan jaringan',
+                    confirmButtonColor: '#0053C5'
+                }).then(() => {
+                    if (isAuto) setTimeout(startAutoVerify, 2000);
+                });
+            }
+        }
+
+        // ===== CAPTURE HANDLER (MANUAL FALLBACK) =====
         async function handleCapture() {
             console.log('[Capture] Starting...');
 
@@ -1407,72 +1582,20 @@
             }
 
             try {
-                // Vibrate feedback
-                if ('vibrate' in navigator) {
-                    navigator.vibrate(20);
-                }
+                if ('vibrate' in navigator) navigator.vibrate(20);
 
                 showLoading('Memverifikasi wajah...', 'Mohon tunggu');
 
-                // Load models if needed
                 if (!modelsLoaded) {
                     showLoading('Memuat model AI...', 'Proses pertama kali mungkin lebih lama');
                     const loaded = await loadFaceModels();
-                    if (!loaded) {
-                        throw new Error('Gagal memuat model face recognition');
-                    }
+                    if (!loaded) throw new Error('Gagal memuat model face recognition');
                 }
 
-                // Verify face
                 showLoading('Mendeteksi wajah...', 'Pastikan wajah terlihat jelas');
                 await verifyFace();
 
-                // Send to server
-                showLoading('Menyimpan presensi...', 'Hampir selesai');
-
-                const formData = new FormData();
-                formData.append('_token', '{{ csrf_token() }}');
-                formData.append('verified', 'true');
-                formData.append('lokasi', elements.lokasiInput.value);
-
-                const shiftKe = document.getElementById('shift_ke_input')?.value;
-                if (shiftKe) {
-                    formData.append('shift_ke', shiftKe);
-                }
-
-                const response = await fetch('/face-presensi/store', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const responseText = await response.text();
-                hideLoading();
-
-                const [status, message] = responseText.split('|');
-
-                if (status === 'success') {
-                    if (elements.successSound) {
-                        elements.successSound.play().catch(() => {});
-                    }
-
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil!',
-                        html: `<strong>${message}</strong>`,
-                        confirmButtonColor: '#0053C5',
-                        timer: 3000,
-                        showConfirmButton: false
-                    }).then(() => {
-                        window.location.href = '/face-presensi/dashboard';
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Gagal!',
-                        text: message || 'Terjadi kesalahan',
-                        confirmButtonColor: '#0053C5'
-                    });
-                }
+                await processPresensi(false);
 
             } catch (error) {
                 hideLoading();
@@ -1520,8 +1643,10 @@
             // Initialize geolocation
             initGeolocation();
 
-            // Preload face models in background
-            loadFaceModels();
+            // Preload face models in background, then start auto verify
+            loadFaceModels().then(() => {
+                startAutoVerify();
+            });
 
             console.log('[Init] Initialization complete');
         }

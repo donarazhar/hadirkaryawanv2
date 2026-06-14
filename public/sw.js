@@ -4,7 +4,7 @@ const urlsToCache = [
   '/manifest.json',
   '/assets/css/inc/bootstrap/bootstrap.min.css',
   '/assets/js/lib/bootstrap.min.js',
-  '/assets/img/logo-ypi.png'
+  '/assets/img/logoypia.png'
 ];
 
 // Install Service Worker

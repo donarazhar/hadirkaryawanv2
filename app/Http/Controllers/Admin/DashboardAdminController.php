@@ -40,9 +40,10 @@ class DashboardAdminController extends Controller
             ->count();
 
         $terlambatGPS = DB::table('presensi')
+            ->join('jam_kerja', 'presensi.kode_jam_kerja', '=', 'jam_kerja.kode_jam_kerja')
             ->where('tgl_presensi', $hariini)
             ->where('status', 'h')
-            ->whereRaw('TIME(jam_in) > (SELECT jam_masuk FROM jam_kerja LIMIT 1)')
+            ->whereRaw('CAST(jam_in AS TIME) > jam_kerja.jam_masuk')
             ->count();
 
         // ========== PRESENSI FACE HARI INI ==========

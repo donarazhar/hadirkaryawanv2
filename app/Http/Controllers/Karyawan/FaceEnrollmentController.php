@@ -64,7 +64,8 @@ class FaceEnrollmentController extends Controller
             }
 
             $image_base64 = base64_decode($image_parts[1]);
-            $fileName = $nik . '_face_' . time() . '.png';
+            $safeNik = \Illuminate\Support\Str::slug($nik);
+            $fileName = $safeNik . '_face_' . time() . '.png';
             $folderPath = "public/uploads/faces/";
             $file = $folderPath . $fileName;
             

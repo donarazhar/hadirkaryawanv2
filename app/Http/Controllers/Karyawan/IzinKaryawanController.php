@@ -133,7 +133,7 @@ class IzinKaryawanController extends Controller
 
             // Generate kode izin
             $prefix = $request->status == 'i' ? 'IZ' : ($request->status == 's' ? 'SK' : 'CT');
-            $kode_izin = $prefix . date('Ymd') . rand(1000, 9999);
+            $kode_izin = $prefix . date('Ymd') . strtoupper(\Illuminate\Support\Str::random(5));
 
             // Cek apakah sudah ada pengajuan di tanggal yang sama
             $cek = DB::table('pengajuan_izin')

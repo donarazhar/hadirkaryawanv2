@@ -38,6 +38,21 @@
 
                         <div class="col-md-6">
                             <div class="mb-3">
+                                <label for="email" class="form-label">Email (Opsional)</label>
+                                <input type="email" class="form-control @error('email') is-invalid @enderror"
+                                    id="email" name="email"
+                                    value="{{ old('email', $karyawan->email) }}"
+                                    maxlength="100">
+                                @error('email')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
                                 <label for="nama_lengkap" class="form-label">Nama Lengkap <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control @error('nama_lengkap') is-invalid @enderror"
                                     id="nama_lengkap" name="nama_lengkap"
@@ -48,9 +63,6 @@
                                 @enderror
                             </div>
                         </div>
-                    </div>
-
-                    <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="jabatan" class="form-label">Jabatan <span class="text-danger">*</span></label>
@@ -202,6 +214,10 @@
                 <hr>
 
                 <div class="text-start">
+                    <p class="mb-2">
+                        <i class="mdi mdi-email text-warning"></i>
+                        <strong>Email:</strong> {{ $karyawan->email ?? 'N/A' }}
+                    </p>
                     <p class="mb-2">
                         <i class="mdi mdi-phone text-primary"></i>
                         <strong>No HP:</strong> {{ $karyawan->no_hp }}

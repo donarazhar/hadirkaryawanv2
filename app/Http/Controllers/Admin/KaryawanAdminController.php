@@ -7,6 +7,7 @@ use App\Models\Departemen;
 use App\Models\Cabang;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\Controller;
@@ -65,6 +66,7 @@ class KaryawanAdminController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'nik' => 'required|string|max:10|unique:karyawan,nik',
+            'email' => 'nullable|email|max:100|unique:karyawan,email',
             'nama_lengkap' => 'required|string|max:100',
             'jabatan' => 'required|string|max:20',
             'no_hp' => 'required|string|max:15',
@@ -75,6 +77,8 @@ class KaryawanAdminController extends Controller
         ], [
             'nik.required' => 'NIK wajib diisi',
             'nik.unique' => 'NIK sudah terdaftar',
+            'email.email' => 'Format email tidak valid',
+            'email.unique' => 'Email sudah terdaftar',
             'nama_lengkap.required' => 'Nama Lengkap wajib diisi',
             'jabatan.required' => 'Jabatan wajib diisi',
             'no_hp.required' => 'No HP wajib diisi',
@@ -95,6 +99,7 @@ class KaryawanAdminController extends Controller
         try {
             $data = [
                 'nik' => $request->nik,
+                'email' => $request->email,
                 'nama_lengkap' => $request->nama_lengkap,
                 'jabatan' => $request->jabatan,
                 'no_hp' => $request->no_hp,
@@ -139,6 +144,7 @@ class KaryawanAdminController extends Controller
     public function update(Request $request, $nik)
     {
         $validator = Validator::make($request->all(), [
+            'email' => ['nullable', 'email', 'max:100', Rule::unique('karyawan')->ignore($nik, 'nik')],
             'nama_lengkap' => 'required|string|max:100',
             'jabatan' => 'required|string|max:20',
             'no_hp' => 'required|string|max:15',
@@ -147,6 +153,8 @@ class KaryawanAdminController extends Controller
             'kode_cabang' => 'required|exists:cabang,kode_cabang',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
         ], [
+            'email.email' => 'Format email tidak valid',
+            'email.unique' => 'Email sudah terdaftar',
             'nama_lengkap.required' => 'Nama Lengkap wajib diisi',
             'jabatan.required' => 'Jabatan wajib diisi',
             'no_hp.required' => 'No HP wajib diisi',
@@ -167,6 +175,7 @@ class KaryawanAdminController extends Controller
             $karyawan = Karyawan::findOrFail($nik);
 
             $data = [
+                'email' => $request->email,
                 'nama_lengkap' => $request->nama_lengkap,
                 'jabatan' => $request->jabatan,
                 'no_hp' => $request->no_hp,

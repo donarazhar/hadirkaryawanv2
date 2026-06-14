@@ -165,6 +165,10 @@
                                         <div>
                                             <div class="fw-bold">{{ $item->nama_lengkap }}</div>
                                             <small class="text-muted">NIK: {{ $item->nik }}</small>
+                                            @if($item->email)
+                                            <br>
+                                            <small class="text-muted">Email: {{ $item->email }}</small>
+                                            @endif
                                             <br>
                                             <small class="text-muted">{{ $item->jabatan }}</small>
                                         </div>

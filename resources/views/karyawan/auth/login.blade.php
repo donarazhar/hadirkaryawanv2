@@ -295,7 +295,7 @@
             Login dengan Google
         </a>
 
-        <div class="divider">Atau gunakan NIK</div>
+        <div class="divider">Atau gunakan NIK / Email</div>
 
         <form action="{{ route('proseslogin') }}" method="POST">
             @csrf
@@ -305,7 +305,7 @@
                     type="text" 
                     name="nik" 
                     class="form-control" 
-                    placeholder="Masukkan NIK" 
+                    placeholder="Masukkan NIK atau Email" 
                     x-model="nik"
                     required 
                     autocomplete="username"

@@ -30,12 +30,14 @@ class AuthController extends Controller
             'nik' => 'required',
             'password' => 'required'
         ], [
-            'nik.required' => 'NIK harus diisi',
+            'nik.required' => 'NIK atau Email harus diisi',
             'password.required' => 'Password harus diisi'
         ]);
 
+        $loginField = filter_var($request->nik, FILTER_VALIDATE_EMAIL) ? 'email' : 'nik';
+
         $credentials = [
-            'nik' => $request->nik,
+            $loginField => $request->nik,
             'password' => $request->password
         ];
 

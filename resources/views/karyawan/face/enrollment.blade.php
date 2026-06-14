@@ -6,19 +6,76 @@
     /* Style sama dengan presensi create, disesuaikan */
     :root {
         --primary: #0053C5;
+        --primary-dark: #003d94;
+        --primary-light: #2E7CE6;
         --primary-gradient: linear-gradient(135deg, #0053C5 0%, #2E7CE6 100%);
         --success: #10b981;
         --danger: #ef4444;
+        --warning: #f59e0b;
+        --info: #06b6d4;
+        --bg-main: #f8fafc;
         --bg-card: #ffffff;
-        --text-primary: #1e293b;
+        --text-primary: #0f172a;
         --text-secondary: #64748b;
     }
 
     .page-header {
-        background: var(--primary-gradient);
+        background: white;
         padding: 24px 20px 80px 20px;
         position: relative;
         overflow: hidden;
+        border-bottom: 1px solid rgba(0, 83, 197, 0.08);
+    }
+
+    .header-content {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .btn-back {
+        width: 40px;
+        height: 40px;
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .btn-back ion-icon {
+        font-size: 24px;
+        color: var(--text-secondary);
+    }
+
+    .btn-back:active, .btn-back:hover {
+        background: #e2e8f0;
+        color: var(--primary);
+    }
+
+    .btn-back:hover ion-icon {
+        color: var(--primary);
+    }
+
+    .header-title h1 {
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0 0 4px 0;
+    }
+
+    .header-title p {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--primary);
+        margin: 0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
 
     .enrollment-section {
@@ -31,8 +88,8 @@
         background: var(--bg-card);
         border-radius: 20px;
         padding: 20px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-        border: 1px solid rgba(0, 83, 197, 0.08);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(0, 83, 197, 0.05);
         margin-bottom: 16px;
     }
 
@@ -104,7 +161,6 @@
     .btn-action {
         width: 100%;
         padding: 16px;
-        border: none;
         border-radius: 16px;
         font-size: 16px;
         font-weight: 700;
@@ -117,15 +173,30 @@
         margin-bottom: 12px;
     }
 
-    .btn-primary {
-        background: var(--primary-gradient);
-        color: white;
-        box-shadow: 0 6px 20px rgba(0, 83, 197, 0.3);
+    .btn-custom-primary {
+        background: white;
+        color: var(--primary);
+        border: 1px solid var(--primary);
+        box-shadow: 0 2px 8px rgba(0, 83, 197, 0.05);
     }
 
-    .btn-danger {
-        background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
+    .btn-custom-primary:active {
+        background: var(--primary);
         color: white;
+        transform: scale(0.98);
+    }
+
+    .btn-custom-danger {
+        background: white;
+        color: var(--danger);
+        border: 1px solid var(--danger);
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.05);
+    }
+
+    .btn-custom-danger:active {
+        background: var(--danger);
+        color: white;
+        transform: scale(0.98);
     }
 
     .btn-secondary {
@@ -136,17 +207,13 @@
 
 <!-- Page Header -->
 <div class="page-header">
-    <div class="header-content" style="display: flex; align-items: center; gap: 16px;">
-        <a href="{{ route('dashboard') }}" style="width: 40px; height: 40px; background: rgba(255,255,255,0.15); border-radius: 12px; display: flex; align-items: center; justify-content: center; text-decoration: none;">
-            <ion-icon name="chevron-back-outline" style="font-size: 24px; color: white;"></ion-icon>
+    <div class="header-content">
+        <a href="{{ route('dashboard') }}" class="btn-back">
+            <ion-icon name="chevron-back-outline"></ion-icon>
         </a>
-        <div>
-            <h1 style="font-size: 22px; font-weight: 700; color: white; margin: 0 0 4px 0;">
-                Pendaftaran Wajah
-            </h1>
-            <p style="font-size: 13px; color: rgba(255,255,255,0.8); margin: 0;">
-                Face Recognition Setup
-            </p>
+        <div class="header-title">
+            <h1>Pendaftaran Wajah</h1>
+            <p>Face Recognition Setup</p>
         </div>
     </div>
 </div>
@@ -177,15 +244,10 @@
         </div>
         @endif
 
-        <button class="btn-action btn-primary" onclick="reEnroll()">
-            <ion-icon name="refresh"></ion-icon>
-            <span>Perbarui Data Wajah</span>
-        </button>
-
-        <button class="btn-action btn-danger" onclick="deleteFaceData()">
-            <ion-icon name="trash"></ion-icon>
-            <span>Hapus Data Wajah</span>
-        </button>
+        <div class="alert alert-warning text-center mt-3" style="border-radius: 12px; font-size: 13px; color: #854d0e; background: #fef08a; border: 1px solid #fde047;">
+            <ion-icon name="information-circle" style="font-size: 20px; vertical-align: middle; margin-right: 5px;"></ion-icon>
+            <strong>Penting:</strong> Data wajah Anda telah dikunci demi keamanan. Jika Anda perlu memperbarui atau mendaftarkan ulang wajah, silakan hubungi <strong>Admin Pusat</strong>.
+        </div>
     </div>
     @else
     <!-- Not Enrolled -->
@@ -218,11 +280,15 @@
             <div class="camera-container" style="display: none;" id="cameraContainer">
                 <video id="video" autoplay></video>
                 <div class="face-overlay"></div>
+                <div id="countdown-overlay" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: none; z-index: 10; pointer-events: none; text-align: center;">
+                    <div style="font-size: 16px; font-weight: 600; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.8); margin-bottom: -10px;">Bersiaplah...</div>
+                    <span id="countdown-text" style="font-size: 120px; font-weight: 800; color: white; text-shadow: 0 0 20px rgba(0,83,197,0.8), 0 4px 10px rgba(0,0,0,0.5);">10</span>
+                </div>
             </div>
             <canvas id="faceCanvas"></canvas>
         </div>
 
-        <button class="btn-action btn-primary" id="startEnrollment">
+        <button class="btn-action btn-custom-primary" id="startEnrollment">
             <ion-icon name="camera"></ion-icon>
             <span>Mulai Pendaftaran</span>
         </button>
@@ -307,10 +373,16 @@ async function startCamera() {
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             
-            // Start face detection after 2 seconds
-            setTimeout(() => {
-                detectAndCapture();
-            }, 2000);
+            // Tampilkan alert instruksi sebelum mulai hitung mundur
+            Swal.fire({
+                icon: 'info',
+                title: 'Persiapkan Wajah Anda',
+                html: 'Kamera aktif. Anda memiliki waktu <b>10 detik</b> untuk mencari pencahayaan yang terang dan memposisikan wajah di tengah bingkai oval.',
+                confirmButtonColor: '#0053C5',
+                confirmButtonText: 'Mulai Hitung Mundur'
+            }).then(() => {
+                startCountdown();
+            });
         });
 
     } catch (error) {
@@ -322,6 +394,28 @@ async function startCamera() {
             confirmButtonColor: '#0053C5'
         });
     }
+}
+
+let countdownInterval;
+function startCountdown() {
+    let count = 10;
+    const overlay = document.getElementById('countdown-overlay');
+    const text = document.getElementById('countdown-text');
+    
+    overlay.style.display = 'block';
+    text.innerText = count;
+    
+    countdownInterval = setInterval(() => {
+        count--;
+        if (count > 0) {
+            text.innerText = count;
+        } else {
+            clearInterval(countdownInterval);
+            overlay.style.display = 'none';
+            // Panggil pendeteksian setelah 5 detik persiapan
+            detectAndCapture(); 
+        }
+    }, 1000);
 }
 
 async function detectAndCapture() {

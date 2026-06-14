@@ -2,20 +2,19 @@
 @section('content')
 
 <style>
-    /* ===== COMPACT & ELEGANT DASHBOARD ===== */
+    /* ===== COMPACT & ELEGANT DASHBOARD (CLEAN WHITE) ===== */
     :root {
         --primary: #0053C5;
         --primary-dark: #003d94;
         --primary-light: #2E7CE6;
-        --primary-gradient: linear-gradient(135deg, #0053C5 0%, #2E7CE6 100%);
         --success: #10b981;
         --danger: #ef4444;
         --warning: #f59e0b;
         --info: #06b6d4;
         --purple: #8b5cf6;
-        --bg-main: #f0f4f8;
+        --bg-main: #f8fafc;
         --bg-card: #ffffff;
-        --text-primary: #1e293b;
+        --text-primary: #0f172a;
         --text-secondary: #64748b;
     }
 
@@ -38,23 +37,11 @@
 
     /* ===== COMPACT HERO HEADER ===== */
     .hero-header {
-        background: var(--primary-gradient);
+        background: white;
         padding: 24px 20px 70px 20px;
         position: relative;
         overflow: hidden;
-        margin: 0 0 0 0;
-    }
-
-    .hero-header::before {
-        content: '';
-        position: absolute;
-        top: -40%;
-        right: -15%;
-        width: 250px;
-        height: 250px;
-        background: rgba(255, 255, 255, 0.08);
-        border-radius: 50%;
-        filter: blur(50px);
+        border-bottom: 1px solid rgba(0, 83, 197, 0.08);
     }
 
     .hero-content {
@@ -71,15 +58,17 @@
 
     .hero-greeting h4 {
         font-size: 12px;
-        font-weight: 500;
-        color: rgba(255, 255, 255, 0.8);
+        font-weight: 600;
+        color: var(--primary);
         margin-bottom: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
 
     .hero-greeting h2 {
         font-size: 20px;
         font-weight: 700;
-        color: white;
+        color: var(--text-primary);
         margin: 0;
     }
 
@@ -87,8 +76,8 @@
         width: 44px;
         height: 44px;
         border-radius: 12px;
-        border: 2.5px solid rgba(255, 255, 255, 0.3);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        border: 2.5px solid rgba(0, 83, 197, 0.1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         object-fit: cover;
     }
 
@@ -108,9 +97,8 @@
     .btn-logout {
         width: 40px;
         height: 40px;
-        background: rgba(255, 255, 255, 0.15);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
         border-radius: 12px;
         display: flex;
         align-items: center;
@@ -122,12 +110,16 @@
 
     .btn-logout ion-icon {
         font-size: 22px;
-        color: white;
+        color: var(--text-secondary);
     }
 
-    .btn-logout:active {
-        transform: scale(0.95);
-        background: rgba(255, 255, 255, 0.25);
+    .btn-logout:active, .btn-logout:hover {
+        background: #e2e8f0;
+        color: var(--danger);
+    }
+
+    .btn-logout:hover ion-icon {
+        color: var(--danger);
     }
 
     /* ===== LOGOUT MODAL ===== */
@@ -138,8 +130,8 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
-        backdrop-filter: blur(5px);
+        background: rgba(15, 23, 42, 0.4);
+        backdrop-filter: blur(4px);
         z-index: 9999;
         align-items: center;
         justify-content: center;
@@ -159,24 +151,24 @@
         width: 100%;
         text-align: center;
         animation: slideUp 0.3s ease;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(0, 83, 197, 0.05);
     }
 
     .logout-modal-icon {
         width: 64px;
         height: 64px;
-        background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
+        background: #fee2e2;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         margin: 0 auto 20px;
-        box-shadow: 0 8px 24px rgba(239, 68, 68, 0.4);
     }
 
     .logout-modal-icon ion-icon {
         font-size: 32px;
-        color: white;
+        color: var(--danger);
     }
 
     .logout-modal-title {
@@ -220,9 +212,9 @@
     }
 
     .btn-modal-confirm {
-        background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
+        background: var(--danger);
         color: white;
-        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
     }
 
     .btn-modal-confirm:active {
@@ -231,42 +223,29 @@
     }
 
     @keyframes fadeIn {
-        from {
-            opacity: 0;
-        }
-
-        to {
-            opacity: 1;
-        }
+        from { opacity: 0; }
+        to { opacity: 1; }
     }
 
     @keyframes slideUp {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
     }
 
     .stat-badge {
-        background: rgba(255, 255, 255, 0.12);
-        backdrop-filter: blur(10px);
+        background: #f8fafc;
         border-radius: 12px;
         padding: 10px 12px;
         display: flex;
         align-items: center;
         gap: 10px;
-        border: 1px solid rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(0, 83, 197, 0.1);
     }
 
     .stat-badge-icon {
         width: 36px;
         height: 36px;
-        background: rgba(255, 255, 255, 0.2);
+        background: rgba(0, 83, 197, 0.08);
         border-radius: 10px;
         display: flex;
         align-items: center;
@@ -275,19 +254,19 @@
 
     .stat-badge-icon ion-icon {
         font-size: 20px;
-        color: white;
+        color: var(--primary);
     }
 
     .stat-badge-info span {
         display: block;
         font-size: 10px;
-        color: rgba(255, 255, 255, 0.8);
+        color: var(--text-secondary);
         margin-bottom: 2px;
     }
 
     .stat-badge-info strong {
         font-size: 13px;
-        color: white;
+        color: var(--text-primary);
         font-weight: 600;
     }
 
@@ -304,7 +283,7 @@
         background: var(--bg-card);
         border-radius: 20px;
         padding: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
         border: 1px solid rgba(0, 83, 197, 0.08);
     }
 
@@ -444,8 +423,8 @@
         border-radius: 14px;
         padding: 14px 10px;
         text-align: center;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-        border: 1px solid rgba(0, 0, 0, 0.04);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+        border: 1px solid rgba(0, 83, 197, 0.05);
         position: relative;
         overflow: hidden;
     }
@@ -514,8 +493,8 @@
         background: var(--bg-card);
         border-radius: 16px;
         padding: 16px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-        border: 1px solid rgba(0, 83, 197, 0.08);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+        border: 1px solid rgba(0, 83, 197, 0.05);
     }
 
     .leaderboard-item {
@@ -610,8 +589,8 @@
         background: white;
         border-radius: 12px;
         padding: 4px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-        border: 1px solid rgba(0, 83, 197, 0.08);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+        border: 1px solid rgba(0, 83, 197, 0.05);
         margin-bottom: 14px;
     }
 
@@ -637,9 +616,9 @@
     }
 
     .tab-button.active {
-        background: var(--primary-gradient);
-        color: white;
-        box-shadow: 0 4px 12px rgba(0, 83, 197, 0.3);
+        background: rgba(0, 83, 197, 0.08);
+        color: var(--primary);
+        box-shadow: none;
     }
 
     .tab-content {
@@ -655,8 +634,8 @@
         background: var(--bg-card);
         border-radius: 16px;
         padding: 16px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-        border: 1px solid rgba(0, 83, 197, 0.08);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+        border: 1px solid rgba(0, 83, 197, 0.05);
     }
 
     .riwayat-item {
@@ -842,75 +821,101 @@
 
 <!-- Floating Presence Card -->
 <div class="floating-presence">
+    @if($presensihariini->isEmpty())
     <div class="presence-card">
         <div class="presence-grid">
             <div class="presence-item check-in">
                 <div class="presence-icon">
-                    @if ($presensihariini != null)
-                    @php
-                    $foto_path = 'uploads/absensi/' . $presensihariini->foto_in;
-                    $foto_exists = Storage::disk('public')->exists($foto_path);
-                    @endphp
-                    @if($foto_exists)
-                    <img src="{{ Storage::url($foto_path) }}" alt="Check In">
-                    @else
-                    <img src="{{ asset('assets/img/sample/avatar/noprofile.svg') }}" alt="No Photo">
-                    @endif
-                    @else
                     <ion-icon name="log-in"></ion-icon>
-                    @endif
                 </div>
                 <div class="presence-label">Check In</div>
-                <div class="presence-time">
-                    {{ $presensihariini != null ? $presensihariini->jam_in : '--:--' }}
-                </div>
-                @if ($presensihariini != null)
-                <span class="presence-status success">
-                    <ion-icon name="checkmark-circle"></ion-icon>
-                    Tercatat
-                </span>
-                @else
+                <div class="presence-time">--:--</div>
                 <span class="presence-status pending">
-                    <ion-icon name="time"></ion-icon>
-                    Belum Absen
+                    <ion-icon name="time"></ion-icon> Belum Absen
                 </span>
-                @endif
             </div>
-
             <div class="presence-item check-out">
                 <div class="presence-icon">
-                    @if ($presensihariini != null && $presensihariini->jam_out != null)
-                    @php
-                    $foto_path = 'uploads/absensi/' . $presensihariini->foto_out;
-                    $foto_exists = Storage::disk('public')->exists($foto_path);
-                    @endphp
-                    @if($foto_exists)
-                    <img src="{{ Storage::url($foto_path) }}" alt="Check Out">
-                    @else
-                    <img src="{{ asset('assets/img/sample/avatar/noprofile.png') }}" alt="No Photo">
-                    @endif
-                    @else
                     <ion-icon name="log-out"></ion-icon>
-                    @endif
                 </div>
                 <div class="presence-label">Check Out</div>
-                <div class="presence-time">
-                    {{ $presensihariini != null && $presensihariini->jam_out != null ? $presensihariini->jam_out : '--:--' }}
-                </div>
-                @if ($presensihariini != null && $presensihariini->jam_out != null)
-                <span class="presence-status success">
-                    <ion-icon name="checkmark-circle"></ion-icon>
-                    Tercatat
-                </span>
-                @else
+                <div class="presence-time">--:--</div>
                 <span class="presence-status pending">
-                    <ion-icon name="time"></ion-icon>
-                    Belum Absen
+                    <ion-icon name="time"></ion-icon> Belum Absen
                 </span>
-                @endif
             </div>
         </div>
     </div>
+    @else
+    <div class="presence-slider" style="display: flex; flex-direction: column; gap: 10px;">
+        @foreach($presensihariini as $presensi)
+        <div class="presence-card">
+            @if($presensi->shift_ke != null)
+            <div style="text-align: center; margin-bottom: 12px; font-size: 13px; font-weight: 700; color: var(--primary); background: rgba(0, 83, 197, 0.05); padding: 4px; border-radius: 8px;">
+                Shift {{ $presensi->shift_ke }} - {{ $presensi->nama_shift }}
+            </div>
+            @endif
+            <div class="presence-grid">
+                <div class="presence-item check-in">
+                    <div class="presence-icon">
+                        @if ($presensi->foto_in)
+                        @php
+                        $foto_path = 'uploads/absensi/' . $presensi->foto_in;
+                        $foto_exists = Storage::disk('public')->exists($foto_path);
+                        @endphp
+                        @if($foto_exists)
+                        <img src="{{ Storage::url($foto_path) }}" alt="Check In">
+                        @else
+                        <img src="{{ asset('assets/img/sample/avatar/noprofile.svg') }}" alt="No Photo">
+                        @endif
+                        @else
+                        <img src="{{ asset('assets/img/sample/avatar/noprofile.svg') }}" alt="No Photo">
+                        @endif
+                    </div>
+                    <div class="presence-label">Check In</div>
+                    <div class="presence-time">{{ $presensi->jam_in }}</div>
+                    <span class="presence-status success">
+                        <ion-icon name="checkmark-circle"></ion-icon> Tercatat
+                    </span>
+                </div>
+
+                <div class="presence-item check-out">
+                    <div class="presence-icon">
+                        @if ($presensi->jam_out != null)
+                        @if ($presensi->foto_out)
+                        @php
+                        $foto_path = 'uploads/absensi/' . $presensi->foto_out;
+                        $foto_exists = Storage::disk('public')->exists($foto_path);
+                        @endphp
+                        @if($foto_exists)
+                        <img src="{{ Storage::url($foto_path) }}" alt="Check Out">
+                        @else
+                        <img src="{{ asset('assets/img/sample/avatar/noprofile.png') }}" alt="No Photo">
+                        @endif
+                        @else
+                        <img src="{{ asset('assets/img/sample/avatar/noprofile.png') }}" alt="No Photo">
+                        @endif
+                        @else
+                        <ion-icon name="log-out"></ion-icon>
+                        @endif
+                    </div>
+                    <div class="presence-label">Check Out</div>
+                    <div class="presence-time">{{ $presensi->jam_out != null ? $presensi->jam_out : '--:--' }}</div>
+                    @if ($presensi->jam_out != null)
+                    <span class="presence-status success">
+                        <ion-icon name="checkmark-circle"></ion-icon> Tercatat
+                    </span>
+                    @else
+                    <span class="presence-status pending">
+                        <ion-icon name="time"></ion-icon> Belum Absen
+                    </span>
+                    @endif
+                </div>
+            </div>
+        </div>
+        @endforeach
+    </div>
+    @endif
 </div>
 
 <!-- Stats Section -->

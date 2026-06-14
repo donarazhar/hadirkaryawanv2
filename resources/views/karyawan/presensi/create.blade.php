@@ -8,13 +8,12 @@
         --primary: #0053C5;
         --primary-dark: #003d94;
         --primary-light: #2E7CE6;
-        --primary-gradient: linear-gradient(135deg, #0053C5 0%, #2E7CE6 100%);
         --success: #10b981;
         --danger: #ef4444;
         --warning: #f59e0b;
-        --bg-main: #f0f4f8;
+        --bg-main: #f8fafc;
         --bg-card: #ffffff;
-        --text-primary: #1e293b;
+        --text-primary: #0f172a;
         --text-secondary: #64748b;
     }
 
@@ -24,23 +23,12 @@
 
     /* ===== PAGE HEADER ===== */
     .page-header {
-        background: var(--primary-gradient);
+        background: white;
         padding: 24px 20px 80px 20px;
         position: relative;
         overflow: hidden;
         margin: 0;
-    }
-
-    .page-header::before {
-        content: '';
-        position: absolute;
-        top: -40%;
-        right: -15%;
-        width: 250px;
-        height: 250px;
-        background: rgba(255, 255, 255, 0.08);
-        border-radius: 50%;
-        filter: blur(50px);
+        border-bottom: 1px solid rgba(0, 83, 197, 0.08);
     }
 
     .header-content {
@@ -54,32 +42,44 @@
     .btn-back {
         width: 40px;
         height: 40px;
-        background: rgba(255, 255, 255, 0.15);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
         border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
         text-decoration: none;
+        transition: all 0.3s ease;
     }
 
     .btn-back ion-icon {
         font-size: 24px;
-        color: white;
+        color: var(--text-secondary);
+    }
+
+    .btn-back:active, .btn-back:hover {
+        background: #e2e8f0;
+        color: var(--primary);
+    }
+
+    .btn-back:hover ion-icon {
+        color: var(--primary);
     }
 
     .header-title h1 {
         font-size: 22px;
         font-weight: 700;
-        color: white;
+        color: var(--text-primary);
         margin: 0 0 4px 0;
     }
 
     .header-title p {
-        font-size: 13px;
-        color: rgba(255, 255, 255, 0.8);
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--primary);
         margin: 0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
 
     /* ===== INFO CARD ===== */
@@ -95,8 +95,8 @@
         background: var(--bg-card);
         border-radius: 20px;
         padding: 20px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-        border: 1px solid rgba(0, 83, 197, 0.08);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(0, 83, 197, 0.05);
         margin-bottom: 16px;
     }
 
@@ -145,8 +145,8 @@
         background: var(--bg-card);
         border-radius: 20px;
         padding: 16px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-        border: 1px solid rgba(0, 83, 197, 0.08);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(0, 83, 197, 0.05);
         margin-bottom: 16px;
     }
 
@@ -179,8 +179,8 @@
         background: var(--bg-card);
         border-radius: 20px;
         padding: 16px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-        border: 1px solid rgba(0, 83, 197, 0.08);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(0, 83, 197, 0.05);
         margin-bottom: 16px;
     }
 
@@ -240,7 +240,6 @@
     .btn-presensi {
         width: 100%;
         padding: 16px 20px;
-        border: none;
         border-radius: 16px;
         font-size: 16px;
         font-weight: 700;
@@ -250,7 +249,6 @@
         gap: 10px;
         cursor: pointer;
         transition: all 0.3s ease;
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
         margin-bottom: 12px;
     }
 
@@ -268,26 +266,52 @@
     }
 
     .btn-masuk {
-        background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+        background: white;
+        color: var(--success);
+        border: 1px solid var(--success);
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.05);
+    }
+
+    .btn-masuk:active {
+        background: var(--success);
         color: white;
     }
 
     .btn-pulang {
-        background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
+        background: white;
+        color: var(--danger);
+        border: 1px solid var(--danger);
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.05);
+    }
+
+    .btn-pulang:active {
+        background: var(--danger);
         color: white;
     }
 
     /* ===== BUTTON FACE VERIFICATION (BARU) ===== */
     .btn-masuk-face {
-        background: linear-gradient(135deg, #0053C5 0%, #003d94 100%);
+        background: white;
+        color: #0053C5;
+        border: 1px solid #0053C5;
+        box-shadow: 0 2px 8px rgba(0, 83, 197, 0.05);
+    }
+
+    .btn-masuk-face:active {
+        background: #0053C5;
         color: white;
-        border: 2px solid rgba(16, 185, 129, 0.3);
     }
 
     .btn-pulang-face {
-        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        background: white;
+        color: #8b5cf6;
+        border: 1px solid #8b5cf6;
+        box-shadow: 0 2px 8px rgba(139, 92, 246, 0.05);
+    }
+
+    .btn-pulang-face:active {
+        background: #8b5cf6;
         color: white;
-        border: 2px solid rgba(239, 68, 68, 0.3);
     }
 
     /* ===== STATUS BADGE ===== */
@@ -389,6 +413,25 @@
 
 <!-- Presensi Section -->
 <div class="presensi-section">
+
+    @if(isset($is_multi_shift) && $is_multi_shift)
+    <div class="shift-selection-card" style="background: white; border-radius: 20px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.05);">
+        <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+            <ion-icon name="time-outline" style="color: var(--primary); font-size: 20px;"></ion-icon>
+            Pilih Shift Aktif
+        </div>
+        <form action="{{ route('presensi.create') }}" method="GET" id="shift-form">
+            <select name="shift_ke" id="shift_ke" class="form-control" onchange="document.getElementById('shift-form').submit()" style="border-radius: 12px; border: 1px solid #e2e8f0; padding: 12px; width: 100%; font-size: 14px; background-color: #f8fafc;">
+                @foreach($shifts_available as $s)
+                    <option value="{{ $s->shift_ke }}" {{ $shift_ke == $s->shift_ke ? 'selected' : '' }}>
+                        Shift {{ $s->shift_ke }} - {{ $s->nama_shift }} ({{ date('H:i', strtotime($s->jam_masuk)) }} - {{ date('H:i', strtotime($s->jam_pulang)) }})
+                    </option>
+                @endforeach
+            </select>
+        </form>
+    </div>
+    @endif
+
     <!-- Info Card -->
     <div class="info-card">
         <div class="info-card-title">
@@ -398,15 +441,33 @@
         <div class="info-grid">
             <div class="info-item">
                 <div class="info-label">Shift</div>
-                <div class="info-value">{{ $jamkerja->nama_jam_kerja }}</div>
+                <div class="info-value">
+                    @if(isset($is_multi_shift) && $is_multi_shift)
+                        {{ $current_shift->nama_shift }}
+                    @else
+                        {{ $jamkerja->nama_jam_kerja }}
+                    @endif
+                </div>
             </div>
             <div class="info-item">
                 <div class="info-label">Jam Kerja</div>
-                <div class="info-value">{{ date('H:i', strtotime($jamkerja->jam_masuk)) }} - {{ date('H:i', strtotime($jamkerja->jam_pulang)) }}</div>
+                <div class="info-value">
+                    @if(isset($is_multi_shift) && $is_multi_shift)
+                        {{ date('H:i', strtotime($current_shift->jam_masuk)) }} - {{ date('H:i', strtotime($current_shift->jam_pulang)) }}
+                    @else
+                        {{ date('H:i', strtotime($jamkerja->jam_masuk)) }} - {{ date('H:i', strtotime($jamkerja->jam_pulang)) }}
+                    @endif
+                </div>
             </div>
             <div class="info-item">
                 <div class="info-label">Waktu Absen</div>
-                <div class="info-value">{{ date('H:i', strtotime($jamkerja->awal_jam_masuk)) }} - {{ date('H:i', strtotime($jamkerja->akhir_jam_masuk)) }}</div>
+                <div class="info-value">
+                    @if(isset($is_multi_shift) && $is_multi_shift)
+                        {{ date('H:i', strtotime($current_shift->jam_masuk) - 3600) }} - {{ date('H:i', strtotime($current_shift->jam_masuk) + 7200) }}
+                    @else
+                        {{ date('H:i', strtotime($jamkerja->awal_jam_masuk)) }} - {{ date('H:i', strtotime($jamkerja->akhir_jam_masuk)) }}
+                    @endif
+                </div>
             </div>
             <div class="info-item">
                 <div class="info-label">Status</div>
@@ -441,31 +502,26 @@
 <div class="button-section">
     <input type="hidden" id="lokasi">
 
-    @if($cek > 0)
-    <!-- METODE LAMA: Absen Pulang Biasa -->
-    <button id="takeabsen" class="btn-presensi btn-pulang">
-        <ion-icon name="log-out-outline"></ion-icon>
-        <span>Absen Pulang</span>
-    </button>
-
-    <!-- METODE BARU: Absen Pulang dengan Face Verification -->
-    <button id="takeabsen-face" class="btn-presensi btn-pulang-face">
-        <ion-icon name="scan-outline"></ion-icon>
-        <span>Absen Pulang + Verifikasi Wajah</span>
-    </button>
+    @if(isset($is_multi_shift) && $is_multi_shift)
+    <input type="hidden" id="shift_ke_val" value="{{ $shift_ke }}">
+    <input type="hidden" id="shift_nama_val" value="{{ $current_shift->nama_shift }}">
+    <input type="hidden" id="shift_jam_masuk_val" value="{{ $current_shift->jam_masuk }}">
+    <input type="hidden" id="shift_jam_pulang_val" value="{{ $current_shift->jam_pulang }}">
     @else
-    <!-- METODE LAMA: Absen Masuk Biasa -->
-    <button id="takeabsen" class="btn-presensi btn-masuk">
-        <ion-icon name="log-in-outline"></ion-icon>
-        <span>Absen Masuk</span>
-    </button>
-
-    <!-- METODE BARU: Absen Masuk dengan Face Verification -->
-    <button id="takeabsen-face" class="btn-presensi btn-masuk-face">
-        <ion-icon name="scan-outline"></ion-icon>
-        <span>Absen Masuk + Verifikasi Wajah</span>
-    </button>
+    <input type="hidden" id="shift_ke_val" value="">
+    <input type="hidden" id="shift_nama_val" value="">
+    <input type="hidden" id="shift_jam_masuk_val" value="">
+    <input type="hidden" id="shift_jam_pulang_val" value="">
     @endif
+
+    <!-- Auto-Scan Status Indicator -->
+    <div id="auto-scan-status" style="background: rgba(0, 83, 197, 0.1); border: 1px solid var(--primary); border-radius: 12px; padding: 16px; text-align: center; color: var(--primary); font-weight: 600; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <div class="spinner-border spinner-border-sm" role="status" style="width: 1.2rem; height: 1.2rem; border-width: 0.15em;"></div>
+            <span>Auto-Scan Wajah Aktif</span>
+        </div>
+        <small style="color: var(--text-secondary); font-weight: 500; font-size: 12px;">Mohon arahkan wajah ke kamera dan pastikan lokasi GPS stabil.</small>
+    </div>
 </div>
 
 <!-- Map Section -->
@@ -882,17 +938,11 @@
         }
     }
 
-    // Verify face from webcam
-    async function verifyFace() {
+    // Verify face from webcam SILENTLY for auto-scan
+    async function verifyFaceSilent() {
         try {
-            console.log('Starting face verification...');
-
-            // Get current frame from webcam
             const video = document.querySelector('.webcam-capture video');
-
-            if (!video) {
-                throw new Error('Video element not found');
-            }
+            if (!video) return false;
 
             // Detect face in current frame
             const detection = await faceapi
@@ -900,189 +950,173 @@
                 .withFaceLandmarks()
                 .withFaceDescriptor();
 
-            if (!detection) {
-                throw new Error('Wajah tidak terdeteksi. Pastikan wajah Anda terlihat jelas di kamera.');
-            }
-
-            console.log('Face detected with confidence:', detection.detection.score);
-
-            if (detection.detection.score < 0.5) {
-                throw new Error('Deteksi wajah kurang jelas. Coba posisikan wajah lebih baik.');
+            if (!detection || detection.detection.score < 0.5) {
+                return false; // Wajah tidak jelas atau tidak terdeteksi
             }
 
             // Get reference descriptor
             const referenceDescriptor = await getReferenceFaceDescriptor();
 
-            // Calculate distance (similarity)
+            // Calculate distance
             const distance = faceapi.euclideanDistance(detection.descriptor, referenceDescriptor);
-            console.log('Face distance:', distance);
-
-            // Threshold: 0.6 (makin kecil makin mirip)
+            
+            // Threshold: 0.6
             const threshold = 0.6;
-
-            if (distance > threshold) {
-                throw new Error('Verifikasi wajah gagal. Wajah tidak cocok dengan data yang terdaftar.');
+            
+            if (distance <= threshold) {
+                console.log('Face matched automatically! Distance:', distance);
+                return true;
             }
 
-            console.log('Face verification SUCCESS! Distance:', distance);
-            return true;
-
+            return false;
         } catch (error) {
-            console.error('Face verification error:', error);
-            throw error;
+            console.error('Silent face verification error:', error);
+            return false;
         }
     }
 
-    // ===== METODE BARU: Take Attendance WITH Face Verification =====
-    $("#takeabsen-face").click(async function(e) {
-        e.preventDefault();
+    // Auto Verification Loop
+    var autoScanInterval = null;
+    var isProcessing = false;
 
-        console.log('Take attendance with face verification clicked');
+    function startAutoVerification() {
+        if (autoScanInterval) clearInterval(autoScanInterval);
+        
+        console.log('Starting Auto-Scan Loop...');
+        
+        autoScanInterval = setInterval(async function() {
+            if (isProcessing) return; // Jangan scan jika sedang proses AJAX
+            if (!webcamReady) return; // Jangan scan jika kamera belum live
+            if (!modelsLoaded) return; // Jangan scan jika AI belum siap
+            
+            var lokasi_val = $("#lokasi").val();
+            if (!lokasi_val) return; // Jangan scan jika lokasi belum terdeteksi
 
-        // Validate location
-        var lokasi_val = $("#lokasi").val();
-        if (!lokasi_val) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Lokasi Belum Terdeteksi',
-                text: 'Mohon tunggu hingga lokasi Anda terdeteksi',
-                confirmButtonColor: '#0053C5'
-            });
-            return;
-        }
+            // Mulai scan silent
+            var isMatched = await verifyFaceSilent();
+            
+            if (isMatched) {
+                // Wajah cocok! Hentikan loop sementara.
+                isProcessing = true;
+                clearInterval(autoScanInterval);
+                
+                // Ubah status UI
+                $("#auto-scan-status").html(`
+                    <div style="display: flex; align-items: center; gap: 8px; color: var(--success);">
+                        <ion-icon name="checkmark-circle" style="font-size: 20px;"></ion-icon>
+                        <span>Wajah Terverifikasi!</span>
+                    </div>
+                    <small style="color: var(--text-secondary); font-weight: 500; font-size: 12px;">Menyimpan data presensi...</small>
+                `);
+                
+                $("#auto-scan-status").css({
+                    'background': 'rgba(16, 185, 129, 0.1)',
+                    'border-color': 'var(--success)'
+                });
 
-        // Validate webcam
-        if (!webcamReady) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Kamera Belum Siap',
-                text: 'Mohon tunggu hingga kamera aktif',
-                confirmButtonColor: '#0053C5'
-            });
-            return;
-        }
+                $("#loading-overlay").addClass('show');
 
-        try {
-            // Show loading for face verification
-            Swal.fire({
-                title: 'Memverifikasi Wajah...',
-                html: 'Mohon tunggu, sedang memverifikasi identitas Anda',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
+                // Lakukan presensi AJAX
+                Webcam.snap(function(uri) {
+                    var image = uri;
+                    var shift_ke_val = $("#shift_ke_val").val();
+                    var shift_nama_val = $("#shift_nama_val").val();
+                    var shift_jam_masuk_val = $("#shift_jam_masuk_val").val();
+                    var shift_jam_pulang_val = $("#shift_jam_pulang_val").val();
 
-            // Load models if not loaded yet
-            if (!modelsLoaded) {
-                const loaded = await loadFaceModels();
-                if (!loaded) {
-                    throw new Error('Gagal memuat model face recognition');
-                }
-            }
+                    $.ajax({
+                        type: 'POST',
+                        url: '/presensi/store',
+                        data: {
+                            _token: "{{ csrf_token() }}",
+                            image: image,
+                            lokasi: lokasi_val,
+                            verified: true,
+                            shift_ke: shift_ke_val,
+                            shift_nama: shift_nama_val,
+                            shift_jam_masuk: shift_jam_masuk_val,
+                            shift_jam_pulang: shift_jam_pulang_val
+                        },
+                        cache: false,
+                        success: function(respond) {
+                            $("#loading-overlay").removeClass('show');
+                            var status = respond.split("|");
 
-            // Verify face
-            await verifyFace();
+                            if (status[0] == "success") {
+                                if (status[2] == "in") {
+                                    notifikasi_in.play();
+                                } else {
+                                    notifikasi_out.play();
+                                }
 
-            // Close loading
-            Swal.close();
-
-            // Show success message
-            await Swal.fire({
-                icon: 'success',
-                title: 'Verifikasi Berhasil!',
-                text: 'Wajah Anda terverifikasi. Melanjutkan presensi...',
-                timer: 2000,
-                showConfirmButton: false,
-                confirmButtonColor: '#0053C5'
-            });
-
-            // Continue with normal attendance process
-            $("#loading-overlay").addClass('show');
-
-            // Capture photo
-            Webcam.snap(function(uri) {
-                console.log('Photo captured after face verification');
-                var image = uri;
-
-                $.ajax({
-                    type: 'POST',
-                    url: '/presensi/store',
-                    data: {
-                        _token: "{{ csrf_token() }}",
-                        image: image,
-                        lokasi: lokasi_val,
-                        verified: true // Flag bahwa ini menggunakan verifikasi wajah
-                    },
-                    cache: false,
-                    success: function(respond) {
-                        $("#loading-overlay").removeClass('show');
-                        console.log('Response:', respond);
-
-                        var status = respond.split("|");
-
-                        if (status[0] == "success") {
-                            if (status[2] == "in") {
-                                notifikasi_in.play();
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Berhasil!',
+                                    html: '<strong>' + status[1] + '</strong><br><small>✅ Terverifikasi Otomatis</small>',
+                                    confirmButtonColor: '#0053C5',
+                                    timer: 3000,
+                                    showConfirmButton: false
+                                }).then(() => {
+                                    window.location.href = '/dashboard';
+                                });
                             } else {
-                                notifikasi_out.play();
-                            }
+                                if (status[2] == "radius") {
+                                    radius_sound.play();
+                                }
 
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Berhasil!',
-                                html: '<strong>' + status[1] + '</strong><br><small>✅ Terverifikasi dengan Face Recognition</small>',
-                                confirmButtonColor: '#0053C5',
-                                timer: 3000
-                            }).then(() => {
-                                window.location.href = '/dashboard';
-                            });
-                        } else {
-                            if (status[2] == "radius") {
-                                radius_sound.play();
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Gagal!',
+                                    text: status[1],
+                                    confirmButtonColor: '#0053C5'
+                                }).then(() => {
+                                    // Reset UI dan jalankan loop auto-scan lagi
+                                    resetAutoScanUI();
+                                    isProcessing = false;
+                                    startAutoVerification();
+                                });
                             }
-
+                        },
+                        error: function(xhr, status, error) {
+                            $("#loading-overlay").removeClass('show');
                             Swal.fire({
                                 icon: 'error',
-                                title: 'Gagal!',
-                                text: status[1],
+                                title: 'Terjadi Kesalahan',
+                                text: 'Gagal mengirim data presensi. Silakan coba lagi.',
                                 confirmButtonColor: '#0053C5'
+                            }).then(() => {
+                                resetAutoScanUI();
+                                isProcessing = false;
+                                startAutoVerification();
                             });
                         }
-                    },
-                    error: function(xhr, status, error) {
-                        $("#loading-overlay").removeClass('show');
-                        console.error('AJAX Error:', error);
-
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Terjadi Kesalahan',
-                            text: 'Gagal mengirim data presensi. Silakan coba lagi.',
-                            confirmButtonColor: '#0053C5'
-                        });
-                    }
+                    });
                 });
-            });
+            }
+        }, 1500); // Scan tiap 1.5 detik
+    }
 
-        } catch (error) {
-            Swal.close();
-            $("#loading-overlay").removeClass('show');
+    function resetAutoScanUI() {
+        $("#auto-scan-status").html(`
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <div class="spinner-border spinner-border-sm" role="status" style="width: 1.2rem; height: 1.2rem; border-width: 0.15em;"></div>
+                <span>Auto-Scan Wajah Aktif</span>
+            </div>
+            <small style="color: var(--text-secondary); font-weight: 500; font-size: 12px;">Mohon arahkan wajah ke kamera dan pastikan lokasi GPS stabil.</small>
+        `);
+        $("#auto-scan-status").css({
+            'background': 'rgba(0, 83, 197, 0.1)',
+            'border-color': 'var(--primary)',
+            'color': 'var(--primary)'
+        });
+    }
 
-            console.error('Face verification failed:', error);
-
-            Swal.fire({
-                icon: 'error',
-                title: 'Verifikasi Gagal',
-                html: error.message || 'Verifikasi wajah gagal. Pastikan:<br>- Wajah Anda sudah terdaftar di sistem<br>- Wajah terlihat jelas di kamera<br>- Pencahayaan cukup',
-                confirmButtonColor: '#0053C5'
-            });
-        }
-    });
-
-    // Preload face-api models saat halaman dimuat (optional)
-    $(document).ready(function() {
+    // Preload face-api models saat halaman dimuat dan jalankan auto-scan
+    $(document).ready(async function() {
         console.log('Page ready - Preloading face-api models...');
-        loadFaceModels();
+        await loadFaceModels();
+        // Mulai auto verification setelah model di-load
+        startAutoVerification();
     });
 </script>
 @endpush

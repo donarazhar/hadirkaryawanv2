@@ -169,7 +169,7 @@ class FaceVerificationController extends Controller
 
             Log::info('Face data deleted', ['nik' => $nik]);
 
-            return redirect()->back()->with('success', 'Data wajah berhasil dihapus. Karyawan dapat mendaftar ulang.');
+            return redirect()->back()->with('success', 'Akses pendaftaran ulang dibuka. Karyawan sekarang dapat merekam wajah baru di HP mereka.');
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('FaceVerification@destroy Error: ' . $e->getMessage());

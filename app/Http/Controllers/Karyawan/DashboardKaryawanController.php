@@ -19,13 +19,14 @@ class DashboardKaryawanController extends Controller
         $nik = Auth::guard('karyawan')->user()->nik;
         $kode_cabang = Auth::guard('karyawan')->user()->kode_cabang;
 
-        // Presensi hari ini dengan join ke jam_kerja untuk mendapatkan jam_masuk
+        // Presensi hari ini dengan join ke jam_kerja untuk mendapatkan jam_masuk (Mendukung Multi-Shift)
         $presensihariini = DB::table('presensi')
             ->leftJoin('jam_kerja', 'presensi.kode_jam_kerja', '=', 'jam_kerja.kode_jam_kerja')
             ->select('presensi.*', 'jam_kerja.jam_masuk', 'jam_kerja.jam_pulang', 'jam_kerja.nama_jam_kerja')
             ->where('presensi.tgl_presensi', $hariini)
             ->where('presensi.nik', $nik)
-            ->first();
+            ->orderBy('presensi.shift_ke', 'asc')
+            ->get();
 
         // Histori bulan ini untuk user yang login
         $historibulanini = DB::table('presensi')

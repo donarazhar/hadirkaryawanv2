@@ -43,6 +43,15 @@ class FaceEnrollmentController extends Controller
             ]);
 
             $nik = Auth::guard('karyawan')->user()->nik;
+
+            // Keamanan: Cek apakah data wajah sudah ada
+            $existingFace = FaceData::where('nik', $nik)->first();
+            if ($existingFace && $existingFace->status == 'active') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data wajah sudah terdaftar. Hubungi admin untuk mereset.'
+                ], 403);
+            }
             
             DB::beginTransaction();
 
@@ -142,6 +151,13 @@ class FaceEnrollmentController extends Controller
         try {
             $nik = Auth::guard('karyawan')->user()->nik;
             
+            // Keamanan: Karyawan tidak boleh menghapus wajahnya sendiri
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki akses untuk menghapus data wajah. Hubungi admin.'
+            ], 403);
+            
+            /* Logic lama di non-aktifkan
             $faceData = FaceData::where('nik', $nik)->first();
             
             if ($faceData) {
@@ -161,7 +177,7 @@ class FaceEnrollmentController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Data wajah tidak ditemukan'
-            ], 404);
+            */
 
         } catch (Exception $e) {
             Log::error('Delete face data error: ' . $e->getMessage());

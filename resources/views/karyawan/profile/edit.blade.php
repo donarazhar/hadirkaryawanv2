@@ -12,9 +12,10 @@
         --success: #10b981;
         --danger: #ef4444;
         --warning: #f59e0b;
-        --bg-main: #f0f4f8;
+        --info: #06b6d4;
+        --bg-main: #f8fafc;
         --bg-card: #ffffff;
-        --text-primary: #1e293b;
+        --text-primary: #0f172a;
         --text-secondary: #64748b;
     }
 
@@ -22,25 +23,13 @@
         background: var(--bg-main);
     }
 
-    /* ===== PAGE HEADER ===== */
     .page-header {
-        background: var(--primary-gradient);
+        background: white;
         padding: 24px 20px 100px 20px;
         position: relative;
         overflow: hidden;
         margin: 0;
-    }
-
-    .page-header::before {
-        content: '';
-        position: absolute;
-        top: -40%;
-        right: -15%;
-        width: 250px;
-        height: 250px;
-        background: rgba(255, 255, 255, 0.08);
-        border-radius: 50%;
-        filter: blur(50px);
+        border-bottom: 1px solid rgba(0, 83, 197, 0.08);
     }
 
     .header-content {
@@ -54,9 +43,8 @@
     .btn-back {
         width: 40px;
         height: 40px;
-        background: rgba(255, 255, 255, 0.15);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
         border-radius: 12px;
         display: flex;
         align-items: center;
@@ -67,12 +55,16 @@
 
     .btn-back ion-icon {
         font-size: 24px;
-        color: white;
+        color: var(--text-secondary);
     }
 
-    .btn-back:active {
-        transform: scale(0.95);
-        background: rgba(255, 255, 255, 0.25);
+    .btn-back:active, .btn-back:hover {
+        background: #e2e8f0;
+        color: var(--primary);
+    }
+
+    .btn-back:hover ion-icon {
+        color: var(--primary);
     }
 
     .header-title {
@@ -82,14 +74,17 @@
     .header-title h1 {
         font-size: 22px;
         font-weight: 700;
-        color: white;
+        color: var(--text-primary);
         margin: 0 0 4px 0;
     }
 
     .header-title p {
-        font-size: 13px;
-        color: rgba(255, 255, 255, 0.8);
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--primary);
         margin: 0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
 
     /* ===== PROFILE CARD ===== */
@@ -105,8 +100,8 @@
         background: var(--bg-card);
         border-radius: 20px;
         padding: 24px 20px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-        border: 1px solid rgba(0, 83, 197, 0.08);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(0, 83, 197, 0.05);
         text-align: center;
     }
 
@@ -202,8 +197,8 @@
         background: var(--bg-card);
         border-radius: 16px;
         padding: 20px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-        border: 1px solid rgba(0, 83, 197, 0.08);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+        border: 1px solid rgba(0, 83, 197, 0.05);
         margin-bottom: 16px;
     }
 
@@ -277,12 +272,12 @@
     }
 
     /* ===== BUTTONS ===== */
-    .btn-primary {
+    .btn-custom-primary {
         width: 100%;
         padding: 14px 20px;
-        background: var(--primary-gradient);
-        color: white;
-        border: none;
+        background: white;
+        color: var(--primary);
+        border: 1px solid var(--primary);
         border-radius: 12px;
         font-size: 15px;
         font-weight: 600;
@@ -292,25 +287,26 @@
         gap: 8px;
         cursor: pointer;
         transition: all 0.3s ease;
-        box-shadow: 0 4px 12px rgba(0, 83, 197, 0.3);
+        box-shadow: 0 2px 8px rgba(0, 83, 197, 0.05);
         margin-top: 20px;
     }
 
-    .btn-primary ion-icon {
+    .btn-custom-primary ion-icon {
         font-size: 20px;
     }
 
-    .btn-primary:active {
+    .btn-custom-primary:active {
+        background: var(--primary);
+        color: white;
         transform: scale(0.98);
-        box-shadow: 0 2px 8px rgba(0, 83, 197, 0.3);
     }
 
-    .btn-primary:disabled {
+    .btn-custom-primary:disabled {
         opacity: 0.6;
         cursor: not-allowed;
     }
 
-    .btn-danger {
+    .btn-custom-danger {
         width: 100%;
         padding: 12px 20px;
         background: white;
@@ -326,9 +322,10 @@
         cursor: pointer;
         transition: all 0.3s ease;
         margin-top: 12px;
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.05);
     }
 
-    .btn-danger:active {
+    .btn-custom-danger:active {
         background: var(--danger);
         color: white;
         transform: scale(0.98);
@@ -567,7 +564,7 @@
             </div>
         </div>
 
-        <button type="submit" class="btn-primary" id="btn-save">
+        <button type="submit" class="btn-custom-primary" id="btn-save">
             <ion-icon name="save"></ion-icon>
             <span>Simpan Perubahan</span>
         </button>
@@ -575,7 +572,7 @@
 
     <!-- Button Hapus Foto -->
     @if(!empty($karyawan->foto))
-    <button type="button" class="btn-danger" onclick="confirmDeletePhoto()">
+    <button type="button" class="btn-custom-danger" onclick="confirmDeletePhoto()">
         <ion-icon name="trash"></ion-icon>
         <span>Hapus Foto Profil</span>
     </button>

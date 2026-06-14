@@ -8,14 +8,13 @@
         --primary: #0053C5;
         --primary-dark: #003d94;
         --primary-light: #2E7CE6;
-        --primary-gradient: linear-gradient(135deg, #0053C5 0%, #2E7CE6 100%);
         --success: #10b981;
         --danger: #ef4444;
         --warning: #f59e0b;
         --info: #06b6d4;
-        --bg-main: #f0f4f8;
+        --bg-main: #f8fafc;
         --bg-card: #ffffff;
-        --text-primary: #1e293b;
+        --text-primary: #0f172a;
         --text-secondary: #64748b;
     }
 
@@ -25,23 +24,12 @@
 
     /* ===== PAGE HEADER ===== */
     .page-header {
-        background: var(--primary-gradient);
+        background: white;
         padding: 24px 20px 70px 20px;
         position: relative;
         overflow: hidden;
         margin: 0;
-    }
-
-    .page-header::before {
-        content: '';
-        position: absolute;
-        top: -40%;
-        right: -15%;
-        width: 250px;
-        height: 250px;
-        background: rgba(255, 255, 255, 0.08);
-        border-radius: 50%;
-        filter: blur(50px);
+        border-bottom: 1px solid rgba(0, 83, 197, 0.08);
     }
 
     .header-content {
@@ -55,9 +43,8 @@
     .btn-back {
         width: 40px;
         height: 40px;
-        background: rgba(255, 255, 255, 0.15);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
         border-radius: 12px;
         display: flex;
         align-items: center;
@@ -68,12 +55,16 @@
 
     .btn-back ion-icon {
         font-size: 24px;
-        color: white;
+        color: var(--text-secondary);
     }
 
-    .btn-back:active {
-        transform: scale(0.95);
-        background: rgba(255, 255, 255, 0.25);
+    .btn-back:active, .btn-back:hover {
+        background: #e2e8f0;
+        color: var(--primary);
+    }
+
+    .btn-back:hover ion-icon {
+        color: var(--primary);
     }
 
     .header-title {
@@ -83,14 +74,17 @@
     .header-title h1 {
         font-size: 22px;
         font-weight: 700;
-        color: white;
+        color: var(--text-primary);
         margin: 0 0 4px 0;
     }
 
     .header-title p {
-        font-size: 13px;
-        color: rgba(255, 255, 255, 0.8);
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--primary);
         margin: 0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
 
     /* ===== FILTER CARD ===== */
@@ -106,8 +100,8 @@
         background: var(--bg-card);
         border-radius: 20px;
         padding: 20px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-        border: 1px solid rgba(0, 83, 197, 0.08);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(0, 83, 197, 0.05);
     }
 
     .filter-title {
@@ -430,8 +424,8 @@
         background: var(--bg-card);
         border-radius: 16px;
         padding: 16px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-        border: 1px solid rgba(0, 83, 197, 0.08);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+        border: 1px solid rgba(0, 83, 197, 0.05);
         margin-bottom: 16px;
     }
 

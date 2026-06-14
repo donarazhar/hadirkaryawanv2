@@ -86,7 +86,7 @@ class GoogleController extends Controller
             Auth::guard('karyawan')->login($karyawan);
             
             Log::info('Karyawan logged in via Google', ['nik' => $karyawan->nik]);
-            return redirect()->route('face-presensi.dashboard')->with('success', 'Berhasil login sebagai ' . $karyawan->nama_lengkap);
+            return redirect()->route('dashboard')->with('success', 'Berhasil login sebagai ' . $karyawan->nama_lengkap);
         }
 
         // Jika karyawan tidak ada di sistem

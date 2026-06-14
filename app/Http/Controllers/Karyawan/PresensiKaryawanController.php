@@ -88,6 +88,16 @@ class PresensiKaryawanController extends Controller
             $hariini = Carbon::now('Asia/Jakarta')->format('Y-m-d');
             $jamsekarang = Carbon::now('Asia/Jakarta')->format('H:i');
 
+            // 1. Wajib memiliki data wajah
+            $faceData = DB::table('face_data')
+                ->where('nik', $nik)
+                ->where('status', 'active')
+                ->first();
+
+            if (!$faceData) {
+                return redirect('/face/enrollment')->with('error', 'Anda wajib mendaftarkan wajah (Face ID) sebelum bisa absen.');
+            }
+
             Log::info('Presensi Create Access', [
                 'nik' => $nik,
                 'kode_cabang' => $kode_cabang,
@@ -151,11 +161,42 @@ class PresensiKaryawanController extends Controller
                 ]);
             }
 
+            // MULTI-SHIFT DETECTION
+            $is_multi_shift = false;
+            $shifts_available = collect();
+            $shift_ke = request()->get('shift_ke', 1);
+            $current_shift = null;
+
+            if (isset($jamkerja->tipe_jam_kerja) && $jamkerja->tipe_jam_kerja === 'multi_shift') {
+                $shifts_available = DB::table('jam_kerja_shifts')
+                    ->where('kode_jam_kerja', $jamkerja->kode_jam_kerja)
+                    ->where('is_active', true)
+                    ->orderBy('shift_ke')
+                    ->get();
+                
+                $is_multi_shift = $shifts_available->count() > 1;
+
+                // Tentukan shift saat ini berdasarkan request atau default 1
+                $current_shift = $shifts_available->where('shift_ke', $shift_ke)->first();
+            }
+
             Log::info('Jam kerja ditemukan', [
                 'nik' => $nik,
                 'kode_jam_kerja' => $jamkerja->kode_jam_kerja,
-                'nama_jam_kerja' => $jamkerja->nama_jam_kerja
+                'nama_jam_kerja' => $jamkerja->nama_jam_kerja,
+                'is_multi_shift' => $is_multi_shift,
+                'shift_ke' => $shift_ke
             ]);
+
+            // Ulangi cek presensi jika ini multi-shift (cek per shift_ke)
+            if ($is_multi_shift) {
+                $presensi_hari_ini = DB::table('presensi')
+                    ->where('tgl_presensi', $hariini)
+                    ->where('nik', $nik)
+                    ->where('shift_ke', $shift_ke)
+                    ->first();
+                $cek = $presensi_hari_ini ? 1 : 0;
+            }
 
             return view('karyawan.presensi.create', compact(
                 'cek',
@@ -164,7 +205,12 @@ class PresensiKaryawanController extends Controller
                 'hariini',
                 'namahari',
                 'presensi_hari_ini',
-                'nama_lengkap'
+                'nama_lengkap',
+                'faceData',
+                'is_multi_shift',
+                'shifts_available',
+                'shift_ke',
+                'current_shift'
             ));
         } catch (Exception $e) {
             Log::error('PresensiKaryawan@create Error: ' . $e->getMessage(), [
@@ -288,31 +334,53 @@ class PresensiKaryawanController extends Controller
                 'nama_jam_kerja' => $jamkerja->nama_jam_kerja
             ]);
 
+            // Validasi Face Verification (Karena sekarang wajib)
+            $is_face_verified = $request->filled('verified') && $request->verified == 'true';
+            if (!$is_face_verified) {
+                return response("error|Face Verification diwajibkan! Silakan gunakan tombol Absen + Verifikasi Wajah.|system", 200);
+            }
+
+            // Menerima parameter multi-shift
+            $shift_ke = $request->input('shift_ke');
+            $shift_nama = $request->input('shift_nama');
+            $shift_jam_masuk = $request->input('shift_jam_masuk');
+            $shift_jam_pulang = $request->input('shift_jam_pulang');
+            $is_multi_shift = !empty($shift_ke) && !empty($shift_nama);
+
+            if ($is_multi_shift) {
+                // Gunakan jam dari shift, set toleransi awal/akhir secara dinamis
+                $jam_masuk_ref = $shift_jam_masuk;
+                $jam_pulang_ref = $shift_jam_pulang;
+                $awal_masuk_ref = Carbon::parse($shift_jam_masuk)->subMinutes(60)->format('H:i:s');
+                $akhir_masuk_ref = Carbon::parse($shift_jam_masuk)->addMinutes(120)->format('H:i:s');
+            } else {
+                $jam_masuk_ref = $jamkerja->jam_masuk;
+                $jam_pulang_ref = $jamkerja->jam_pulang;
+                $awal_masuk_ref = $jamkerja->awal_jam_masuk;
+                $akhir_masuk_ref = $jamkerja->akhir_jam_masuk;
+            }
+
             // Check apakah sudah presensi
-            $presensi = DB::table('presensi')
+            $query_presensi = DB::table('presensi')
                 ->where('tgl_presensi', $tgl_presensi)
                 ->where('nik', $nik);
 
-            $cek = $presensi->count();
-            $datapresensi = $presensi->first();
+            if ($is_multi_shift) {
+                $query_presensi->where('shift_ke', $shift_ke);
+            } else {
+                $query_presensi->whereNull('shift_ke');
+            }
+
+            $cek = $query_presensi->count();
+            $datapresensi = $query_presensi->first();
 
             // Tentukan tipe presensi (in/out)
             $ket = $cek > 0 ? "out" : "in";
 
-            // Process image
-            $image = $request->image;
-            $folderPath = "public/uploads/absensi/";
-            $formatName = $nik . "_" . $tgl_presensi . "_" . $ket;
-
-            $image_parts = explode(";base64,", $image);
-            if (count($image_parts) < 2) {
-                Log::error('Invalid image format', ['nik' => $nik]);
-                return response("error|Format gambar tidak valid|system", 200);
-            }
-
-            $image_base64 = base64_decode($image_parts[1]);
-            $fileName = $formatName . ".png";
-            $file = $folderPath . $fileName;
+            // Disable physical photo saving for storage optimization
+            // The identity is already verified by face-api on the client side
+            $fileName = "face_api";
+            // $file = $folderPath . $fileName;
 
             // Proses presensi
             DB::beginTransaction();
@@ -333,7 +401,7 @@ class PresensiKaryawanController extends Controller
 
                 if ($jam_pulang < $jamkerja_pulang) {
                     DB::rollBack();
-                    $waktu_pulang = date('H:i', strtotime($jamkerja->jam_pulang));
+                    $waktu_pulang = date('H:i', strtotime($jam_pulang_ref));
                     Log::warning('Check-out too early', [
                         'nik' => $nik,
                         'current' => $jam_pulang,
@@ -345,7 +413,8 @@ class PresensiKaryawanController extends Controller
                 if (!empty($datapresensi->jam_out)) {
                     DB::rollBack();
                     Log::warning('Already checked out', ['nik' => $nik]);
-                    return response("error|Anda sudah melakukan absen pulang sebelumnya|out", 200);
+                    $nama_shift_msg = $is_multi_shift ? " untuk {$shift_nama}" : "";
+                    return response("error|Anda sudah melakukan absen pulang sebelumnya{$nama_shift_msg}|out", 200);
                 }
 
                 $data_pulang = [
@@ -361,7 +430,7 @@ class PresensiKaryawanController extends Controller
                     ->update($data_pulang);
 
                 if ($update) {
-                    Storage::put($file, $image_base64);
+                    // Storage::put($file, $image_base64); // Disabled to save storage
 
                     Log::info('Check-out success', [
                         'nik' => $nik,
@@ -391,17 +460,17 @@ class PresensiKaryawanController extends Controller
 
                 // Konversi ke Carbon untuk perbandingan yang akurat
                 $jam_sekarang = Carbon::createFromFormat('H:i:s', $jam, 'Asia/Jakarta');
-                $awal_masuk = Carbon::createFromFormat('H:i:s', $jamkerja->awal_jam_masuk, 'Asia/Jakarta');
-                $akhir_masuk = Carbon::createFromFormat('H:i:s', $jamkerja->akhir_jam_masuk, 'Asia/Jakarta');
+                $awal_masuk = Carbon::createFromFormat('H:i:s', $awal_masuk_ref, 'Asia/Jakarta');
+                $akhir_masuk = Carbon::createFromFormat('H:i:s', $akhir_masuk_ref, 'Asia/Jakarta');
 
                 // Validasi: Belum waktunya presensi (terlalu cepat)
                 if ($jam_sekarang->lt($awal_masuk)) {
                     DB::rollBack();
-                    $waktu_mulai = Carbon::parse($jamkerja->awal_jam_masuk)->format('H:i');
+                    $waktu_mulai = Carbon::parse($awal_masuk_ref)->format('H:i');
                     Log::warning('Check-in too early', [
                         'nik' => $nik,
                         'jam_sekarang' => $jam,
-                        'awal_jam_masuk' => $jamkerja->awal_jam_masuk
+                        'awal_jam_masuk' => $awal_masuk_ref
                     ]);
                     return response("error|Belum waktunya presensi. Awal jam masuk: {$waktu_mulai}|in", 200);
                 }
@@ -409,11 +478,11 @@ class PresensiKaryawanController extends Controller
                 // Validasi: Waktu presensi sudah habis (terlalu telat)
                 if ($jam_sekarang->gt($akhir_masuk)) {
                     DB::rollBack();
-                    $waktu_akhir = Carbon::parse($jamkerja->akhir_jam_masuk)->format('H:i');
+                    $waktu_akhir = Carbon::parse($akhir_masuk_ref)->format('H:i');
                     Log::warning('Check-in too late', [
                         'nik' => $nik,
                         'jam_sekarang' => $jam,
-                        'akhir_jam_masuk' => $jamkerja->akhir_jam_masuk
+                        'akhir_jam_masuk' => $akhir_masuk_ref
                     ]);
                     return response("error|Waktu presensi sudah habis. Akhir jam masuk: {$waktu_akhir}|in", 200);
                 }
@@ -426,6 +495,8 @@ class PresensiKaryawanController extends Controller
                     'lokasi_in' => $lokasi,
                     'kode_jam_kerja' => $jamkerja->kode_jam_kerja,
                     'status' => 'h',
+                    'shift_ke' => $is_multi_shift ? $shift_ke : null,
+                    'nama_shift' => $is_multi_shift ? $shift_nama : null,
                     'created_at' => Carbon::now('Asia/Jakarta'),
                     'updated_at' => Carbon::now('Asia/Jakarta')
                 ];
@@ -433,7 +504,7 @@ class PresensiKaryawanController extends Controller
                 $simpan = DB::table('presensi')->insert($data);
 
                 if ($simpan) {
-                    Storage::put($file, $image_base64);
+                    // Storage::put($file, $image_base64); // Disabled to save storage
 
                     Log::info('Check-in success', [
                         'nik' => $nik,

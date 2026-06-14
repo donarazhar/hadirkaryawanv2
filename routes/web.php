@@ -21,7 +21,6 @@ use App\Http\Controllers\Karyawan\HistoryKaryawanController;
 use App\Http\Controllers\Karyawan\IzinKaryawanController;
 use App\Http\Controllers\Karyawan\PresensiKaryawanController;
 use App\Http\Controllers\Karyawan\ProfileKaryawanController;
-use App\Http\Controllers\Karyawan\SimpleFacePresensiController;
 use App\Http\Controllers\Auth\GoogleController;
 use Illuminate\Support\Facades\Route;
 
@@ -94,19 +93,7 @@ Route::middleware('auth:karyawan')->group(function () {
         Route::delete('/delete', [FaceEnrollmentController::class, 'destroy'])->name('delete');
     });
 
-    // ===== SIMPLE FACE PRESENSI (STANDALONE) =====
-    Route::prefix('face-presensi')->name('face-presensi.')->group(function () {
-        Route::get('/dashboard', [SimpleFacePresensiController::class, 'dashboard'])->name('dashboard');
-        Route::get('/create', [SimpleFacePresensiController::class, 'create'])->name('create');
-        Route::post('/store', [SimpleFacePresensiController::class, 'store'])->name('store');
 
-        // Enrollment khusus simple-face
-        Route::get('/enrollment', [SimpleFacePresensiController::class, 'enrollment'])->name('enrollment');
-        Route::post('/enrollment/store', [SimpleFacePresensiController::class, 'enrollmentStore'])->name('enrollment.store');
-        Route::get('/descriptor', [SimpleFacePresensiController::class, 'getDescriptor'])->name('descriptor');
-        Route::get('/image', [SimpleFacePresensiController::class, 'viewImage'])->name('image');
-        Route::delete('/enrollment/delete', [SimpleFacePresensiController::class, 'deleteEnrollment'])->name('enrollment.delete');
-    });
 });
 
 // ========================================
@@ -144,13 +131,17 @@ Route::prefix('panel')->name('panel.')->group(function () {
         // Laporan
         Route::controller(LaporanController::class)->prefix('laporan')->name('laporan.')->group(function () {
             Route::get('/', 'index')->name('index');
-            Route::post('/cetak', 'cetak')->name('cetak');
+            Route::post('/edit', 'edit')->name('edit');
+            Route::post('/update', 'update')->name('update');
+            Route::post('/getkaryawan', 'getKaryawan')->name('getkaryawan');
+            Route::post('/store', 'store')->name('store');
         });
 
         // Rekap
         Route::controller(RekapController::class)->prefix('rekap')->name('rekap.')->group(function () {
             Route::get('/', 'index')->name('index');
             Route::post('/cetak', 'cetak')->name('cetak');
+            Route::post('/getkaryawan', 'getKaryawan')->name('getkaryawan');
         });
 
         // Izin/Sakit
@@ -158,22 +149,6 @@ Route::prefix('panel')->name('panel.')->group(function () {
             Route::get('/', 'index')->name('index');
             Route::post('/{kode_izin}/approve', 'approve')->name('approve');
             Route::get('/{kode_izin}/cancel', 'cancel')->name('cancel');
-        });
-
-        // Presensi Face Routes
-        Route::prefix('presensi-face')->name('presensi-face.')->group(function () {
-            Route::get('/', [PresensiFaceAdminController::class, 'index'])->name('index');
-            Route::get('/create', [PresensiFaceAdminController::class, 'create'])->name('create');
-            Route::post('/store', [PresensiFaceAdminController::class, 'store'])->name('store');
-            Route::get('/show/{id}', [PresensiFaceAdminController::class, 'show'])->name('show');
-            Route::get('/edit/{id}', [PresensiFaceAdminController::class, 'edit'])->name('edit');
-            Route::put('/update/{id}', [PresensiFaceAdminController::class, 'update'])->name('update');
-            Route::delete('/destroy/{id}', [PresensiFaceAdminController::class, 'destroy'])->name('destroy');
-            Route::get('/monitoring', [PresensiFaceAdminController::class, 'monitoring'])->name('monitoring');
-            Route::get('/rekap', [PresensiFaceAdminController::class, 'rekap'])->name('rekap');
-            Route::get('/export-data', [PresensiFaceAdminController::class, 'exportData'])->name('export-data');
-            Route::get('/export-rekap', [PresensiFaceAdminController::class, 'exportRekap'])->name('export-rekap');
-            Route::get('/api/stats', [PresensiFaceAdminController::class, 'getDashboardStats'])->name('api.stats');
         });
 
         // Face Verification Routes

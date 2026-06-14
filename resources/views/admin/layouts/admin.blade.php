@@ -770,113 +770,46 @@
                 </div>
             </div>
 
-            <!-- Presensi GPS Group (Collapsible) -->
-            <!-- <div class="menu-group">
+            <!-- Presensi & Laporan Group (Collapsible) -->
+            <div class="menu-group">
                 <div class="menu-group-header"
                     data-bs-toggle="collapse"
-                    data-bs-target="#presensiGPSMenu"
-                    data-tooltip="Presensi GPS"
-                    aria-expanded="{{ Request::is('panel/presensi') && !Request::is('panel/presensi-face*') && !Request::is('panel/face-verification*') ? 'true' : 'false' }}">
+                    data-bs-target="#presensiMenu"
+                    data-tooltip="Presensi & Laporan"
+                    aria-expanded="{{ Request::is('panel/monitoring*') || Request::is('panel/laporan*') || Request::is('panel/rekap*') || Request::is('panel/face-verification*') || Request::is('panel/izinsakit*') ? 'true' : 'false' }}">
                     <div class="menu-group-title">
                         <i class="mdi mdi-map-marker-check"></i>
-                        <span>Presensi GPS</span>
+                        <span>Presensi & Laporan</span>
                     </div>
                     <i class="mdi mdi-chevron-down menu-group-icon"></i>
                 </div>
-                <div class="collapse {{ Request::is('panel/presensi') && !Request::is('panel/presensi-face*') && !Request::is('panel/face-verification*') ? 'show' : '' }}"
-                    id="presensiGPSMenu">
+                <div class="collapse {{ Request::is('panel/monitoring*') || Request::is('panel/laporan*') || Request::is('panel/rekap*') || Request::is('panel/face-verification*') || Request::is('panel/izinsakit*') ? 'show' : '' }}"
+                    id="presensiMenu">
                     <div class="menu-group-content">
-                        <a href="#" class="menu-item">
-                            <i class="mdi mdi-format-list-bulleted"></i>
-                            <span>Data Presensi</span>
-                        </a>
-                        <a href="#" class="menu-item">
-                            <i class="mdi mdi-calendar-today"></i>
-                            <span>Rekap Harian</span>
-                        </a>
-                        <a href="#" class="menu-item">
-                            <i class="mdi mdi-calendar-month"></i>
-                            <span>Rekap Bulanan</span>
-                        </a>
-                        <a href="#" class="menu-item">
+                        <a href="{{ route('panel.monitoring.index') }}"
+                            class="menu-item {{ Request::is('panel/monitoring*') ? 'active' : '' }}">
                             <i class="mdi mdi-map"></i>
-                            <span>Monitoring Lokasi</span>
-                        </a>
-                    </div>
-                </div>
-            </div> -->
-
-            <!-- Presensi Face Group (Collapsible) - MERGED WITH VERIFIKASI WAJAH -->
-            <div class="menu-group">
-                <div class="menu-group-header"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#presensiFaceMenu"
-                    data-tooltip="Presensi Face"
-                    aria-expanded="{{ Request::is('panel/presensi-face*') || Request::is('panel/face-verification*') ? 'true' : 'false' }}">
-                    <div class="menu-group-title">
-                        <i class="mdi mdi-face-recognition"></i>
-                        <span>Presensi Face</span>
-                    </div>
-                    <i class="mdi mdi-chevron-down menu-group-icon"></i>
-                </div>
-                <div class="collapse {{ Request::is('panel/presensi-face*') || Request::is('panel/face-verification*') ? 'show' : '' }}"
-                    id="presensiFaceMenu">
-                    <div class="menu-group-content">
-                        <a href="{{ route('panel.presensi-face.index') }}"
-                            class="menu-item {{ Request::is('panel/presensi-face') || Request::is('panel/presensi-face/show*') ? 'active' : '' }}">
-                            <i class="mdi mdi-format-list-bulleted"></i>
-                            <span>Data Presensi</span>
-                        </a>
-                        <a href="{{ route('panel.presensi-face.rekap') }}"
-                            class="menu-item {{ Request::is('panel/presensi-face/rekap*') ? 'active' : '' }}">
-                            <i class="mdi mdi-file-chart"></i>
-                            <span>Rekap Presensi</span>
-                        </a>
-                        <a href="{{ route('panel.presensi-face.monitoring') }}"
-                            class="menu-item {{ Request::is('panel/presensi-face/rmonitoring*') ? 'active' : '' }}">
-                            <i class="mdi mdi-file-chart"></i>
                             <span>Monitoring Presensi</span>
                         </a>
-                        <a href="{{ route('panel.face-verification.index') }}"
-                            class="menu-item {{ Request::is('panel/face-verification') || Request::is('panel/face-verification/show*') ? 'active' : '' }}">
-                            <i class="mdi mdi-account-check"></i>
-                            <span>Verifikasi Wajah</span>
-                        </a>
-                        
-                    </div>
-                </div>
-            </div>
-
-            <!-- Laporan Group (Collapsible) -->
-            <div class="menu-group">
-                <div class="menu-group-header"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#laporanMenu"
-                    data-tooltip="Laporan"
-                    aria-expanded="false">
-                    <div class="menu-group-title">
-                        <i class="mdi mdi-chart-bar"></i>
-                        <span>Laporan</span>
-                    </div>
-                    <i class="mdi mdi-chevron-down menu-group-icon"></i>
-                </div>
-                <div class="collapse" id="laporanMenu">
-                    <div class="menu-group-content">
-                        <a href="#" class="menu-item">
-                            <i class="mdi mdi-chart-line"></i>
-                            <span>Grafik Kehadiran</span>
-                        </a>
-                        <a href="#" class="menu-item">
-                            <i class="mdi mdi-account-clock"></i>
-                            <span>Keterlambatan</span>
-                        </a>
-                        <a href="#" class="menu-item">
-                            <i class="mdi mdi-account-off"></i>
-                            <span>Ketidakhadiran</span>
-                        </a>
-                        <a href="#" class="menu-item">
+                        <a href="{{ route('panel.laporan.index') }}"
+                            class="menu-item {{ Request::is('panel/laporan*') ? 'active' : '' }}">
                             <i class="mdi mdi-file-document"></i>
-                            <span>Laporan Lengkap</span>
+                            <span>Laporan Presensi</span>
+                        </a>
+                        <a href="{{ route('panel.rekap.index') }}"
+                            class="menu-item {{ Request::is('panel/rekap*') ? 'active' : '' }}">
+                            <i class="mdi mdi-calendar-month"></i>
+                            <span>Rekap Kehadiran</span>
+                        </a>
+                        <a href="{{ route('panel.izinsakit.index') }}"
+                            class="menu-item {{ Request::is('panel/izinsakit*') ? 'active' : '' }}">
+                            <i class="mdi mdi-hospital-box-outline"></i>
+                            <span>Data Izin / Sakit</span>
+                        </a>
+                        <a href="{{ route('panel.face-verification.index') }}"
+                            class="menu-item {{ Request::is('panel/face-verification*') ? 'active' : '' }}">
+                            <i class="mdi mdi-face-recognition"></i>
+                            <span>Verifikasi Wajah</span>
                         </a>
                     </div>
                 </div>

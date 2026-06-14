@@ -548,7 +548,7 @@
     @else
     <!-- Not Enrolled -->
     <div class="enrollment-card">
-        <div class="status-info">
+        <div class="status-info" id="statusInfo">
             <div class="status-icon not-enrolled">
                 <ion-icon name="person-add"></ion-icon>
             </div>
@@ -559,7 +559,7 @@
         </div>
 
         <!-- Info Box -->
-        <div class="info-box">
+        <div class="info-box" id="infoBox">
             <h4 class="info-title">
                 <ion-icon name="information-circle"></ion-icon>
                 Petunjuk Pendaftaran
@@ -670,6 +670,10 @@
 
         document.getElementById('cameraContainer').classList.add('active');
         this.style.display = 'none';
+        
+        // Hide info boxes for better user experience on mobile
+        document.getElementById('statusInfo').style.display = 'none';
+        document.getElementById('infoBox').style.display = 'none';
 
         startCamera();
     });

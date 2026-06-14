@@ -104,6 +104,7 @@ Route::middleware('auth:karyawan')->group(function () {
         Route::get('/enrollment', [SimpleFacePresensiController::class, 'enrollment'])->name('enrollment');
         Route::post('/enrollment/store', [SimpleFacePresensiController::class, 'enrollmentStore'])->name('enrollment.store');
         Route::get('/descriptor', [SimpleFacePresensiController::class, 'getDescriptor'])->name('descriptor');
+        Route::get('/image', [SimpleFacePresensiController::class, 'viewImage'])->name('image');
         Route::delete('/enrollment/delete', [SimpleFacePresensiController::class, 'deleteEnrollment'])->name('enrollment.delete');
     });
 });

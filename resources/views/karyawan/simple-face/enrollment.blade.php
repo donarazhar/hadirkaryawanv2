@@ -494,7 +494,7 @@
         @if($faceData->face_image)
         <div class="enrolled-image">
             <div class="enrolled-image-wrapper">
-                <img src="{{ Storage::url('uploads/faces/' . $faceData->face_image) }}" alt="Face Reference">
+                <img src="{{ route('face-presensi.image') }}" alt="Face Reference">
                 <div class="enrolled-badge">
                     <ion-icon name="checkmark"></ion-icon>
                 </div>

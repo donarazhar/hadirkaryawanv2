@@ -687,4 +687,30 @@ class SimpleFacePresensiController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * View face image
+     */
+    public function viewImage()
+    {
+        try {
+            $nik = Auth::guard('karyawan')->user()->nik;
+            $faceData = DB::table('face_data')->where('nik', $nik)->where('status', 'active')->first();
+
+            if (!$faceData || !$faceData->face_image) {
+                abort(404, 'Gambar tidak ditemukan');
+            }
+
+            $path = storage_path('app/public/uploads/faces/' . $faceData->face_image);
+
+            if (!file_exists($path)) {
+                abort(404, 'File gambar tidak ditemukan');
+            }
+
+            return response()->file($path);
+        } catch (\Exception $e) {
+            Log::error('SimpleFacePresensiController@viewImage Error: ' . $e->getMessage());
+            abort(404);
+        }
+    }
 }

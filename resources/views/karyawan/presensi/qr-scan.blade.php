@@ -182,7 +182,7 @@
         
         $.ajax({
             type: 'POST',
-            url: '/presensi/store-qr',
+            url: '{{ route("presensi.storeQr") }}',
             data: {
                 _token: "{{ csrf_token() }}",
                 qr_code: qrCodeData,
@@ -204,7 +204,7 @@
                         text: respond.message,
                         timer: 3000
                     }).then(() => {
-                        window.location.href = '/dashboard';
+                        window.location.href = '{{ route("dashboard") }}';
                     });
                 } else {
                     Swal.fire({

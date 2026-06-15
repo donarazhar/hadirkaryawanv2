@@ -614,11 +614,8 @@ class PresensiKaryawanController extends Controller
                 return response()->json(['success' => true, 'message' => "Absen Pulang QR Berhasil!"]);
             } else {
                 // Masuk (default jam kerja)
-                $jamkerja = DB::table('konfigurasi_jk_dept')
-                    ->join('jam_kerja', 'konfigurasi_jk_dept.kode_jam_kerja', '=', 'jam_kerja.kode_jam_kerja')
-                    ->where('kode_dept', $karyawan->kode_dept)
-                    ->where('kode_cabang', $karyawan->kode_cabang)
-                    ->first();
+                $namahari = $this->getHari(date("D", strtotime($tgl_presensi)));
+                $jamkerja = $this->getJamKerja($karyawan->kode_cabang, $karyawan->kode_dept, $namahari);
 
                 if(!$jamkerja) {
                      $jamkerja = DB::table('jam_kerja')->first(); // fallback

@@ -167,12 +167,16 @@
 
     .webcam-capture,
     .webcam-capture video {
-        width: 100% !important;
-        height: 100% !important;
+        position: fixed !important;
+        top: 0;
+        left: 0;
+        width: 100vw !important;
+        height: 100vh !important;
         object-fit: cover !important;
         border-radius: 0;
         overflow: hidden;
         box-shadow: none;
+        z-index: 0;
     }
 
     /* ===== MAP SECTION ===== */
@@ -399,103 +403,61 @@
 <!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
-<!-- Page Header -->
-<div class="page-header">
-    <div class="header-content">
-        <a href="{{ route('dashboard') }}" class="btn-back">
-            <ion-icon name="chevron-back-outline"></ion-icon>
-        </a>
-        <div class="header-title">
-            <h1>{{ $cek > 0 ? 'Absen Pulang' : 'Absen Masuk' }}</h1>
-            <p>{{ $namahari }}, {{ \Carbon\Carbon::parse($hariini)->isoFormat('D MMMM Y') }}</p>
-        </div>
+<!-- Full-screen Background Camera -->
+<div class="webcam-capture"></div>
+
+<!-- Floating Back Button -->
+<a href="{{ route('dashboard') }}" class="btn-back-floating" style="position: fixed; top: 20px; left: 20px; width: 40px; height: 40px; background: rgba(0,0,0,0.5); backdrop-filter: blur(5px); border-radius: 12px; display: flex; align-items: center; justify-content: center; z-index: 20; border: 1px solid rgba(255,255,255,0.3); color: white; text-decoration: none;">
+    <ion-icon name="chevron-back-outline" style="font-size: 24px;"></ion-icon>
+</a>
+
+<!-- Floating Schedule Text -->
+<div class="schedule-floating-text" style="position: fixed; top: 75px; left: 20px; right: 20px; z-index: 20; color: white; text-shadow: 0px 2px 4px rgba(0,0,0,0.8);">
+    <h1 style="font-size: 22px; font-weight: 700; margin: 0 0 4px 0; color: white;">{{ $cek > 0 ? 'Absen Pulang' : 'Absen Masuk' }}</h1>
+    <p style="font-size: 13px; font-weight: 500; margin: 0 0 12px 0; opacity: 0.9;">{{ $namahari }}, {{ \Carbon\Carbon::parse($hariini)->isoFormat('D MMMM Y') }}</p>
+    
+    <div style="font-size: 13px; line-height: 1.6; font-weight: 500;">
+        @if(isset($is_multi_shift) && $is_multi_shift)
+            Shift: {{ $current_shift->nama_shift }} ({{ date('H:i', strtotime($current_shift->jam_masuk)) }} - {{ date('H:i', strtotime($current_shift->jam_pulang)) }})<br>
+            Waktu Absen: {{ date('H:i', strtotime($current_shift->jam_masuk) - 3600) }} s/d {{ date('H:i', strtotime($current_shift->jam_masuk) + 7200) }}<br>
+        @else
+            Shift: {{ $jamkerja->nama_jam_kerja }} ({{ date('H:i', strtotime($jamkerja->jam_masuk)) }} - {{ date('H:i', strtotime($jamkerja->jam_pulang)) }})<br>
+            Waktu Absen: {{ date('H:i', strtotime($jamkerja->awal_jam_masuk)) }} s/d {{ date('H:i', strtotime($jamkerja->akhir_jam_masuk)) }}<br>
+        @endif
+        Status: 
+        @if($cek > 0)
+            <span style="color: #4ade80; font-weight: bold;">Sudah Absen</span>
+        @else
+            <span style="color: #f87171; font-weight: bold;">Belum Absen</span>
+        @endif
     </div>
 </div>
 
-<!-- Presensi Section -->
-<div class="presensi-section">
+<!-- Shift Selection Form (if multi-shift) -->
+@if(isset($is_multi_shift) && $is_multi_shift)
+<div style="position: fixed; top: 180px; left: 20px; right: 20px; z-index: 20;">
+    <form action="{{ route('presensi.create') }}" method="GET" id="shift-form">
+        <select name="shift_ke" id="shift_ke" class="form-control" onchange="document.getElementById('shift-form').submit()" style="background: rgba(0,0,0,0.5); backdrop-filter: blur(5px); color: white; border: 1px solid rgba(255,255,255,0.3); border-radius: 12px; padding: 10px; font-size: 12px;">
+            @foreach($shifts_available as $s)
+                <option style="color: black;" value="{{ $s->shift_ke }}" {{ $shift_ke == $s->shift_ke ? 'selected' : '' }}>
+                    Shift {{ $s->shift_ke }} - {{ $s->nama_shift }} ({{ date('H:i', strtotime($s->jam_masuk)) }} - {{ date('H:i', strtotime($s->jam_pulang)) }})
+                </option>
+            @endforeach
+        </select>
+    </form>
+</div>
+@endif
 
-    @if(isset($is_multi_shift) && $is_multi_shift)
-    <div class="shift-selection-card" style="background: white; border-radius: 20px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.05);">
-        <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-            <ion-icon name="time-outline" style="color: var(--primary); font-size: 20px;"></ion-icon>
-            Pilih Shift Aktif
-        </div>
-        <form action="{{ route('presensi.create') }}" method="GET" id="shift-form">
-            <select name="shift_ke" id="shift_ke" class="form-control" onchange="document.getElementById('shift-form').submit()" style="border-radius: 12px; border: 1px solid #e2e8f0; padding: 12px; width: 100%; font-size: 14px; background-color: #f8fafc;">
-                @foreach($shifts_available as $s)
-                    <option value="{{ $s->shift_ke }}" {{ $shift_ke == $s->shift_ke ? 'selected' : '' }}>
-                        Shift {{ $s->shift_ke }} - {{ $s->nama_shift }} ({{ date('H:i', strtotime($s->jam_masuk)) }} - {{ date('H:i', strtotime($s->jam_pulang)) }})
-                    </option>
-                @endforeach
-            </select>
-        </form>
-    </div>
-    @endif
-
-    <!-- Webcam Card with Floating Info -->
-    <div class="webcam-card" style="position: relative; padding: 0; overflow: hidden; border-radius: 20px; margin-bottom: 16px; min-height: 480px; display: flex; align-items: center; justify-content: center; background: #000;">
-        <div class="webcam-capture" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;"></div>
-        
-        <!-- Floating Info Card -->
-        <div class="info-card" style="position: absolute; bottom: 12px; left: 12px; right: 12px; z-index: 10; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); padding: 12px; margin: 0; box-shadow: 0 4px 20px rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.5);">
-            <div class="info-card-title" style="font-size: 12px; margin-bottom: 8px; justify-content: center;">
-                <ion-icon name="time-outline" style="font-size: 16px;"></ion-icon>
-                Jadwal Kerja Hari Ini
-            </div>
-            <div class="info-grid" style="gap: 8px;">
-                <div class="info-item" style="padding: 8px; background: rgba(255, 255, 255, 0.6); border-radius: 8px;">
-                    <div class="info-label" style="font-size: 9px; margin-bottom: 2px;">Shift</div>
-                    <div class="info-value" style="font-size: 11px;">
-                        @if(isset($is_multi_shift) && $is_multi_shift)
-                            {{ $current_shift->nama_shift }}
-                        @else
-                            {{ $jamkerja->nama_jam_kerja }}
-                        @endif
-                    </div>
-                </div>
-                <div class="info-item" style="padding: 8px; background: rgba(255, 255, 255, 0.6); border-radius: 8px;">
-                    <div class="info-label" style="font-size: 9px; margin-bottom: 2px;">Jam Kerja</div>
-                    <div class="info-value" style="font-size: 11px;">
-                        @if(isset($is_multi_shift) && $is_multi_shift)
-                            {{ date('H:i', strtotime($current_shift->jam_masuk)) }} - {{ date('H:i', strtotime($current_shift->jam_pulang)) }}
-                        @else
-                            {{ date('H:i', strtotime($jamkerja->jam_masuk)) }} - {{ date('H:i', strtotime($jamkerja->jam_pulang)) }}
-                        @endif
-                    </div>
-                </div>
-                <div class="info-item" style="padding: 8px; background: rgba(255, 255, 255, 0.6); border-radius: 8px;">
-                    <div class="info-label" style="font-size: 9px; margin-bottom: 2px;">Waktu Absen</div>
-                    <div class="info-value" style="font-size: 11px;">
-                        @if(isset($is_multi_shift) && $is_multi_shift)
-                            {{ date('H:i', strtotime($current_shift->jam_masuk) - 3600) }} - {{ date('H:i', strtotime($current_shift->jam_masuk) + 7200) }}
-                        @else
-                            {{ date('H:i', strtotime($jamkerja->awal_jam_masuk)) }} - {{ date('H:i', strtotime($jamkerja->akhir_jam_masuk)) }}
-                        @endif
-                    </div>
-                </div>
-                <div class="info-item" style="padding: 8px; background: rgba(255, 255, 255, 0.6); border-radius: 8px;">
-                    <div class="info-label" style="font-size: 9px; margin-bottom: 2px;">Status</div>
-                    <div class="info-value" style="font-size: 11px;">
-                        @if($cek > 0)
-                        <span class="status-badge success" style="font-size: 10px; padding: 4px 6px;">
-                            <ion-icon name="checkmark-circle"></ion-icon>
-                            Sudah Absen
-                        </span>
-                        @else
-                        <span class="status-badge danger" style="font-size: 10px; padding: 4px 6px;">
-                            <ion-icon name="time"></ion-icon>
-                            Belum Absen
-                        </span>
-                        @endif
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+<!-- Floating Map -->
+<div class="map-floating" style="position: fixed; top: 20px; right: 20px; width: 100px; height: 100px; border-radius: 16px; overflow: hidden; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 20;">
+    <div id="map" style="width: 100%; height: 100%;"></div>
+</div>
+<!-- Radius Kantor Info under Map -->
+<div style="position: fixed; top: 128px; right: 20px; z-index: 20; background: rgba(0,0,0,0.5); backdrop-filter: blur(5px); padding: 4px 8px; border-radius: 8px; font-size: 10px; color: white; border: 1px solid rgba(255,255,255,0.2);">
+    Radius: {{ $lok_kantor->radius_cabang }}m
 </div>
 
-<!-- Button Section -->
+<!-- Button Section (Hidden inputs & Auto-scan indicator) -->
 <div class="button-section">
     <input type="hidden" id="lokasi">
 
@@ -512,29 +474,12 @@
     @endif
 
     <!-- Auto-Scan Status Indicator -->
-    <div id="auto-scan-status" style="background: rgba(0, 83, 197, 0.1); border: 1px solid var(--primary); border-radius: 12px; padding: 16px; text-align: center; color: var(--primary); font-weight: 600; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;">
+    <div id="auto-scan-status" style="position: fixed; bottom: 30px; left: 20px; right: 20px; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); border-radius: 16px; padding: 12px; text-align: center; color: white; font-weight: 600; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; z-index: 20;">
         <div style="display: flex; align-items: center; gap: 8px;">
-            <div class="spinner-border spinner-border-sm" role="status" style="width: 1.2rem; height: 1.2rem; border-width: 0.15em;"></div>
-            <span>Auto-Scan Wajah Aktif</span>
+            <div class="spinner-border spinner-border-sm" role="status" style="width: 1.2rem; height: 1.2rem; border-width: 0.15em; color: #10b981;"></div>
+            <span style="color: #10b981;">Auto-Scan Wajah Aktif</span>
         </div>
-        <small style="color: var(--text-secondary); font-weight: 500; font-size: 12px;">Arahkan wajah ke kamera lalu <strong style="color:var(--primary);">KEDIPKAN MATA</strong> Anda untuk absen.</small>
-    </div>
-</div>
-
-<!-- Map Section -->
-<div class="map-section">
-    <div class="map-card">
-        <div class="map-title">
-            <ion-icon name="location-outline"></ion-icon>
-            Lokasi Anda
-        </div>
-        <div id="map"></div>
-        <div class="location-info">
-            <p>
-                <ion-icon name="business-outline"></ion-icon>
-                <strong>Radius Kantor:</strong> {{ $lok_kantor->radius_cabang }} meter
-            </p>
-        </div>
+        <small style="color: #cbd5e1; font-weight: 500; font-size: 11px;">Arahkan wajah ke kamera lalu <strong style="color:#10b981;">KEDIPKAN MATA</strong> Anda untuk absen.</small>
     </div>
 </div>
 
@@ -979,7 +924,7 @@
                     console.log('Blink detected! EAR:', avgEAR);
                     blinkDetected = true;
                     $("#auto-scan-status").html(`
-                        <div style="display: flex; align-items: center; gap: 8px; color: var(--warning);">
+                        <div style="display: flex; align-items: center; gap: 8px; color: #f59e0b;">
                             <ion-icon name="eye-outline" style="font-size: 20px;"></ion-icon>
                             <span>Kedipan Terdeteksi! Memverifikasi wajah...</span>
                         </div>
@@ -1007,7 +952,7 @@
                         // Reset blink status if fail to match
                         blinkDetected = false;
                         $("#auto-scan-status").html(`
-                            <div style="display: flex; align-items: center; gap: 8px; color: var(--danger);">
+                            <div style="display: flex; align-items: center; gap: 8px; color: #ef4444;">
                                 <ion-icon name="close-circle-outline" style="font-size: 20px;"></ion-icon>
                                 <span>Wajah tidak cocok. Silakan coba lagi.</span>
                             </div>
@@ -1050,16 +995,16 @@
                 
                 // Ubah status UI
                 $("#auto-scan-status").html(`
-                    <div style="display: flex; align-items: center; gap: 8px; color: var(--success);">
+                    <div style="display: flex; align-items: center; gap: 8px; color: #10b981;">
                         <ion-icon name="checkmark-circle" style="font-size: 20px;"></ion-icon>
                         <span>Wajah Terverifikasi!</span>
                     </div>
-                    <small style="color: var(--text-secondary); font-weight: 500; font-size: 12px;">Menyimpan data presensi...</small>
+                    <small style="color: #cbd5e1; font-weight: 500; font-size: 11px;">Menyimpan data presensi...</small>
                 `);
                 
                 $("#auto-scan-status").css({
-                    'background': 'rgba(16, 185, 129, 0.1)',
-                    'border-color': 'var(--success)'
+                    'background': 'rgba(16, 185, 129, 0.2)',
+                    'border-color': '#10b981'
                 });
 
                 $("#loading-overlay").addClass('show');
@@ -1148,15 +1093,15 @@
     function resetAutoScanUI() {
         $("#auto-scan-status").html(`
             <div style="display: flex; align-items: center; gap: 8px;">
-                <div class="spinner-border spinner-border-sm" role="status" style="width: 1.2rem; height: 1.2rem; border-width: 0.15em;"></div>
-                <span>Auto-Scan Wajah Aktif</span>
+                <div class="spinner-border spinner-border-sm" role="status" style="width: 1.2rem; height: 1.2rem; border-width: 0.15em; color: #10b981;"></div>
+                <span style="color: #10b981;">Auto-Scan Wajah Aktif</span>
             </div>
-            <small style="color: var(--text-secondary); font-weight: 500; font-size: 12px;">Arahkan wajah ke kamera lalu <strong style="color:var(--primary);">KEDIPKAN MATA</strong> Anda untuk absen.</small>
+            <small style="color: #cbd5e1; font-weight: 500; font-size: 11px;">Arahkan wajah ke kamera lalu <strong style="color:#10b981;">KEDIPKAN MATA</strong> Anda untuk absen.</small>
         `);
         $("#auto-scan-status").css({
-            'background': 'rgba(0, 83, 197, 0.1)',
-            'border-color': 'var(--primary)',
-            'color': 'var(--primary)'
+            'background': 'rgba(0, 0, 0, 0.6)',
+            'border-color': 'rgba(255,255,255,0.2)',
+            'color': 'white'
         });
     }
 

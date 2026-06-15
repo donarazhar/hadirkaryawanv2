@@ -462,6 +462,10 @@
                     <div class="info-label">No. HP</div>
                     <div class="info-value">{{ $karyawan->no_hp }}</div>
                 </div>
+                <div class="info-item" style="grid-column: span 2;">
+                    <div class="info-label">Email</div>
+                    <div class="info-value">{{ $karyawan->email ?? 'Belum diatur' }}</div>
+                </div>
             </div>
         </form>
     </div>
@@ -530,6 +534,15 @@
                 </label>
                 <input type="text" name="no_hp" class="form-control"
                     value="{{ old('no_hp', $karyawan->no_hp) }}" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    <ion-icon name="mail"></ion-icon>
+                    Email
+                </label>
+                <input type="email" name="email" class="form-control"
+                    value="{{ old('email', $karyawan->email) }}" placeholder="Masukkan alamat email">
             </div>
 
             <input type="file" name="foto" id="foto" accept="image/*" style="display: none;">

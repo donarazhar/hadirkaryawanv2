@@ -60,11 +60,14 @@ class ProfileKaryawanController extends Controller
             $request->validate([
                 'nama_lengkap' => 'required|string|max:255',
                 'no_hp' => 'required|string|max:20',
+                'email' => 'nullable|email|max:255|unique:karyawan,email,' . $nik . ',nik',
                 'foto' => 'nullable|image|mimes:png,jpg,jpeg|max:2048', // max 2MB
                 'password' => 'nullable|min:6|confirmed'
             ], [
                 'nama_lengkap.required' => 'Nama lengkap harus diisi',
                 'no_hp.required' => 'Nomor HP harus diisi',
+                'email.email' => 'Format email tidak valid',
+                'email.unique' => 'Email sudah digunakan oleh akun lain',
                 'foto.image' => 'File harus berupa gambar',
                 'foto.mimes' => 'Format foto harus PNG, JPG, atau JPEG',
                 'foto.max' => 'Ukuran foto maksimal 2MB',
@@ -112,6 +115,7 @@ class ProfileKaryawanController extends Controller
             $data = [
                 'nama_lengkap' => $request->nama_lengkap,
                 'no_hp' => $request->no_hp,
+                'email' => $request->email,
                 'password' => $password,
                 'foto' => $foto,
                 'updated_at' => now()

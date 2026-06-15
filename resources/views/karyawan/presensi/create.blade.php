@@ -596,7 +596,7 @@
     } else {
         console.log('Requesting geolocation...');
 
-        navigator.geolocation.watchPosition(
+        navigator.geolocation.getCurrentPosition(
             successCallback,
             errorCallback, {
                 enableHighAccuracy: true,

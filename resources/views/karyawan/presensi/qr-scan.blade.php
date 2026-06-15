@@ -62,7 +62,7 @@
 
     // Dapatkan Lokasi Dulu
     if (navigator.geolocation) {
-        navigator.geolocation.watchPosition(successCallback, errorCallback, {
+        navigator.geolocation.getCurrentPosition(successCallback, errorCallback, {
             enableHighAccuracy: true,
             timeout: 10000,
             maximumAge: 0

@@ -1076,7 +1076,7 @@
                 return;
             }
 
-            navigator.geolocation.watchPosition(
+            navigator.geolocation.getCurrentPosition(
                 onGeolocationSuccess,
                 onGeolocationError, {
                     enableHighAccuracy: true,

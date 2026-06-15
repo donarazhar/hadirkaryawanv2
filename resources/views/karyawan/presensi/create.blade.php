@@ -448,7 +448,7 @@
 @endif
 
 <!-- Floating Map -->
-<div class="map-floating" style="position: fixed; bottom: 90px; left: 20px; right: 20px; height: 120px; border-radius: 16px; overflow: hidden; border: 2px solid rgba(255,255,255,0.5); box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 20;">
+<div class="map-floating" style="position: fixed; bottom: 90px; left: 0; right: 0; width: 100vw; height: 120px; border-radius: 0; overflow: hidden; border-top: 2px solid rgba(255,255,255,0.5); border-bottom: 2px solid rgba(255,255,255,0.5); box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 20;">
     <div id="map" style="width: 100%; height: 100%;"></div>
     <!-- Radius Kantor Info inside Map -->
     <div style="position: absolute; bottom: 8px; right: 8px; z-index: 1000; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); padding: 4px 8px; border-radius: 8px; font-size: 10px; color: white; border: 1px solid rgba(255,255,255,0.2);">

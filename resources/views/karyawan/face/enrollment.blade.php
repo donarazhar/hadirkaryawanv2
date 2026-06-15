@@ -463,6 +463,7 @@ async function detectAndCapture() {
 
     } catch (error) {
         console.error('Detection error:', error);
+        cancelCamera();
         Swal.fire({
             icon: 'error',
             title: 'Error',
@@ -481,8 +482,14 @@ async function captureFaceData(descriptor) {
 
         // Stop camera
         const stream = video.srcObject;
-        const tracks = stream.getTracks();
-        tracks.forEach(track => track.stop());
+        if (stream) {
+            const tracks = stream.getTracks();
+            tracks.forEach(track => track.stop());
+        }
+        
+        // Hide full-screen camera container so popup is visible
+        document.getElementById('cameraContainer').style.display = 'none';
+        document.getElementById('startEnrollment').style.display = 'flex';
 
         // Show loading
         Swal.fire({

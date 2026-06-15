@@ -134,16 +134,22 @@
     }
 
     .camera-container {
-        position: relative;
-        width: 100%;
-        border-radius: 16px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 9999;
+        background: #000;
+        border-radius: 0;
         overflow: hidden;
     }
 
     #video {
         width: 100%;
-        height: auto;
-        border-radius: 16px;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 0;
     }
 
     .face-overlay {
@@ -252,33 +258,34 @@
     @else
     <!-- Not Enrolled -->
     <div class="enrollment-card">
-        <div class="status-info">
-            <div class="status-icon not-enrolled">
-                <ion-icon name="person-add"></ion-icon>
+        <div class="status-info" style="padding: 10px; margin-bottom: 10px;">
+            <div class="status-icon not-enrolled" style="width: 50px; height: 50px; margin: 0 auto 8px;">
+                <ion-icon name="person-add" style="font-size: 24px;"></ion-icon>
             </div>
-            <h3 style="color: var(--danger); margin-bottom: 8px;">Belum Terdaftar</h3>
-            <p style="color: var(--text-secondary); font-size: 14px; margin: 0;">
+            <h3 style="color: var(--danger); margin-bottom: 4px; font-size: 16px;">Belum Terdaftar</h3>
+            <p style="color: var(--text-secondary); font-size: 12px; margin: 0;">
                 Daftarkan wajah Anda untuk menggunakan fitur verifikasi wajah saat presensi
             </p>
         </div>
 
-        <div class="enrollment-card">
-            <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-                <ion-icon name="information-circle" style="color: var(--primary); font-size: 20px;"></ion-icon>
+        <div class="enrollment-card" style="padding: 12px; margin-bottom: 12px;">
+            <h4 style="font-size: 13px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                <ion-icon name="information-circle" style="color: var(--primary); font-size: 18px;"></ion-icon>
                 Petunjuk
             </h4>
-            <ul style="font-size: 13px; color: var(--text-secondary); line-height: 1.8; padding-left: 20px;">
-                <li>Pastikan wajah Anda terlihat jelas</li>
-                <li>Posisikan wajah di dalam bingkai oval</li>
-                <li>Pastikan pencahayaan cukup</li>
-                <li>Lepas kacamata hitam/masker</li>
-                <li>Tatap langsung ke kamera</li>
-            </ul>
+            <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.6; margin: 0;">
+                Pastikan wajah Anda terlihat jelas, posisikan di dalam bingkai oval dengan pencahayaan cukup, lepas kacamata hitam/masker, dan tatap langsung ke kamera.
+            </p>
         </div>
 
         <div class="enrollment-card">
             <div class="camera-container" style="display: none;" id="cameraContainer">
-                <video id="video" autoplay></video>
+                <!-- Floating Close Button -->
+                <button type="button" onclick="cancelCamera()" style="position: absolute; top: 20px; left: 20px; z-index: 1001; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.3); color: white; width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(5px);">
+                    <ion-icon name="close-outline" style="font-size: 24px;"></ion-icon>
+                </button>
+                
+                <video id="video" autoplay playsinline></video>
                 <div class="face-overlay"></div>
                 <div id="countdown-overlay" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: none; z-index: 10; pointer-events: none; text-align: center;">
                     <div style="font-size: 16px; font-weight: 600; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.8); margin-bottom: -10px;">Bersiaplah...</div>
@@ -387,6 +394,7 @@ async function startCamera() {
 
     } catch (error) {
         console.error('Camera error:', error);
+        cancelCamera();
         Swal.fire({
             icon: 'error',
             title: 'Kamera Error',
@@ -394,6 +402,16 @@ async function startCamera() {
             confirmButtonColor: '#0053C5'
         });
     }
+}
+
+function cancelCamera() {
+    document.getElementById('cameraContainer').style.display = 'none';
+    document.getElementById('startEnrollment').style.display = 'flex';
+    if (video && video.srcObject) {
+        video.srcObject.getTracks().forEach(track => track.stop());
+    }
+    if (countdownInterval) clearInterval(countdownInterval);
+    document.getElementById('countdown-overlay').style.display = 'none';
 }
 
 let countdownInterval;

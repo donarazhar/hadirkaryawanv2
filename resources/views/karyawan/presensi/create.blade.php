@@ -434,15 +434,16 @@
 
 <!-- Shift Selection Form (if multi-shift) -->
 @if(isset($is_multi_shift) && $is_multi_shift)
-<div style="position: fixed; top: 180px; left: 20px; right: 20px; z-index: 20;">
-    <form action="{{ route('presensi.create') }}" method="GET" id="shift-form">
-        <select name="shift_ke" id="shift_ke" class="form-control" onchange="document.getElementById('shift-form').submit()" style="background: rgba(0,0,0,0.5); backdrop-filter: blur(5px); color: white; border: 1px solid rgba(255,255,255,0.3); border-radius: 12px; padding: 10px; font-size: 12px;">
+<div style="position: fixed; top: 130px; left: 20px; right: 20px; z-index: 20;">
+    <form action="{{ route('presensi.create') }}" method="GET" id="shift-form" style="position: relative;">
+        <select name="shift_ke" id="shift_ke" onchange="document.getElementById('shift-form').submit()" style="width: 100%; appearance: none; -webkit-appearance: none; height: auto; min-height: 48px; padding: 12px 40px 12px 16px; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); color: white; border: 1px solid rgba(255,255,255,0.4); border-radius: 12px; font-size: 13px; font-weight: 600; outline: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
             @foreach($shifts_available as $s)
-                <option style="color: black;" value="{{ $s->shift_ke }}" {{ $shift_ke == $s->shift_ke ? 'selected' : '' }}>
-                    Shift {{ $s->shift_ke }} - {{ $s->nama_shift }} ({{ date('H:i', strtotime($s->jam_masuk)) }} - {{ date('H:i', strtotime($s->jam_pulang)) }})
+                <option style="color: #0f172a; font-weight: 500;" value="{{ $s->shift_ke }}" {{ $shift_ke == $s->shift_ke ? 'selected' : '' }}>
+                    Shift {{ $s->shift_ke }} - {{ $s->nama_shift }} ({{ date('H:i', strtotime($s->jam_masuk)) }} s/d {{ date('H:i', strtotime($s->jam_pulang)) }})
                 </option>
             @endforeach
         </select>
+        <ion-icon name="chevron-down-outline" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: white; font-size: 18px; pointer-events: none;"></ion-icon>
     </form>
 </div>
 @endif

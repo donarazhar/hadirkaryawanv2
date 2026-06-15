@@ -21,7 +21,7 @@
 
     .page-header {
         background: white;
-        padding: 24px 20px 80px 20px;
+        padding: 20px;
         position: relative;
         overflow: hidden;
         border-bottom: 1px solid rgba(0, 83, 197, 0.08);
@@ -80,7 +80,7 @@
 
     .enrollment-section {
         padding: 0 20px;
-        margin-top: -65px;
+        margin-top: 20px;
         margin-bottom: 120px;
     }
 
@@ -162,6 +162,7 @@
         border: 3px solid var(--primary);
         border-radius: 50%;
         pointer-events: none;
+        z-index: 10001;
     }
 
     .btn-action {
@@ -287,7 +288,7 @@
                 
                 <video id="video" autoplay playsinline></video>
                 <div class="face-overlay"></div>
-                <div id="countdown-overlay" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: none; z-index: 10; pointer-events: none; text-align: center;">
+                <div id="countdown-overlay" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: none; z-index: 10001; pointer-events: none; text-align: center;">
                     <div style="font-size: 16px; font-weight: 600; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.8); margin-bottom: -10px;">Bersiaplah...</div>
                     <span id="countdown-text" style="font-size: 120px; font-weight: 800; color: white; text-shadow: 0 0 20px rgba(0,83,197,0.8), 0 4px 10px rgba(0,0,0,0.5);">10</span>
                 </div>
@@ -380,16 +381,8 @@ async function startCamera() {
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             
-            // Tampilkan alert instruksi sebelum mulai hitung mundur
-            Swal.fire({
-                icon: 'info',
-                title: 'Persiapkan Wajah Anda',
-                html: 'Kamera aktif. Anda memiliki waktu <b>10 detik</b> untuk mencari pencahayaan yang terang dan memposisikan wajah di tengah bingkai oval.',
-                confirmButtonColor: '#0053C5',
-                confirmButtonText: 'Mulai Hitung Mundur'
-            }).then(() => {
-                startCountdown();
-            });
+            // Langsung mulai hitung mundur
+            startCountdown();
         });
 
     } catch (error) {

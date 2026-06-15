@@ -12,7 +12,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="manifest" href="/manifest.json">
     <link rel="shortcut icon" href="/assets/img/logoypia.png" type="image/png" />
-    <link rel="apple-touch-icon" href="/assets/img/logoypia.png">
+    <link rel="apple-touch-icon" href="/assets/img/pwa-icon.png">
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
 
     <style>

@@ -84,13 +84,13 @@
             var latitude = position.coords.latitude;
             var longitude = position.coords.longitude;
             
-            if (typeof window.map === 'undefined') {
-                window.map = L.map('map').setView([latitude, longitude], 17);
+            if (!window.leafletMap) {
+                window.leafletMap = L.map('map').setView([latitude, longitude], 17);
 
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     maxZoom: 19,
                     attribution: '© OpenStreetMap'
-                }).addTo(window.map);
+                }).addTo(window.leafletMap);
 
                 // User Marker
                 var userIcon = L.divIcon({
@@ -100,8 +100,8 @@
                     iconAnchor: [20, 20]
                 });
 
-                window.marker = L.marker([latitude, longitude], { icon: userIcon }).addTo(window.map);
-                window.marker.bindPopup('<strong style="color: #10b981;">Lokasi Anda</strong>').openPopup();
+                window.leafletMarker = L.marker([latitude, longitude], { icon: userIcon }).addTo(window.leafletMap);
+                window.leafletMarker.bindPopup('<strong style="color: #10b981;">Lokasi Anda</strong>').openPopup();
 
                 // Office Location
                 var lok_kantor = "{{ $lok_kantor->lokasi_cabang ?? '' }}";
@@ -119,7 +119,7 @@
                             radius: radius,
                             weight: 2,
                             dashArray: '5, 5'
-                        }).addTo(window.map);
+                        }).addTo(window.leafletMap);
 
                         var officeIcon = L.divIcon({
                             className: 'custom-div-icon',
@@ -128,20 +128,20 @@
                             iconAnchor: [20, 20]
                         });
 
-                        var officeMarker = L.marker([lat_kantor, long_kantor], { icon: officeIcon }).addTo(window.map);
+                        var officeMarker = L.marker([lat_kantor, long_kantor], { icon: officeIcon }).addTo(window.leafletMap);
                         officeMarker.bindPopup('<strong style="color: #0053C5;">Kantor</strong><br><small>Radius: ' + radius + 'm</small>');
 
-                        var group = L.featureGroup([window.marker, officeMarker, circle]);
-                        window.map.fitBounds(group.getBounds().pad(0.1));
+                        var group = L.featureGroup([window.leafletMarker, officeMarker, circle]);
+                        window.leafletMap.fitBounds(group.getBounds().pad(0.1));
                     }
                 }
                 
                 // Start QR Scanner only once when map is initialized
                 startQRScanner();
             } else {
-                if (window.marker) {
-                    window.marker.setLatLng([latitude, longitude]);
-                    window.map.setView([latitude, longitude]);
+                if (window.leafletMarker) {
+                    window.leafletMarker.setLatLng([latitude, longitude]);
+                    window.leafletMap.setView([latitude, longitude]);
                 }
             }
         } catch (e) {

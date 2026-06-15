@@ -474,7 +474,7 @@
     @endif
 
     <!-- Auto-Scan Status Indicator -->
-    <div id="auto-scan-status" style="position: fixed; bottom: 30px; left: 20px; right: 20px; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); border-radius: 16px; padding: 12px; text-align: center; color: white; font-weight: 600; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; z-index: 20;">
+    <div id="auto-scan-status" style="position: fixed; bottom: 90px; left: 20px; right: 20px; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); border-radius: 16px; padding: 12px; text-align: center; color: white; font-weight: 600; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; z-index: 20;">
         <div style="display: flex; align-items: center; gap: 8px;">
             <div class="spinner-border spinner-border-sm" role="status" style="width: 1.2rem; height: 1.2rem; border-width: 0.15em; color: #10b981;"></div>
             <span style="color: #10b981;">Auto-Scan Wajah Aktif</span>

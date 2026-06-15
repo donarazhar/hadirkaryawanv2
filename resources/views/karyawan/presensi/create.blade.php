@@ -596,7 +596,7 @@
     } else {
         console.log('Requesting geolocation...');
 
-        navigator.geolocation.getCurrentPosition(
+        navigator.geolocation.watchPosition(
             successCallback,
             errorCallback, {
                 enableHighAccuracy: true,
@@ -617,71 +617,80 @@
 
         // Initialize Map
         try {
-            map = L.map('map').setView([latitude, longitude], 17);
+            if (!map) {
+                map = L.map('map').setView([latitude, longitude], 17);
 
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-                attribution: '© OpenStreetMap'
-            }).addTo(map);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '© OpenStreetMap'
+                }).addTo(map);
 
-            // User Marker
-            var userIcon = L.divIcon({
-                className: 'custom-div-icon',
-                html: '<div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); width: 40px; height: 40px; border-radius: 50%; border: 4px solid white; box-shadow: 0 3px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;"><ion-icon name="person" style="color: white; font-size: 22px;"></ion-icon></div>',
-                iconSize: [40, 40],
-                iconAnchor: [20, 20]
-            });
+                // Office Location
+                var lok_kantor = "{{ $lok_kantor->lokasi_cabang }}";
+                var lok = lok_kantor.split(",");
+                var lat_kantor = parseFloat(lok[0]);
+                var long_kantor = parseFloat(lok[1]);
+                var radius = {{ $lok_kantor->radius_cabang }};
 
-            marker = L.marker([latitude, longitude], {
-                icon: userIcon
-            }).addTo(map);
-            marker.bindPopup('<strong style="color: #10b981;">Lokasi Anda</strong>').openPopup();
+                console.log('Office location:', lat_kantor, long_kantor, 'Radius:', radius);
 
-            // Office Location
-            var lok_kantor = "{{ $lok_kantor->lokasi_cabang }}";
-            var lok = lok_kantor.split(",");
-            var lat_kantor = parseFloat(lok[0]);
-            var long_kantor = parseFloat(lok[1]);
-            var radius = {{ $lok_kantor->radius_cabang }};
+                // Office Circle
+                circle = L.circle([lat_kantor, long_kantor], {
+                    color: '#0053C5',
+                    fillColor: '#0053C5',
+                    fillOpacity: 0.15,
+                    radius: radius,
+                    weight: 2,
+                    dashArray: '5, 5'
+                }).addTo(map);
 
-            console.log('Office location:', lat_kantor, long_kantor, 'Radius:', radius);
+                // Office Marker
+                var officeIcon = L.divIcon({
+                    className: 'custom-div-icon',
+                    html: '<div style="background: linear-gradient(135deg, #0053C5 0%, #003d94 100%); width: 40px; height: 40px; border-radius: 50%; border: 4px solid white; box-shadow: 0 3px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;"><ion-icon name="business" style="color: white; font-size: 22px;"></ion-icon></div>',
+                    iconSize: [40, 40],
+                    iconAnchor: [20, 20]
+                });
 
-            // Office Circle
-            circle = L.circle([lat_kantor, long_kantor], {
-                color: '#0053C5',
-                fillColor: '#0053C5',
-                fillOpacity: 0.15,
-                radius: radius,
-                weight: 2,
-                dashArray: '5, 5'
-            }).addTo(map);
-
-            // Office Marker
-            var officeIcon = L.divIcon({
-                className: 'custom-div-icon',
-                html: '<div style="background: linear-gradient(135deg, #0053C5 0%, #003d94 100%); width: 40px; height: 40px; border-radius: 50%; border: 4px solid white; box-shadow: 0 3px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;"><ion-icon name="business" style="color: white; font-size: 22px;"></ion-icon></div>',
-                iconSize: [40, 40],
-                iconAnchor: [20, 20]
-            });
-
-            var officeMarker = L.marker([lat_kantor, long_kantor], {
-                icon: officeIcon
-            }).addTo(map);
-            officeMarker.bindPopup('<strong style="color: #0053C5;">Kantor</strong><br><small>Radius: ' + radius + 'm</small>');
-
-            // Fit bounds
-            var group = L.featureGroup([marker, officeMarker, circle]);
-            map.fitBounds(group.getBounds().pad(0.1));
-
-            // Calculate distance
-            var distance = calculateDistance(latitude, longitude, lat_kantor, long_kantor);
-            console.log('Jarak dari kantor:', distance, 'meter');
-
-            if (distance > radius) {
-                console.warn('Diluar radius!', distance, '>', radius);
+                var officeMarker = L.marker([lat_kantor, long_kantor], {
+                    icon: officeIcon
+                }).addTo(map);
+                officeMarker.bindPopup('<strong style="color: #0053C5;">Kantor</strong><br><small>Radius: ' + radius + 'm</small>');
             }
 
-            console.log('Map initialized successfully');
+            if (marker) {
+                marker.setLatLng([latitude, longitude]);
+                map.setView([latitude, longitude]);
+            } else {
+                // User Marker
+                var userIcon = L.divIcon({
+                    className: 'custom-div-icon',
+                    html: '<div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); width: 40px; height: 40px; border-radius: 50%; border: 4px solid white; box-shadow: 0 3px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;"><ion-icon name="person" style="color: white; font-size: 22px;"></ion-icon></div>',
+                    iconSize: [40, 40],
+                    iconAnchor: [20, 20]
+                });
+
+                marker = L.marker([latitude, longitude], {
+                    icon: userIcon
+                }).addTo(map);
+                marker.bindPopup('<strong style="color: #10b981;">Lokasi Anda</strong>').openPopup();
+            }
+
+            // Calculate distance
+            var lok_kantor_str = "{{ $lok_kantor->lokasi_cabang }}";
+            var lok_arr = lok_kantor_str.split(",");
+            var lat_kntr = parseFloat(lok_arr[0]);
+            var long_kntr = parseFloat(lok_arr[1]);
+            var rad = {{ $lok_kantor->radius_cabang }};
+            
+            var distance = calculateDistance(latitude, longitude, lat_kntr, long_kntr);
+            console.log('Jarak dari kantor:', distance, 'meter');
+
+            if (distance > rad) {
+                console.warn('Diluar radius!', distance, '>', rad);
+            }
+
+            console.log('Map updated successfully');
         } catch (e) {
             console.error('Map initialization error:', e);
             Swal.fire({

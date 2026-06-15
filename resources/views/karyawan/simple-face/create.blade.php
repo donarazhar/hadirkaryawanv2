@@ -1076,7 +1076,7 @@
                 return;
             }
 
-            navigator.geolocation.getCurrentPosition(
+            navigator.geolocation.watchPosition(
                 onGeolocationSuccess,
                 onGeolocationError, {
                     enableHighAccuracy: true,
@@ -1190,45 +1190,22 @@
             }
 
             try {
-                // Initialize map
-                map = L.map('map', {
-                    zoomControl: false,
-                    attributionControl: false
-                }).setView([lat, lng], 17);
+                if (!map) {
+                    // Initialize map
+                    map = L.map('map', {
+                        zoomControl: false,
+                        attributionControl: false
+                    }).setView([lat, lng], 17);
 
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    maxZoom: 19
-                }).addTo(map);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        maxZoom: 19
+                    }).addTo(map);
 
-                // User marker
-                const userIcon = L.divIcon({
-                    className: 'custom-marker',
-                    html: `<div style="
-                background: linear-gradient(135deg, #0053C5, #003A8C);
-                width: 32px;
-                height: 32px;
-                border-radius: 50%;
-                border: 3px solid white;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            "><ion-icon name="person" style="color: white; font-size: 16px;"></ion-icon></div>`,
-                    iconSize: [32, 32],
-                    iconAnchor: [16, 16]
-                });
-
-                userMarker = L.marker([lat, lng], {
-                    icon: userIcon
-                }).addTo(map);
-                userMarker.bindPopup('<b>Lokasi Anda</b>').openPopup();
-
-                // Office marker and radius circle
-                if (window.OFFICE_CONFIG) {
-                    const officeIcon = L.divIcon({
+                    // User marker
+                    const userIcon = L.divIcon({
                         className: 'custom-marker',
                         html: `<div style="
-                    background: linear-gradient(135deg, #10B981, #059669);
+                    background: linear-gradient(135deg, #0053C5, #003A8C);
                     width: 32px;
                     height: 32px;
                     border-radius: 50%;
@@ -1237,38 +1214,68 @@
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                "><ion-icon name="business" style="color: white; font-size: 16px;"></ion-icon></div>`,
+                "><ion-icon name="person" style="color: white; font-size: 16px;"></ion-icon></div>`,
                         iconSize: [32, 32],
                         iconAnchor: [16, 16]
                     });
 
-                    const officeMarker = L.marker(
-                        [window.OFFICE_CONFIG.lat, window.OFFICE_CONFIG.lng], {
-                            icon: officeIcon
-                        }
-                    ).addTo(map);
-                    officeMarker.bindPopup(`<b>${window.OFFICE_CONFIG.name}</b>`);
-
-                    // Radius circle
-                    L.circle([window.OFFICE_CONFIG.lat, window.OFFICE_CONFIG.lng], {
-                        color: withinRadius ? '#10B981' : '#EF4444',
-                        fillColor: withinRadius ? '#10B981' : '#EF4444',
-                        fillOpacity: 0.1,
-                        weight: 2,
-                        radius: window.OFFICE_CONFIG.radius
+                    userMarker = L.marker([lat, lng], {
+                        icon: userIcon
                     }).addTo(map);
+                    userMarker.bindPopup('<b>Lokasi Anda</b>').openPopup();
 
-                    // Fit bounds to show both markers
-                    const group = L.featureGroup([userMarker, officeMarker]);
-                    map.fitBounds(group.getBounds().pad(0.3));
+                    // Office marker and radius circle
+                    if (window.OFFICE_CONFIG) {
+                        const officeIcon = L.divIcon({
+                            className: 'custom-marker',
+                            html: `<div style="
+                        background: linear-gradient(135deg, #10B981, #059669);
+                        width: 32px;
+                        height: 32px;
+                        border-radius: 50%;
+                        border: 3px solid white;
+                        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    "><ion-icon name="business" style="color: white; font-size: 16px;"></ion-icon></div>`,
+                            iconSize: [32, 32],
+                            iconAnchor: [16, 16]
+                        });
+
+                        const officeMarker = L.marker(
+                            [window.OFFICE_CONFIG.lat, window.OFFICE_CONFIG.lng], {
+                                icon: officeIcon
+                            }
+                        ).addTo(map);
+                        officeMarker.bindPopup(`<b>${window.OFFICE_CONFIG.name}</b>`);
+
+                        // Radius circle
+                        L.circle([window.OFFICE_CONFIG.lat, window.OFFICE_CONFIG.lng], {
+                            color: withinRadius ? '#10B981' : '#EF4444',
+                            fillColor: withinRadius ? '#10B981' : '#EF4444',
+                            fillOpacity: 0.1,
+                            weight: 2,
+                            radius: window.OFFICE_CONFIG.radius
+                        }).addTo(map);
+
+                        // Fit bounds to show both markers
+                        const group = L.featureGroup([userMarker, officeMarker]);
+                        map.fitBounds(group.getBounds().pad(0.3));
+                    }
+
+                    console.log('[Map] Initialized successfully');
+
+                    // Force map resize after a short delay
+                    setTimeout(() => {
+                        map.invalidateSize();
+                    }, 300);
+                } else {
+                    if (userMarker) {
+                        userMarker.setLatLng([lat, lng]);
+                        map.setView([lat, lng]);
+                    }
                 }
-
-                console.log('[Map] Initialized successfully');
-
-                // Force map resize after a short delay
-                setTimeout(() => {
-                    map.invalidateSize();
-                }, 300);
 
             } catch (e) {
                 console.error('[Map] Error:', e);

@@ -412,19 +412,18 @@
 </a>
 
 <!-- Floating Schedule Text -->
-<div class="schedule-floating-text" style="position: fixed; top: 75px; left: 20px; right: 20px; z-index: 20; color: white; text-shadow: 0px 2px 4px rgba(0,0,0,0.8);">
-    <h1 style="font-size: 22px; font-weight: 700; margin: 0 0 4px 0; color: white;">{{ $cek > 0 ? 'Absen Pulang' : 'Absen Masuk' }}</h1>
-    <p style="font-size: 13px; font-weight: 500; margin: 0 0 12px 0; opacity: 0.9;">{{ $namahari }}, {{ \Carbon\Carbon::parse($hariini)->isoFormat('D MMMM Y') }}</p>
+<div class="schedule-floating-text" style="position: fixed; top: 20px; right: 20px; z-index: 20; color: white; text-shadow: 0px 1px 3px rgba(0,0,0,0.8); background: rgba(0,0,0,0.5); backdrop-filter: blur(5px); padding: 10px; border-radius: 12px; text-align: right; border: 1px solid rgba(255,255,255,0.2);">
+    <h1 style="font-size: 14px; font-weight: 700; margin: 0 0 2px 0; color: white;">{{ $cek > 0 ? 'Absen Pulang' : 'Absen Masuk' }}</h1>
+    <p style="font-size: 10px; font-weight: 500; margin: 0 0 4px 0; opacity: 0.9;">{{ $namahari }}, {{ \Carbon\Carbon::parse($hariini)->isoFormat('D MMMM Y') }}</p>
     
-    <div style="font-size: 13px; line-height: 1.6; font-weight: 500;">
+    <div style="font-size: 10px; line-height: 1.4; font-weight: 500;">
         @if(isset($is_multi_shift) && $is_multi_shift)
-            Shift: {{ $current_shift->nama_shift }} ({{ date('H:i', strtotime($current_shift->jam_masuk)) }} - {{ date('H:i', strtotime($current_shift->jam_pulang)) }})<br>
-            Waktu Absen: {{ date('H:i', strtotime($current_shift->jam_masuk) - 3600) }} s/d {{ date('H:i', strtotime($current_shift->jam_masuk) + 7200) }}<br>
+            Shift: {{ $current_shift->nama_shift }}<br>
+            ({{ date('H:i', strtotime($current_shift->jam_masuk)) }} - {{ date('H:i', strtotime($current_shift->jam_pulang)) }})<br>
         @else
-            Shift: {{ $jamkerja->nama_jam_kerja }} ({{ date('H:i', strtotime($jamkerja->jam_masuk)) }} - {{ date('H:i', strtotime($jamkerja->jam_pulang)) }})<br>
-            Waktu Absen: {{ date('H:i', strtotime($jamkerja->awal_jam_masuk)) }} s/d {{ date('H:i', strtotime($jamkerja->akhir_jam_masuk)) }}<br>
+            Shift: {{ $jamkerja->nama_jam_kerja }}<br>
+            ({{ date('H:i', strtotime($jamkerja->jam_masuk)) }} - {{ date('H:i', strtotime($jamkerja->jam_pulang)) }})<br>
         @endif
-        Status: 
         @if($cek > 0)
             <span style="color: #4ade80; font-weight: bold;">Sudah Absen</span>
         @else
@@ -449,12 +448,12 @@
 @endif
 
 <!-- Floating Map -->
-<div class="map-floating" style="position: fixed; top: 20px; right: 20px; width: 100px; height: 100px; border-radius: 16px; overflow: hidden; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 20;">
+<div class="map-floating" style="position: fixed; bottom: 90px; left: 20px; right: 20px; height: 120px; border-radius: 16px; overflow: hidden; border: 2px solid rgba(255,255,255,0.5); box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 20;">
     <div id="map" style="width: 100%; height: 100%;"></div>
-</div>
-<!-- Radius Kantor Info under Map -->
-<div style="position: fixed; top: 128px; right: 20px; z-index: 20; background: rgba(0,0,0,0.5); backdrop-filter: blur(5px); padding: 4px 8px; border-radius: 8px; font-size: 10px; color: white; border: 1px solid rgba(255,255,255,0.2);">
-    Radius: {{ $lok_kantor->radius_cabang }}m
+    <!-- Radius Kantor Info inside Map -->
+    <div style="position: absolute; bottom: 8px; right: 8px; z-index: 1000; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); padding: 4px 8px; border-radius: 8px; font-size: 10px; color: white; border: 1px solid rgba(255,255,255,0.2);">
+        Radius: {{ $lok_kantor->radius_cabang }}m
+    </div>
 </div>
 
 <!-- Button Section (Hidden inputs & Auto-scan indicator) -->
@@ -474,12 +473,12 @@
     @endif
 
     <!-- Auto-Scan Status Indicator -->
-    <div id="auto-scan-status" style="position: fixed; bottom: 90px; left: 20px; right: 20px; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); border-radius: 16px; padding: 12px; text-align: center; color: white; font-weight: 600; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; z-index: 20;">
-        <div style="display: flex; align-items: center; gap: 8px;">
-            <div class="spinner-border spinner-border-sm" role="status" style="width: 1.2rem; height: 1.2rem; border-width: 0.15em; color: #10b981;"></div>
-            <span style="color: #10b981;">Auto-Scan Wajah Aktif</span>
+    <div id="auto-scan-status" style="position: fixed; top: 70px; left: 20px; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 6px 10px; color: white; display: flex; align-items: center; gap: 8px; z-index: 20;">
+        <div class="spinner-border spinner-border-sm" role="status" style="width: 1rem; height: 1rem; border-width: 0.15em; color: #10b981;"></div>
+        <div style="display: flex; flex-direction: column; text-align: left;">
+            <span style="color: #10b981; font-size: 11px; font-weight: 600; line-height: 1;">Auto-Scan Aktif</span>
+            <small style="color: #cbd5e1; font-size: 9px; line-height: 1; margin-top: 2px;">Arahkan & Tahan Posisi...</small>
         </div>
-        <small style="color: #cbd5e1; font-weight: 500; font-size: 11px;">Arahkan wajah ke kamera dan <strong style="color:#10b981;">Tahan Posisi</strong> untuk absen.</small>
     </div>
 </div>
 
@@ -906,9 +905,10 @@
                     return { matched: true, descriptor: Array.from(descriptorDetection.descriptor) };
                 } else {
                     $("#auto-scan-status").html(`
-                        <div style="display: flex; align-items: center; gap: 8px; color: #ef4444;">
-                            <ion-icon name="close-circle-outline" style="font-size: 20px;"></ion-icon>
-                            <span>Wajah tidak cocok. Silakan coba lagi.</span>
+                        <ion-icon name="close-circle-outline" style="font-size: 18px; color: #ef4444;"></ion-icon>
+                        <div style="display: flex; flex-direction: column; text-align: left;">
+                            <span style="color: #ef4444; font-size: 11px; font-weight: 600; line-height: 1;">Wajah Tidak Cocok</span>
+                            <small style="color: #cbd5e1; font-size: 9px; line-height: 1; margin-top: 2px;">Silakan coba lagi</small>
                         </div>
                     `);
                 }
@@ -948,11 +948,11 @@
                 
                 // Ubah status UI
                 $("#auto-scan-status").html(`
-                    <div style="display: flex; align-items: center; gap: 8px; color: #10b981;">
-                        <ion-icon name="checkmark-circle" style="font-size: 20px;"></ion-icon>
-                        <span>Wajah Terverifikasi!</span>
+                    <ion-icon name="checkmark-circle" style="font-size: 18px; color: #10b981;"></ion-icon>
+                    <div style="display: flex; flex-direction: column; text-align: left;">
+                        <span style="color: #10b981; font-size: 11px; font-weight: 600; line-height: 1;">Wajah Cocok!</span>
+                        <small style="color: #cbd5e1; font-size: 9px; line-height: 1; margin-top: 2px;">Menyimpan...</small>
                     </div>
-                    <small style="color: #cbd5e1; font-weight: 500; font-size: 11px;">Menyimpan data presensi...</small>
                 `);
                 
                 $("#auto-scan-status").css({
@@ -1045,11 +1045,11 @@
 
     function resetAutoScanUI() {
         $("#auto-scan-status").html(`
-            <div style="display: flex; align-items: center; gap: 8px;">
-                <div class="spinner-border spinner-border-sm" role="status" style="width: 1.2rem; height: 1.2rem; border-width: 0.15em; color: #10b981;"></div>
-                <span style="color: #10b981;">Auto-Scan Wajah Aktif</span>
+            <div class="spinner-border spinner-border-sm" role="status" style="width: 1rem; height: 1rem; border-width: 0.15em; color: #10b981;"></div>
+            <div style="display: flex; flex-direction: column; text-align: left;">
+                <span style="color: #10b981; font-size: 11px; font-weight: 600; line-height: 1;">Auto-Scan Aktif</span>
+                <small style="color: #cbd5e1; font-size: 9px; line-height: 1; margin-top: 2px;">Arahkan wajah & Tahan</small>
             </div>
-            <small style="color: #cbd5e1; font-weight: 500; font-size: 11px;">Arahkan wajah ke kamera dan <strong style="color:#10b981;">Tahan Posisi</strong> untuk absen.</small>
         `);
         $("#auto-scan-status").css({
             'background': 'rgba(0, 0, 0, 0.6)',

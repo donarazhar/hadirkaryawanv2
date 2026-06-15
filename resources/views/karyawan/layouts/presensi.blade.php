@@ -40,22 +40,20 @@
             left: 0;
             right: 0;
             z-index: 999;
-            padding: 12px 16px 16px 16px;
+            padding: 0;
             animation: dockFloat 0.5s ease;
         }
 
         /* Glass Dock - Full Width */
         .glass-dock {
             position: relative;
-            background: rgba(255, 255, 255, 0.75);
+            background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(30px) saturate(180%);
             -webkit-backdrop-filter: blur(30px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            border-radius: 28px;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 24px 24px 0 0;
             padding: 12px 16px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12),
-                0 16px 64px rgba(0, 0, 0, 0.05),
-                inset 0 1px 1px rgba(255, 255, 255, 0.9);
+            box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.08);
             display: flex;
             justify-content: space-around;
             align-items: center;
@@ -69,8 +67,8 @@
             content: '';
             position: absolute;
             inset: 0;
-            border-radius: 28px;
-            padding: 1px;
+            border-radius: 24px 24px 0 0;
+            padding: 1px 1px 0 1px;
             background: linear-gradient(135deg,
                     rgba(255, 255, 255, 0.9) 0%,
                     rgba(255, 255, 255, 0.3) 50%,
@@ -91,7 +89,7 @@
             right: 0;
             height: 100%;
             background: linear-gradient(to top, rgba(0, 83, 197, 0.03) 0%, transparent 100%);
-            border-radius: 28px;
+            border-radius: 24px 24px 0 0;
             pointer-events: none;
         }
 
@@ -276,12 +274,12 @@
         /* Small Mobile (320px - 374px) */
         @media (max-width: 374px) {
             .dock-container {
-                padding: 10px 12px 12px 12px;
+                padding: 0;
             }
 
             .glass-dock {
                 padding: 10px 12px;
-                border-radius: 24px;
+                border-radius: 24px 24px 0 0;
                 gap: 6px;
             }
 
@@ -308,7 +306,7 @@
         /* Mobile (375px - 767px) */
         @media (min-width: 375px) and (max-width: 767px) {
             .dock-container {
-                padding: 12px 16px 16px 16px;
+                padding: 0;
             }
 
             .glass-dock {
@@ -323,12 +321,12 @@
             }
 
             .dock-container {
-                padding: 16px 32px 24px 32px;
+                padding: 0;
             }
 
             .glass-dock {
                 padding: 16px 24px;
-                border-radius: 32px;
+                border-radius: 32px 32px 0 0;
                 max-width: 600px;
                 margin: 0 auto;
             }
@@ -359,12 +357,12 @@
             }
 
             .dock-container {
-                padding: 20px 48px 32px 48px;
+                padding: 0;
             }
 
             .glass-dock {
                 padding: 18px 32px;
-                border-radius: 36px;
+                border-radius: 36px 36px 0 0;
                 max-width: 700px;
                 margin: 0 auto;
                 gap: 12px;
@@ -417,7 +415,7 @@
             }
 
             .dock-container {
-                padding-bottom: max(16px, env(safe-area-inset-bottom));
+                padding-bottom: max(0px, env(safe-area-inset-bottom));
             }
         }
     </style>

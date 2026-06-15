@@ -168,10 +168,11 @@
     .webcam-capture,
     .webcam-capture video {
         width: 100% !important;
-        height: auto !important;
-        border-radius: 16px;
+        height: 100% !important;
+        object-fit: cover !important;
+        border-radius: 0;
         overflow: hidden;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        box-shadow: none;
     }
 
     /* ===== MAP SECTION ===== */
@@ -432,69 +433,65 @@
     </div>
     @endif
 
-    <!-- Info Card -->
-    <div class="info-card">
-        <div class="info-card-title">
-            <ion-icon name="time-outline"></ion-icon>
-            Jadwal Kerja Hari Ini
+    <!-- Webcam Card with Floating Info -->
+    <div class="webcam-card" style="position: relative; padding: 0; overflow: hidden; border-radius: 20px; margin-bottom: 16px; min-height: 480px; display: flex; align-items: center; justify-content: center; background: #000;">
+        <div class="webcam-capture" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;"></div>
+        
+        <!-- Floating Info Card -->
+        <div class="info-card" style="position: absolute; bottom: 12px; left: 12px; right: 12px; z-index: 10; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); padding: 12px; margin: 0; box-shadow: 0 4px 20px rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.5);">
+            <div class="info-card-title" style="font-size: 12px; margin-bottom: 8px; justify-content: center;">
+                <ion-icon name="time-outline" style="font-size: 16px;"></ion-icon>
+                Jadwal Kerja Hari Ini
+            </div>
+            <div class="info-grid" style="gap: 8px;">
+                <div class="info-item" style="padding: 8px; background: rgba(255, 255, 255, 0.6); border-radius: 8px;">
+                    <div class="info-label" style="font-size: 9px; margin-bottom: 2px;">Shift</div>
+                    <div class="info-value" style="font-size: 11px;">
+                        @if(isset($is_multi_shift) && $is_multi_shift)
+                            {{ $current_shift->nama_shift }}
+                        @else
+                            {{ $jamkerja->nama_jam_kerja }}
+                        @endif
+                    </div>
+                </div>
+                <div class="info-item" style="padding: 8px; background: rgba(255, 255, 255, 0.6); border-radius: 8px;">
+                    <div class="info-label" style="font-size: 9px; margin-bottom: 2px;">Jam Kerja</div>
+                    <div class="info-value" style="font-size: 11px;">
+                        @if(isset($is_multi_shift) && $is_multi_shift)
+                            {{ date('H:i', strtotime($current_shift->jam_masuk)) }} - {{ date('H:i', strtotime($current_shift->jam_pulang)) }}
+                        @else
+                            {{ date('H:i', strtotime($jamkerja->jam_masuk)) }} - {{ date('H:i', strtotime($jamkerja->jam_pulang)) }}
+                        @endif
+                    </div>
+                </div>
+                <div class="info-item" style="padding: 8px; background: rgba(255, 255, 255, 0.6); border-radius: 8px;">
+                    <div class="info-label" style="font-size: 9px; margin-bottom: 2px;">Waktu Absen</div>
+                    <div class="info-value" style="font-size: 11px;">
+                        @if(isset($is_multi_shift) && $is_multi_shift)
+                            {{ date('H:i', strtotime($current_shift->jam_masuk) - 3600) }} - {{ date('H:i', strtotime($current_shift->jam_masuk) + 7200) }}
+                        @else
+                            {{ date('H:i', strtotime($jamkerja->awal_jam_masuk)) }} - {{ date('H:i', strtotime($jamkerja->akhir_jam_masuk)) }}
+                        @endif
+                    </div>
+                </div>
+                <div class="info-item" style="padding: 8px; background: rgba(255, 255, 255, 0.6); border-radius: 8px;">
+                    <div class="info-label" style="font-size: 9px; margin-bottom: 2px;">Status</div>
+                    <div class="info-value" style="font-size: 11px;">
+                        @if($cek > 0)
+                        <span class="status-badge success" style="font-size: 10px; padding: 4px 6px;">
+                            <ion-icon name="checkmark-circle"></ion-icon>
+                            Sudah Absen
+                        </span>
+                        @else
+                        <span class="status-badge danger" style="font-size: 10px; padding: 4px 6px;">
+                            <ion-icon name="time"></ion-icon>
+                            Belum Absen
+                        </span>
+                        @endif
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="info-grid">
-            <div class="info-item">
-                <div class="info-label">Shift</div>
-                <div class="info-value">
-                    @if(isset($is_multi_shift) && $is_multi_shift)
-                        {{ $current_shift->nama_shift }}
-                    @else
-                        {{ $jamkerja->nama_jam_kerja }}
-                    @endif
-                </div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Jam Kerja</div>
-                <div class="info-value">
-                    @if(isset($is_multi_shift) && $is_multi_shift)
-                        {{ date('H:i', strtotime($current_shift->jam_masuk)) }} - {{ date('H:i', strtotime($current_shift->jam_pulang)) }}
-                    @else
-                        {{ date('H:i', strtotime($jamkerja->jam_masuk)) }} - {{ date('H:i', strtotime($jamkerja->jam_pulang)) }}
-                    @endif
-                </div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Waktu Absen</div>
-                <div class="info-value">
-                    @if(isset($is_multi_shift) && $is_multi_shift)
-                        {{ date('H:i', strtotime($current_shift->jam_masuk) - 3600) }} - {{ date('H:i', strtotime($current_shift->jam_masuk) + 7200) }}
-                    @else
-                        {{ date('H:i', strtotime($jamkerja->awal_jam_masuk)) }} - {{ date('H:i', strtotime($jamkerja->akhir_jam_masuk)) }}
-                    @endif
-                </div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Status</div>
-                <div class="info-value">
-                    @if($cek > 0)
-                    <span class="status-badge success">
-                        <ion-icon name="checkmark-circle"></ion-icon>
-                        Sudah Absen
-                    </span>
-                    @else
-                    <span class="status-badge danger">
-                        <ion-icon name="time"></ion-icon>
-                        Belum Absen
-                    </span>
-                    @endif
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Webcam Card -->
-    <div class="webcam-card">
-        <div class="webcam-title">
-            <ion-icon name="camera-outline"></ion-icon>
-            Ambil Foto Selfie
-        </div>
-        <div class="webcam-capture"></div>
     </div>
 </div>
 
@@ -520,7 +517,7 @@
             <div class="spinner-border spinner-border-sm" role="status" style="width: 1.2rem; height: 1.2rem; border-width: 0.15em;"></div>
             <span>Auto-Scan Wajah Aktif</span>
         </div>
-        <small style="color: var(--text-secondary); font-weight: 500; font-size: 12px;">Mohon arahkan wajah ke kamera dan pastikan lokasi GPS stabil.</small>
+        <small style="color: var(--text-secondary); font-weight: 500; font-size: 12px;">Arahkan wajah ke kamera lalu <strong style="color:var(--primary);">KEDIPKAN MATA</strong> Anda untuk absen.</small>
     </div>
 </div>
 
@@ -915,8 +912,11 @@
         }
     }
 
+    let cachedReferenceDescriptor = null;
     // Get reference face descriptor from server
     async function getReferenceFaceDescriptor() {
+        if (cachedReferenceDescriptor) return cachedReferenceDescriptor;
+
         try {
             const response = await fetch('/face/descriptor', {
                 method: 'GET',
@@ -928,7 +928,8 @@
             const result = await response.json();
 
             if (result.success) {
-                return new Float32Array(result.descriptor);
+                cachedReferenceDescriptor = new Float32Array(result.descriptor);
+                return cachedReferenceDescriptor;
             } else {
                 throw new Error(result.message);
             }
@@ -1150,7 +1151,7 @@
                 <div class="spinner-border spinner-border-sm" role="status" style="width: 1.2rem; height: 1.2rem; border-width: 0.15em;"></div>
                 <span>Auto-Scan Wajah Aktif</span>
             </div>
-            <small style="color: var(--text-secondary); font-weight: 500; font-size: 12px;">Mohon arahkan wajah ke kamera dan pastikan lokasi GPS stabil.</small>
+            <small style="color: var(--text-secondary); font-weight: 500; font-size: 12px;">Arahkan wajah ke kamera lalu <strong style="color:var(--primary);">KEDIPKAN MATA</strong> Anda untuk absen.</small>
         `);
         $("#auto-scan-status").css({
             'background': 'rgba(0, 83, 197, 0.1)',

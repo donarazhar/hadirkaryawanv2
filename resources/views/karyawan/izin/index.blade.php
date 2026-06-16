@@ -91,6 +91,7 @@
     .btn-add-new {
         display: flex;
         align-items: center;
+        justify-content: center;
         gap: 5px;
         padding: 8px 13px;
         background: var(--primary);
@@ -103,6 +104,7 @@
         box-shadow: 0 2px 8px rgba(37,99,235,0.25);
         transition: opacity 0.2s;
         -webkit-tap-highlight-color: transparent;
+        white-space: nowrap;
     }
 
     .btn-add-new:active { opacity: 0.85; }
@@ -389,8 +391,22 @@
     .pg-body > *:nth-child(2) { animation-delay: 0.08s; }
     .pg-body > *:nth-child(3) { animation-delay: 0.12s; }
 
+    @media (max-width: 480px) {
+        .btn-add-new {
+            padding: 6px 10px;
+            font-size: 11px;
+            gap: 4px;
+        }
+        .btn-add-new ion-icon { font-size: 14px; }
+        .pg-header { padding: 12px 14px; gap: 8px; }
+        .pg-header-left { gap: 8px; }
+        .pg-title { font-size: 15px; }
+    }
+
     @media (max-width: 360px) {
         .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        .btn-add-new { padding: 6px 8px; font-size: 10px; }
+        .pg-header { padding: 10px; }
     }
 </style>
 

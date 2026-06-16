@@ -1,4 +1,4 @@
-﻿@extends('karyawan.layouts.presensi')
+@extends('karyawan.layouts.presensi')
 
 @section('content')
 
@@ -252,7 +252,25 @@
         line-height: 1.6;
     }
 
-    select.form-control { cursor: pointer; }
+    select.form-control {
+        cursor: pointer;
+        white-space: normal;
+        word-wrap: break-word;
+        height: auto;
+        padding-right: 36px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%234B5563'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 14px center;
+        background-size: 14px;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+    }
+
+    select.form-control option {
+        white-space: normal;
+        word-wrap: break-word;
+    }
 
     .form-hint {
         display: flex;

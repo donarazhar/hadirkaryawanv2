@@ -1,4 +1,4 @@
-﻿@extends('karyawan.layouts.presensi')
+@extends('karyawan.layouts.presensi')
 
 @section('content')
 
@@ -452,10 +452,18 @@
 
         @foreach($dataizin as $d)
         @php
-            switch($d->status_approved) {
-                case 0:  $sClass = 'pending';  $sText = '● Menunggu';  break;
-                case 1:  $sClass = 'approved'; $sText = '✓ Disetujui'; break;
-                default: $sClass = 'rejected'; $sText = '✕ Ditolak';   break;
+            // Status badge: izin/sakit auto-approved tampilkan 'Otomatis Disetujui'
+            if (in_array($d->status, ['i', 's'])) {
+                // Izin & Sakit selalu otomatis disetujui
+                $sClass = 'approved';
+                $sText  = '✓ Otomatis';
+            } else {
+                // Cuti: tampilkan status sesuai approval
+                switch($d->status_approved) {
+                    case 0:  $sClass = 'pending';  $sText = '● Menunggu';  break;
+                    case 1:  $sClass = 'approved'; $sText = '✓ Disetujui'; break;
+                    default: $sClass = 'rejected'; $sText = '✕ Ditolak';   break;
+                }
             }
 
             switch($d->status) {
@@ -510,7 +518,14 @@
                     <ion-icon name="eye-outline"></ion-icon>
                     Lihat Detail
                 </a>
-                @if($d->status_approved == 0)
+                {{-- Tombol hapus: hanya untuk Cuti yang masih pending --}}
+                @if($d->status == 'c' && $d->status_approved == 0)
+                <button type="button" class="btn-act btn-delete" onclick="confirmDelete('{{ $d->kode_izin }}')">
+                    <ion-icon name="trash-outline"></ion-icon>
+                    Hapus
+                </button>
+                @elseif(in_array($d->status, ['i', 's']))
+                {{-- Izin & Sakit bisa dihapus kapan saja --}}
                 <button type="button" class="btn-act btn-delete" onclick="confirmDelete('{{ $d->kode_izin }}')">
                     <ion-icon name="trash-outline"></ion-icon>
                     Hapus

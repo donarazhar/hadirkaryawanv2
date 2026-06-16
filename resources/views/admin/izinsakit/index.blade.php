@@ -477,43 +477,62 @@
                             @endif
                         </td>
                         <td>
-                            <div class="appr-group">
-                                {{-- Pimpinan --}}
-                                <div class="appr-item">
-                                    <div class="appr-label">Pimpinan</div>
-                                    @if($item->status_approved_atasan == '0')
-                                        <div class="appr-stat st-wait">Menunggu</div>
-                                    @elseif($item->status_approved_atasan == '1')
-                                        <div class="appr-stat st-acc">Disetujui</div>
-                                    @elseif($item->status_approved_atasan == '2')
-                                        <div class="appr-stat st-rej">Ditolak</div>
-                                    @endif
-                                    @if($item->catatan_atasan)
-                                        <div class="appr-note">"{{ $item->catatan_atasan }}"</div>
-                                    @endif
+                            @if(in_array($item->status, ['i', 's']))
+                                {{-- Izin & Sakit: Otomatis Disetujui --}}
+                                <div class="appr-group">
+                                    <div class="appr-item">
+                                        <div class="appr-stat st-acc" style="display:inline-flex; align-items:center; gap:4px;">
+                                            <i class="mdi mdi-check-circle" style="font-size:13px;"></i> Otomatis Disetujui
+                                        </div>
+                                        <div class="appr-note" style="margin-top:3px;">Izin & Sakit tidak memerlukan persetujuan</div>
+                                    </div>
                                 </div>
-                                {{-- HRD / Admin --}}
-                                <div class="appr-item mt-1">
-                                    <div class="appr-label">HRD</div>
-                                    @if($item->status_approved == '0')
-                                        <div class="appr-stat st-wait">Menunggu</div>
-                                    @elseif($item->status_approved == '1')
-                                        <div class="appr-stat st-acc">Disetujui</div>
-                                    @elseif($item->status_approved == '2')
-                                        <div class="appr-stat st-rej">Ditolak</div>
-                                    @endif
-                                    @if($item->catatan_admin)
-                                        <div class="appr-note">"{{ $item->catatan_admin }}"</div>
-                                    @endif
+                            @else
+                                {{-- Cuti: perlu approval berjenjang --}}
+                                <div class="appr-group">
+                                    {{-- Pimpinan --}}
+                                    <div class="appr-item">
+                                        <div class="appr-label">Pimpinan</div>
+                                        @if($item->status_approved_atasan == '0')
+                                            <div class="appr-stat st-wait">Menunggu</div>
+                                        @elseif($item->status_approved_atasan == '1')
+                                            <div class="appr-stat st-acc">Disetujui</div>
+                                        @elseif($item->status_approved_atasan == '2')
+                                            <div class="appr-stat st-rej">Ditolak</div>
+                                        @endif
+                                        @if($item->catatan_atasan)
+                                            <div class="appr-note">"{{ $item->catatan_atasan }}"</div>
+                                        @endif
+                                    </div>
+                                    {{-- HRD / Admin --}}
+                                    <div class="appr-item mt-1">
+                                        <div class="appr-label">HRD</div>
+                                        @if($item->status_approved == '0')
+                                            <div class="appr-stat st-wait">Menunggu</div>
+                                        @elseif($item->status_approved == '1')
+                                            <div class="appr-stat st-acc">Disetujui</div>
+                                        @elseif($item->status_approved == '2')
+                                            <div class="appr-stat st-rej">Ditolak</div>
+                                        @endif
+                                        @if($item->catatan_admin)
+                                            <div class="appr-note">"{{ $item->catatan_admin }}"</div>
+                                        @endif
+                                    </div>
                                 </div>
-                            </div>
+                            @endif
                         </td>
                         <td style="text-align:center;">
                             @php
                                 $userRole = \Illuminate\Support\Facades\Auth::guard('user')->user()->role ?? 'admin';
                             @endphp
 
-                            @if($userRole == 'pimpinan')
+                            @if(in_array($item->status, ['i', 's']))
+                                {{-- Izin & Sakit: tidak perlu action, tampilkan label saja --}}
+                                <span class="appr-stat st-acc" style="font-size:11px; padding:4px 10px;">
+                                    <i class="mdi mdi-check"></i> Auto
+                                </span>
+                            @elseif($userRole == 'pimpinan')
+                                {{-- Pimpinan: approval untuk Cuti --}}
                                 @if($item->status_approved_atasan == '0')
                                     <button class="btn-act btn-act-blue" onclick="openApprovalModal('{{ $item->kode_izin }}')">
                                         <i class="mdi mdi-check-decagram"></i> Action
@@ -527,7 +546,7 @@
                                     </form>
                                 @endif
                             @else
-                                {{-- HRD / Admin --}}
+                                {{-- HRD / Admin: approval untuk Cuti --}}
                                 @if($item->status_approved == '0')
                                     <button class="btn-act btn-act-blue" onclick="openApprovalModal('{{ $item->kode_izin }}')" {{ $item->status_approved_atasan != '1' ? 'disabled' : '' }} title="{{ $item->status_approved_atasan != '1' ? 'Menunggu Approval Pimpinan' : 'Lakukan Action' }}">
                                         <i class="mdi mdi-check-decagram"></i> Action

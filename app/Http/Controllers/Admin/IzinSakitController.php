@@ -58,6 +58,11 @@ class IzinSakitController extends Controller
             DB::beginTransaction();
 
             $izin = PengajuanIzin::findOrFail($kode_izin);
+
+            // Izin (i) dan Sakit (s) tidak perlu approval — sudah disetujui otomatis
+            if (in_array($izin->status, ['i', 's'])) {
+                return redirect()->back()->with('error', 'Izin dan Sakit tidak memerlukan persetujuan — sudah disetujui otomatis.');
+            }
             
             $user = \Illuminate\Support\Facades\Auth::guard('user')->user();
             $userRole = $user ? $user->role : 'admin';
@@ -114,6 +119,11 @@ class IzinSakitController extends Controller
     {
         try {
             $izin = PengajuanIzin::findOrFail($kode_izin);
+
+            // Izin (i) dan Sakit (s) tidak perlu approval — tidak ada status yang perlu di-cancel
+            if (in_array($izin->status, ['i', 's'])) {
+                return redirect()->back()->with('error', 'Izin dan Sakit tidak memerlukan persetujuan, tidak ada yang perlu dibatalkan.');
+            }
             
             $user = \Illuminate\Support\Facades\Auth::guard('user')->user();
             $userRole = $user ? $user->role : 'admin';

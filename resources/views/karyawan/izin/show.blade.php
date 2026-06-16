@@ -1,4 +1,4 @@
-﻿@extends('karyawan.layouts.presensi')
+@extends('karyawan.layouts.presensi')
 
 @section('content')
 
@@ -321,10 +321,18 @@
 </style>
 
 @php
-    switch($dataizin->status_approved) {
-        case 0:  $sClass = 'pending';  $sText = 'Menunggu Persetujuan'; $sIcon = 'time-outline';          $sSub = 'Menunggu konfirmasi dari atasan'; break;
-        case 1:  $sClass = 'approved'; $sText = 'Pengajuan Disetujui';  $sIcon = 'checkmark-circle-outline'; $sSub = 'Pengajuan Anda telah disetujui'; break;
-        default: $sClass = 'rejected'; $sText = 'Pengajuan Ditolak';    $sIcon = 'close-circle-outline';  $sSub = 'Silakan hubungi atasan untuk informasi lebih lanjut'; break;
+    // Status hero: izin/sakit otomatis disetujui, cuti ikuti status_approved
+    if (in_array($dataizin->status, ['i', 's'])) {
+        $sClass = 'approved';
+        $sText  = 'Disetujui Otomatis';
+        $sIcon  = 'checkmark-circle-outline';
+        $sSub   = 'Izin dan Sakit langsung disetujui secara otomatis';
+    } else {
+        switch($dataizin->status_approved) {
+            case 0:  $sClass = 'pending';  $sText = 'Menunggu Persetujuan'; $sIcon = 'time-outline';             $sSub = 'Menunggu konfirmasi dari atasan'; break;
+            case 1:  $sClass = 'approved'; $sText = 'Pengajuan Disetujui';  $sIcon = 'checkmark-circle-outline'; $sSub = 'Pengajuan Anda telah disetujui'; break;
+            default: $sClass = 'rejected'; $sText = 'Pengajuan Ditolak';    $sIcon = 'close-circle-outline';     $sSub = 'Silakan hubungi atasan untuk informasi lebih lanjut'; break;
+        }
     }
 
     switch($dataizin->status) {
@@ -446,8 +454,8 @@
     </div>
     @endif
 
-    {{-- Delete button (pending only) --}}
-    @if($dataizin->status_approved == 0)
+    {{-- Delete button: izin/sakit bisa dihapus kapan saja, cuti hanya jika masih pending --}}
+    @if(in_array($dataizin->status, ['i', 's']) || ($dataizin->status == 'c' && $dataizin->status_approved == 0))
     <button type="button" class="btn-delete-full" onclick="confirmDelete()">
         <ion-icon name="trash-outline"></ion-icon>
         Hapus Pengajuan

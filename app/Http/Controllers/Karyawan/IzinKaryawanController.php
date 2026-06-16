@@ -29,11 +29,17 @@ class IzinKaryawanController extends Controller
         try {
             $nik = Auth::guard('karyawan')->user()->nik;
 
-            // Query dasar
+            // Query dasar — select eksplisit agar kolom 'status' dari pengajuan_cuti
+            // tidak menimpa kolom 'status' dari pengajuan_izin (i/s/c)
             $query = DB::table('pengajuan_izin')
                 ->leftJoin('pengajuan_cuti', 'pengajuan_izin.kode_cuti', '=', 'pengajuan_cuti.kode_cuti')
-                ->where('nik', $nik)
-                ->orderBy('tgl_izin_dari', 'desc');
+                ->select(
+                    'pengajuan_izin.*',
+                    'pengajuan_cuti.nama_cuti',
+                    'pengajuan_cuti.jml_hari'
+                )
+                ->where('pengajuan_izin.nik', $nik)
+                ->orderBy('pengajuan_izin.tgl_izin_dari', 'desc');
 
             // Filter berdasarkan bulan dan tahun jika ada
             if (!empty($request->bulan) && !empty($request->tahun)) {
@@ -171,6 +177,9 @@ class IzinKaryawanController extends Controller
                 Log::info('Document uploaded', ['filename' => $doc_sid]);
             }
 
+            // Izin (i) dan Sakit (s) langsung disetujui otomatis, Cuti (c) perlu persetujuan
+            $statusApproved = in_array($request->status, ['i', 's']) ? 1 : 0;
+
             // Simpan data
             $data = [
                 'kode_izin' => $kode_izin,
@@ -181,7 +190,8 @@ class IzinKaryawanController extends Controller
                 'keterangan' => $request->keterangan,
                 'doc_sid' => $doc_sid,
                 'kode_cuti' => $request->kode_cuti ?? null,
-                'status_approved' => 0, // 0 = pending
+                'status_approved' => $statusApproved, // 1 = auto-approved (izin/sakit), 0 = pending (cuti)
+                'status_approved_atasan' => in_array($request->status, ['i', 's']) ? 1 : 0, // sama, auto-approved untuk izin/sakit
                 'created_at' => now(),
                 'updated_at' => now()
             ];
@@ -191,24 +201,33 @@ class IzinKaryawanController extends Controller
             DB::commit();
 
             if ($simpan) {
-                Log::info('Pengajuan izin berhasil disimpan', [
+                Log::info('Pengajuan berhasil disimpan', [
                     'kode_izin' => $kode_izin,
-                    'nik' => $nik
+                    'nik' => $nik,
+                    'status_approved' => $statusApproved
                 ]);
 
-                // Notifikasi WA ke HRD/Admin
                 $karyawan = \App\Models\Karyawan::where('nik', $nik)->first();
                 $nama_karyawan = $karyawan ? $karyawan->nama_lengkap : 'Karyawan';
-                
-                $tipe = $request->status == 'i' ? 'Izin' : ($request->status == 's' ? 'Sakit' : 'Cuti');
-                $pesan = "Halo Admin,\n\nTerdapat pengajuan *{$tipe}* baru.\n\n*NIK:* {$nik}\n*Nama:* {$nama_karyawan}\n*Tgl:* {$request->tgl_izin_dari} s/d {$request->tgl_izin_sampai}\n*Alasan:* {$request->keterangan}\n\nMohon segera diproses di panel admin.\nTerima kasih.";
-                
-                \App\Services\WhatsAppService::send('081234567890', $pesan); // Ganti dengan nomor HRD
 
-                return redirect('/presensi/izin')->with('success', 'Pengajuan izin berhasil dikirim dan menunggu persetujuan');
+                $tipe = $request->status == 'i' ? 'Izin' : ($request->status == 's' ? 'Sakit' : 'Cuti');
+
+                if (in_array($request->status, ['i', 's'])) {
+                    // Izin/Sakit: notifikasi ke admin saja sebagai informasi
+                    $pesan = "Halo Admin,\n\nTerdapat laporan *{$tipe}* baru (disetujui otomatis).\n\n*NIK:* {$nik}\n*Nama:* {$nama_karyawan}\n*Tgl:* {$request->tgl_izin_dari} s/d {$request->tgl_izin_sampai}\n*Alasan:* {$request->keterangan}\n\nTerima kasih.";
+                    \App\Services\WhatsAppService::send('081234567890', $pesan);
+
+                    return redirect('/presensi/izin')->with('success', "Pengajuan {$tipe} berhasil dikirim dan telah disetujui otomatis");
+                } else {
+                    // Cuti: notifikasi ke HRD/Admin untuk diproses
+                    $pesan = "Halo Admin,\n\nTerdapat pengajuan *{$tipe}* baru yang perlu disetujui.\n\n*NIK:* {$nik}\n*Nama:* {$nama_karyawan}\n*Tgl:* {$request->tgl_izin_dari} s/d {$request->tgl_izin_sampai}\n*Alasan:* {$request->keterangan}\n\nMohon segera diproses di panel admin.\nTerima kasih.";
+                    \App\Services\WhatsAppService::send('081234567890', $pesan);
+
+                    return redirect('/presensi/izin')->with('success', 'Pengajuan Cuti berhasil dikirim dan sedang menunggu persetujuan');
+                }
             } else {
                 DB::rollBack();
-                return redirect('/presensi/izin')->with('error', 'Gagal menyimpan pengajuan izin');
+                return redirect('/presensi/izin')->with('error', 'Gagal menyimpan pengajuan');
             }
         } catch (\Illuminate\Validation\ValidationException $e) {
             Log::warning('Validation error', ['errors' => $e->errors()]);
@@ -235,6 +254,11 @@ class IzinKaryawanController extends Controller
 
             $dataizin = DB::table('pengajuan_izin')
                 ->leftJoin('pengajuan_cuti', 'pengajuan_izin.kode_cuti', '=', 'pengajuan_cuti.kode_cuti')
+                ->select(
+                    'pengajuan_izin.*',
+                    'pengajuan_cuti.nama_cuti',
+                    'pengajuan_cuti.jml_hari'
+                )
                 ->where('pengajuan_izin.kode_izin', $kode_izin)
                 ->where('pengajuan_izin.nik', $nik)
                 ->first();
@@ -272,9 +296,10 @@ class IzinKaryawanController extends Controller
                 return redirect('/presensi/izin')->with('error', 'Data tidak ditemukan');
             }
 
-            // Cek status, hanya bisa hapus jika masih pending
-            if ($cekdataizin->status_approved != 0) {
-                return redirect('/presensi/izin')->with('error', 'Tidak dapat menghapus izin yang sudah diproses');
+            // Cek status: cuti hanya bisa dihapus jika masih pending (status_approved == 0)
+            // Izin & Sakit (auto-approved) bisa dihapus kapan saja
+            if ($cekdataizin->status == 'c' && $cekdataizin->status_approved != 0) {
+                return redirect('/presensi/izin')->with('error', 'Tidak dapat menghapus cuti yang sudah diproses');
             }
 
             DB::beginTransaction();

@@ -405,10 +405,18 @@
             <span class="pg-sub">Kelola izin, sakit & cuti</span>
         </div>
     </div>
-    <a href="{{ route('izin.create') }}" class="btn-add-new">
-        <ion-icon name="add"></ion-icon>
-        Ajukan
-    </a>
+    <div style="display: flex; gap: 8px;">
+        @if(isset($is_pimpinan) && $is_pimpinan)
+            <a href="{{ url('/presensi/izin/ajuan-pegawai') }}" class="btn-add-new" style="background: var(--purple);">
+                <ion-icon name="people"></ion-icon>
+                Ajuan Pegawai
+            </a>
+        @endif
+        <a href="{{ route('izin.create') }}" class="btn-add-new">
+            <ion-icon name="add"></ion-icon>
+            Ajukan
+        </a>
+    </div>
 </div>
 
 {{-- ── PAGE BODY ── --}}

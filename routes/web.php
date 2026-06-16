@@ -78,6 +78,10 @@ Route::middleware('auth:karyawan')->group(function () {
         Route::post('/cek-pengajuan', 'cekPengajuan')->name('cekPengajuan');
         Route::get('/{kode_izin}/download', 'downloadDokumen')->name('download');
         Route::get('/{kode_izin}/print-cuti', 'printSuratCuti')->name('printCuti');
+
+        // Fitur Ajuan Pegawai (Pimpinan)
+        Route::get('/ajuan-pegawai', 'ajuanPegawai')->name('ajuanPegawai');
+        Route::post('/ajuan-pegawai/{kode_izin}/approve', 'approvePegawai')->name('approvePegawai');
     });
 
     Route::get('/presensi/buatizin', [IzinKaryawanController::class, 'create']);

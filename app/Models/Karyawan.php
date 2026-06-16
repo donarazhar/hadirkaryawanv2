@@ -106,6 +106,32 @@ class Karyawan extends Authenticatable
     }
 
     // ========================================
+    // ✅ ROLE CHECKS (NEW)
+    // ========================================
+    
+    /**
+     * Cek apakah karyawan adalah pimpinan di tabel users
+     */
+    public function isPimpinan()
+    {
+        return \App\Models\User::where(function($q) {
+            $q->where('nik_karyawan', $this->nik)
+              ->orWhere('email', $this->email);
+        })->where('role', 'pimpinan')->exists();
+    }
+
+    /**
+     * Mendapatkan detail pimpinan dari tabel users
+     */
+    public function getPimpinanDetail()
+    {
+        return \App\Models\User::where(function($q) {
+            $q->where('nik_karyawan', $this->nik)
+              ->orWhere('email', $this->email);
+        })->where('role', 'pimpinan')->first();
+    }
+
+    // ========================================
     // ✅ JAM KERJA RELATIONSHIPS (IMPROVED)
     // ========================================
 

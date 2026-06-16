@@ -41,7 +41,8 @@ class UserController extends Controller
     {
         $cabang = Cabang::orderBy('nama_cabang', 'ASC')->get();
         $departemen = Departemen::orderBy('nama_dept', 'ASC')->get();
-        return view('admin.user.create', compact('cabang', 'departemen'));
+        $karyawan = \App\Models\Karyawan::orderBy('nama_lengkap', 'ASC')->get();
+        return view('admin.user.create', compact('cabang', 'departemen', 'karyawan'));
     }
 
     /**
@@ -52,7 +53,7 @@ class UserController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email',
-            'password' => 'required|min:6',
+            'password' => $request->role === 'superadmin' ? 'required|min:6' : 'nullable',
             'role' => ['required', Rule::in(['superadmin', 'admin', 'pimpinan'])],
             'kode_cabang' => 'nullable|string|exists:cabang,kode_cabang',
             'kode_dept' => 'nullable|string|exists:departemen,kode_dept',
@@ -79,10 +80,19 @@ class UserController extends Controller
         }
 
         try {
+            $password = Hash::make($request->password);
+            if ($request->role !== 'superadmin' && !empty($request->nik_karyawan)) {
+                $karyawan = \App\Models\Karyawan::where('nik', $request->nik_karyawan)->first();
+                if ($karyawan && $karyawan->password) {
+                    $password = $karyawan->password;
+                }
+            }
+
             User::create([
                 'name' => $request->name,
                 'email' => $request->email,
-                'password' => Hash::make($request->password),
+                'nik_karyawan' => $request->nik_karyawan ?? null,
+                'password' => $password,
                 'role' => $request->role,
                 'kode_cabang' => $request->role === 'superadmin' ? null : $request->kode_cabang,
                 'kode_dept' => $request->role === 'pimpinan' ? $request->kode_dept : null,
@@ -102,7 +112,8 @@ class UserController extends Controller
         $user = User::findOrFail($id);
         $cabang = Cabang::orderBy('nama_cabang', 'ASC')->get();
         $departemen = Departemen::orderBy('nama_dept', 'ASC')->get();
-        return view('admin.user.edit', compact('user', 'cabang', 'departemen'));
+        $karyawan = \App\Models\Karyawan::orderBy('nama_lengkap', 'ASC')->get();
+        return view('admin.user.edit', compact('user', 'cabang', 'departemen', 'karyawan'));
     }
 
     /**
@@ -144,12 +155,18 @@ class UserController extends Controller
             $data = [
                 'name' => $request->name,
                 'email' => $request->email,
+                'nik_karyawan' => $request->nik_karyawan ?? null,
                 'role' => $request->role,
                 'kode_cabang' => $request->role === 'superadmin' ? null : $request->kode_cabang,
                 'kode_dept' => $request->role === 'pimpinan' ? $request->kode_dept : null,
             ];
 
-            if ($request->filled('password')) {
+            if ($request->role !== 'superadmin' && !empty($request->nik_karyawan)) {
+                $karyawan = \App\Models\Karyawan::where('nik', $request->nik_karyawan)->first();
+                if ($karyawan && $karyawan->password) {
+                    $data['password'] = $karyawan->password;
+                }
+            } elseif ($request->filled('password')) {
                 $data['password'] = Hash::make($request->password);
             }
 

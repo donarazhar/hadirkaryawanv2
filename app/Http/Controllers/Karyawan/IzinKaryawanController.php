@@ -53,8 +53,12 @@ class IzinKaryawanController extends Controller
 
             $dataizin = $query->get();
 
+            $karyawan = Auth::guard('karyawan')->user();
+            $is_pimpinan = $karyawan->isPimpinan();
+
             Log::info('IzinKaryawan@index loaded', [
                 'nik' => $nik,
+                'is_pimpinan' => $is_pimpinan,
                 'count' => $dataizin->count()
             ]);
 
@@ -75,7 +79,7 @@ class IzinKaryawanController extends Controller
                 "Desember"
             ];
 
-            return view('karyawan.izin.index', compact('dataizin', 'namabulan'));
+            return view('karyawan.izin.index', compact('dataizin', 'namabulan', 'is_pimpinan'));
         } catch (Exception $e) {
             Log::error('IzinKaryawan@index Error: ' . $e->getMessage(), [
                 'trace' => $e->getTraceAsString()
@@ -477,6 +481,74 @@ class IzinKaryawanController extends Controller
         } catch (Exception $e) {
             Log::error('IzinKaryawan@printSuratCuti Error: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Gagal memuat surat cuti');
+        }
+    }
+
+    /**
+     * Menampilkan daftar cuti pegawai untuk Pimpinan
+     */
+    public function ajuanPegawai(Request $request)
+    {
+        $karyawan = Auth::guard('karyawan')->user();
+        if (!$karyawan->isPimpinan()) {
+            return redirect('/presensi/izin')->with(['error' => 'Akses ditolak. Anda bukan pimpinan.']);
+        }
+
+        $pimpinanData = $karyawan->getPimpinanDetail();
+
+        // Ambil NIK karyawan di bawah pimpinan ini
+        $bawahanNiks = \App\Models\Karyawan::where('kode_dept', $pimpinanData->kode_dept)
+            ->where('kode_cabang', $pimpinanData->kode_cabang)
+            ->where('nik', '!=', $karyawan->nik)
+            ->pluck('nik');
+
+        $query = DB::table('pengajuan_izin')
+            ->join('karyawan', 'pengajuan_izin.nik', '=', 'karyawan.nik')
+            ->leftJoin('pengajuan_cuti', 'pengajuan_izin.kode_cuti', '=', 'pengajuan_cuti.kode_cuti')
+            ->select(
+                'pengajuan_izin.*',
+                'karyawan.nama_lengkap',
+                'karyawan.jabatan',
+                'pengajuan_cuti.nama_cuti',
+                'pengajuan_cuti.jml_hari'
+            )
+            ->whereIn('pengajuan_izin.nik', $bawahanNiks)
+            ->where('pengajuan_izin.status', 'c'); // Hanya Cuti
+
+        if (!empty($request->bulan) && !empty($request->tahun)) {
+            $query->whereRaw('MONTH(pengajuan_izin.tgl_izin_dari) = ?', [$request->bulan])
+                ->whereRaw('YEAR(pengajuan_izin.tgl_izin_dari) = ?', [$request->tahun]);
+        }
+
+        $dataajuan = $query->orderBy('pengajuan_izin.tgl_izin_dari', 'desc')->get();
+
+        return view('karyawan.izin.ajuan_pegawai', compact('dataajuan'));
+    }
+
+    /**
+     * Setujui atau Tolak cuti pegawai oleh Pimpinan via Mobile
+     */
+    public function approvePegawai(Request $request, $kode_izin)
+    {
+        $karyawan = Auth::guard('karyawan')->user();
+        if (!$karyawan->isPimpinan()) {
+            return redirect('/presensi/izin')->with(['error' => 'Akses ditolak. Anda bukan pimpinan.']);
+        }
+
+        $request->validate([
+            'status_approved' => 'required|in:1,2',
+        ]);
+
+        try {
+            DB::table('pengajuan_izin')->where('kode_izin', $kode_izin)->update([
+                'status_approved' => $request->status_approved, // 1: Disetujui, 2: Ditolak
+                'status_approved_atasan' => $request->status_approved, // Pimpinan -> Final
+            ]);
+
+            return redirect()->back()->with(['success' => 'Status pengajuan cuti pegawai berhasil diperbarui.']);
+        } catch (\Exception $e) {
+            Log::error('Error approving pegawai cuti via mobile: ' . $e->getMessage());
+            return redirect()->back()->with(['error' => 'Terjadi kesalahan saat menyimpan data.']);
         }
     }
 }

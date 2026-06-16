@@ -182,36 +182,6 @@
                     <div class="card-body">
                         
                         <div class="fg">
-                            <label>Nama Lengkap <span class="req">*</span></label>
-                            <input type="text" name="name" class="form-control @error('name') is-invalid @enderror" 
-                                value="{{ old('name') }}" placeholder="Contoh: Budi Santoso" required>
-                            @error('name')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="fg-row">
-                            <div class="fg">
-                                <label>Alamat Email <span class="req">*</span></label>
-                                <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" 
-                                    value="{{ old('email') }}" placeholder="Contoh: budi@perusahaan.com" required>
-                                @error('email')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="fg">
-                                <label>Password <span class="req">*</span></label>
-                                <input type="password" name="password" class="form-control @error('password') is-invalid @enderror" 
-                                    placeholder="Minimal 6 karakter" required>
-                                @error('password')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <hr style="border-color:var(--slate-200); margin:24px 0;">
-
-                        <div class="fg">
                             <label>Role Akses <span class="req">*</span></label>
                             <select name="role" id="role-select" class="form-select @error('role') is-invalid @enderror" required>
                                 <option value="">-- Pilih Akses Role --</option>
@@ -224,8 +194,21 @@
                             @enderror
                         </div>
 
-                        <div class="fg-row" style="margin-bottom:0;">
-                            <div class="fg" id="cabang-container" style="display:none;">
+                        <div class="fg" id="karyawan-container" style="display:none;">
+                            <label>Pilih Karyawan <span class="req">*</span></label>
+                            <select name="nik_karyawan" id="karyawan-select" class="form-select">
+                                <option value="">-- Pilih Karyawan --</option>
+                                @foreach($karyawan as $k)
+                                    <option value="{{ $k->nik }}" data-nama="{{ $k->nama_lengkap }}" data-email="{{ $k->email }}" data-cabang="{{ $k->kode_cabang }}" data-dept="{{ $k->kode_dept }}">
+                                        {{ $k->nik }} - {{ $k->nama_lengkap }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <div class="form-hint"><i class="mdi mdi-information-outline"></i> Nama Lengkap, Email, Cabang dan Departemen akan terisi otomatis berdasarkan karyawan yang dipilih.</div>
+                        </div>
+
+                        <div class="fg-row" style="margin-bottom:20px;">
+                            <div class="fg" id="cabang-container" style="display:none; margin-bottom:0;">
                                 <label>Pilih Cabang <span class="req">*</span></label>
                                 <select name="kode_cabang" id="cabang-select" class="form-select @error('kode_cabang') is-invalid @enderror">
                                     <option value="">-- Pilih Cabang --</option>
@@ -241,7 +224,7 @@
                                 @enderror
                             </div>
 
-                            <div class="fg" id="dept-container" style="display:none;">
+                            <div class="fg" id="dept-container" style="display:none; margin-bottom:0;">
                                 <label>Pilih Departemen <span class="req">*</span></label>
                                 <select name="kode_dept" id="dept-select" class="form-select @error('kode_dept') is-invalid @enderror">
                                     <option value="">-- Pilih Departemen --</option>
@@ -253,6 +236,36 @@
                                 </select>
                                 <div class="form-hint"><i class="mdi mdi-information-outline"></i> Departemen yang dikepalai Pimpinan.</div>
                                 @error('kode_dept')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <hr style="border-color:var(--slate-200); margin:24px 0;">
+
+                        <div class="fg">
+                            <label>Nama Lengkap <span class="req">*</span></label>
+                            <input type="text" id="name-input" name="name" class="form-control @error('name') is-invalid @enderror" 
+                                value="{{ old('name') }}" placeholder="Contoh: Budi Santoso" required>
+                            @error('name')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="fg-row" style="margin-bottom:0;">
+                            <div class="fg" style="margin-bottom:0;">
+                                <label>Alamat Email <span class="req">*</span></label>
+                                <input type="email" id="email-input" name="email" class="form-control @error('email') is-invalid @enderror" 
+                                    value="{{ old('email') }}" placeholder="Contoh: budi@perusahaan.com" required>
+                                @error('email')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            <div class="fg" id="password-container" style="margin-bottom:0;">
+                                <label>Password <span class="req">*</span></label>
+                                <input type="password" id="password-input" name="password" class="form-control @error('password') is-invalid @enderror" 
+                                    placeholder="Minimal 6 karakter" required>
+                                @error('password')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
@@ -319,40 +332,85 @@
 <script>
     $(document).ready(function() {
         const roleSelect = $('#role-select');
+        const karyawanContainer = $('#karyawan-container');
+        const karyawanSelect = $('#karyawan-select');
         const cabangContainer = $('#cabang-container');
         const cabangSelect = $('#cabang-select');
         const deptContainer = $('#dept-container');
         const deptSelect = $('#dept-select');
+        const nameInput = $('#name-input');
+        const emailInput = $('#email-input');
+        const passwordContainer = document.getElementById('password-container');
+        const passwordInput = document.getElementById('password-input');
 
-        function toggleCabang() {
+        function toggleRole() {
             const role = roleSelect.val();
             
-            // Logika Cabang
-            if (role === 'admin' || role === 'pimpinan') {
-                cabangContainer.slideDown(200);
-                cabangSelect.prop('required', true);
+            if(role === 'admin' || role === 'pimpinan') {
+                karyawanContainer.slideDown(200);
+                passwordContainer.style.display = 'none';
+                passwordInput.removeAttribute('required');
+                passwordInput.value = '';
+                
+                if(role === 'admin') {
+                    cabangContainer.slideDown(200);
+                    cabangSelect.prop('required', true);
+                    deptContainer.slideUp(200);
+                    deptSelect.prop('required', false);
+                    deptSelect.val('');
+                } else if(role === 'pimpinan') {
+                    cabangContainer.slideDown(200);
+                    cabangSelect.prop('required', true);
+                    deptContainer.slideDown(200);
+                    deptSelect.prop('required', true);
+                }
             } else {
+                karyawanContainer.slideUp(200);
+                karyawanSelect.val('');
+                passwordContainer.style.display = 'block';
+                passwordInput.setAttribute('required', 'required');
+                
                 cabangContainer.slideUp(200);
                 cabangSelect.prop('required', false);
                 cabangSelect.val('');
-            }
-
-            // Logika Departemen
-            if (role === 'pimpinan') {
-                deptContainer.slideDown(200);
-                deptSelect.prop('required', true);
-            } else {
+                
                 deptContainer.slideUp(200);
                 deptSelect.prop('required', false);
                 deptSelect.val('');
+                
+                // Clear auto-filled inputs for superadmin
+                nameInput.val('');
+                nameInput.prop('readonly', false);
+                emailInput.val('');
+                emailInput.prop('readonly', false);
             }
         }
 
         // Initialize state
-        toggleCabang();
+        toggleRole();
 
         // Listen for change
-        roleSelect.on('change', toggleCabang);
+        roleSelect.on('change', toggleRole);
+
+        // Autofill dari Karyawan
+        karyawanSelect.on('change', function() {
+            const selected = $(this).find('option:selected');
+            if (selected.val()) {
+                nameInput.val(selected.data('nama'));
+                
+                if(selected.data('email')) {
+                    emailInput.val(selected.data('email'));
+                }
+                
+                if(selected.data('cabang')) {
+                    cabangSelect.val(selected.data('cabang'));
+                }
+                
+                if(selected.data('dept')) {
+                    deptSelect.val(selected.data('dept'));
+                }
+            }
+        });
     });
 </script>
 @endpush

@@ -542,11 +542,6 @@
     </div>
 </div>
 
-<!-- ── AUDIO ── -->
-<audio id="notifikasi_in"  src="{{ asset('assets/sound/notifikasi_in.mp3') }}"></audio>
-<audio id="notifikasi_out" src="{{ asset('assets/sound/notifikasi_out.mp3') }}"></audio>
-<audio id="radius_sound"   src="{{ asset('assets/sound/radius_sound.mp3') }}"></audio>
-
 @endsection
 
 @push('myscript')
@@ -555,9 +550,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
 
 <script>
-    var notifikasi_in  = document.getElementById('notifikasi_in');
-    var notifikasi_out = document.getElementById('notifikasi_out');
-    var radius_sound   = document.getElementById('radius_sound');
     var map, marker, circle;
     var webcamReady = false;
     var modelsLoaded = false;
@@ -795,7 +787,6 @@
 
         if (status === 'success') {
             var isIn = (type === 'in');
-            (isIn ? notifikasi_in : notifikasi_out).play();
             var successTitle = isIn ? 'Absen Masuk Berhasil' : 'Absen Pulang Berhasil';
             speakText(successTitle + '. ' + message);
             Swal.fire({
@@ -815,7 +806,6 @@
             var icon = 'error', title = '', hint = '', color = '#EF4444', btnText = 'Coba Lagi';
 
             if (type === 'radius') {
-                radius_sound.play();
                 icon  = 'warning';
                 color = '#F59E0B';
                 title = '📍 Di Luar Radius Kantor';

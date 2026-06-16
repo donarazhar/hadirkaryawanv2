@@ -1,221 +1,358 @@
 @extends('admin.layouts.admin')
 
-@section('title', 'Tambah User Baru')
-@section('page-title', 'Tambah User')
+@section('title', 'Tambah Pengguna (User)')
+@section('page-title', 'Tambah Pengguna Baru')
+
+@push('styles')
+<style>
+    :root {
+        --blue:       #2563EB;
+        --blue-dark:  #1D4ED8;
+        --blue-soft:  #EFF6FF;
+        --blue-mid:   #BFDBFE;
+        --green:      #10B981;
+        --green-soft: #ECFDF5;
+        --red:        #EF4444;
+        --red-soft:   #FEF2F2;
+        --amber:      #F59E0B;
+        --amber-soft: #FFFBEB;
+        --cyan:       #06B6D4;
+        --cyan-soft:  #ECFEFF;
+        --slate-900:  #111827;
+        --slate-700:  #374151;
+        --slate-600:  #4B5563;
+        --slate-400:  #9CA3AF;
+        --slate-300:  #D1D5DB;
+        --slate-200:  #E5E7EB;
+        --slate-100:  #F3F4F6;
+        --slate-50:   #F9FAFB;
+        --white:      #FFFFFF;
+        --shadow:     0 1px 3px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.04);
+        --radius:     14px;
+        --radius-sm:  10px;
+    }
+
+    .form-wrap { display: flex; flex-direction: column; gap: 20px; }
+
+    /* ── PAGE HEADER ── */
+    .form-header {
+        background: var(--white);
+        border: 1px solid var(--slate-200);
+        border-radius: var(--radius);
+        padding: 20px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        box-shadow: var(--shadow);
+    }
+    .form-header-left { display: flex; align-items: center; gap: 14px; }
+    .form-header-icon {
+        width: 46px; height: 46px; border-radius: 12px; background: var(--blue-soft);
+        display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .form-header-icon i { font-size: 22px; color: var(--blue); }
+    .form-header-title { font-size: 17px; font-weight: 800; color: var(--slate-900); letter-spacing: -0.2px; }
+    .form-header-sub   { font-size: 12px; color: var(--slate-400); margin-top: 2px; }
+    
+    .btn-back {
+        display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px;
+        border: 1.5px solid var(--slate-200); border-radius: 9px; font-family: 'Inter', sans-serif;
+        font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.15s;
+        text-decoration: none; background: var(--white); color: var(--slate-700);
+    }
+    .btn-back i { font-size: 16px; }
+    .btn-back:hover { background: var(--slate-50); color: var(--slate-900); border-color: var(--slate-300); }
+
+    /* ── LAYOUT ── */
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        gap: 20px;
+        align-items: start;
+    }
+    @media (max-width: 992px) { .form-grid { grid-template-columns: 1fr; } }
+    .side-col { display: flex; flex-direction: column; gap: 20px; position: sticky; top: 20px; }
+
+    /* ── CARDS ── */
+    .card { background: var(--white); border: 1px solid var(--slate-200); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; margin-bottom: 20px; }
+    .card-head { padding: 18px 24px; border-bottom: 1px solid var(--slate-100); display: flex; align-items: center; gap: 8px; justify-content: space-between; }
+    .card-head-left { display: flex; align-items: center; gap: 8px; }
+    .card-head i { font-size: 18px; color: var(--blue); }
+    .card-title { font-size: 14px; font-weight: 800; color: var(--slate-900); m-0; }
+    .card-body { padding: 24px; }
+
+    /* ── FORM ELEMENTS ── */
+    .fg-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+    @media (max-width: 640px) { .fg-row { grid-template-columns: 1fr; } }
+    
+    .fg { margin-bottom: 20px; }
+    .fg:last-child { margin-bottom: 0; }
+    .fg label {
+        display: block; font-size: 11.5px; font-weight: 700; color: var(--slate-700);
+        margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .req { color: var(--red); }
+    
+    .form-control, .form-select {
+        width: 100%; height: 42px; padding: 0 14px; border: 1.5px solid var(--slate-200);
+        border-radius: 9px; font-family: 'Inter', sans-serif; font-size: 13.5px;
+        color: var(--slate-900); background: var(--white); transition: all 0.15s; outline: none;
+    }
+    .form-control:focus, .form-select:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,0.10); }
+    
+    .is-invalid { border-color: var(--red) !important; background: var(--red-soft); }
+    .invalid-feedback { display: block; font-size: 11.5px; color: var(--red); font-weight: 600; margin-top: 6px; }
+    .form-hint { display: block; font-size: 11.5px; color: var(--slate-500); margin-top: 6px; font-weight: 500; line-height: 1.4; }
+
+    /* Action Footer */
+    .form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--slate-100); }
+    .btn-save {
+        height: 42px; padding: 0 24px; border: none; border-radius: 9px; font-family: 'Inter', sans-serif;
+        font-size: 13.5px; font-weight: 700; color: var(--white); background: var(--blue);
+        cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: background 0.15s;
+    }
+    .btn-save:hover { background: var(--blue-dark); }
+    .btn-save i { font-size: 18px; }
+
+    /* ── INFO BLOCKS ── */
+    .info-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 14px; }
+    .info-item { display: flex; gap: 12px; }
+    .ii-icon {
+        width: 32px; height: 32px; border-radius: 8px; background: var(--slate-50);
+        display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        border: 1px solid var(--slate-200); color: var(--slate-600); font-size: 16px;
+    }
+    .ii-text { font-size: 12.5px; color: var(--slate-600); line-height: 1.5; padding-top: 4px; }
+    .ii-text strong { color: var(--slate-900); font-weight: 700; }
+</style>
+@endpush
 
 @section('content')
-<div class="page-header d-print-none mb-3">
-    <div class="container-xl">
-        <div class="row g-2 align-items-center">
-            <div class="col">
-                <div class="page-pretitle">Kelola Konfigurasi</div>
-                <h2 class="page-title">Tambah User Baru</h2>
+<div class="form-wrap">
+
+    {{-- HEADER --}}
+    <div class="form-header">
+        <div class="form-header-left">
+            <div class="form-header-icon">
+                <i class="mdi mdi-account-plus"></i>
             </div>
-            <div class="col-auto ms-auto d-print-none">
-                <a href="{{ route('panel.user.index') }}" class="btn btn-outline-secondary">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                        <line x1="5" y1="12" x2="19" y2="12" />
-                        <line x1="5" y1="12" x2="11" y2="18" />
-                        <line x1="5" y1="12" x2="11" y2="6" />
-                    </svg>
-                    Kembali
-                </a>
+            <div>
+                <div class="form-header-title">Tambah Pengguna Baru</div>
+                <div class="form-header-sub">Buat akun untuk Superadmin, Admin Cabang, atau Pimpinan</div>
             </div>
         </div>
+        <div>
+            <a href="{{ route('panel.user.index') }}" class="btn-back">
+                <i class="mdi mdi-arrow-left"></i> Kembali
+            </a>
+        </div>
     </div>
-</div>
 
-<div class="page-body">
-    <div class="container-xl">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Form Tambah User</h3>
+    {{-- ALERTS (Error Summary) --}}
+    @if($errors->any())
+    <div class="card" style="border-color:var(--red); background:var(--red-soft); box-shadow:none;">
+        <div class="card-body" style="padding:16px;">
+            <div style="font-size:13px; font-weight:800; color:var(--red); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                <i class="mdi mdi-alert-circle" style="font-size:18px;"></i> Terdapat kesalahan pada input:
             </div>
-            <div class="card-body">
-                <form action="{{ route('panel.user.store') }}" method="POST">
-                    @csrf
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label required">Nama Lengkap</label>
-                                <input type="text" class="form-control @error('name') is-invalid @enderror" 
-                                    name="name" value="{{ old('name') }}" placeholder="Masukkan nama lengkap" required>
-                                @error('name')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
+            <ul style="margin:0; padding-left:24px; color:#991B1B; font-size:12.5px; font-weight:500;">
+                @foreach($errors->all() as $error)
+                    <li style="margin-bottom:2px;">{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    </div>
+    @endif
 
-                            <div class="mb-3">
-                                <label class="form-label required">Email</label>
-                                <input type="email" class="form-control @error('email') is-invalid @enderror" 
-                                    name="email" value="{{ old('email') }}" placeholder="Masukkan alamat email" required>
+    <div class="form-grid">
+        
+        {{-- LEFT COLUMN: FORM --}}
+        <div>
+            <form action="{{ route('panel.user.store') }}" method="POST" id="formUser">
+                @csrf
+                
+                <div class="card">
+                    <div class="card-head">
+                        <div class="card-head-left">
+                            <i class="mdi mdi-card-account-details-outline"></i>
+                            <h3 class="card-title">Informasi Akun</h3>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        
+                        <div class="fg">
+                            <label>Nama Lengkap <span class="req">*</span></label>
+                            <input type="text" name="name" class="form-control @error('name') is-invalid @enderror" 
+                                value="{{ old('name') }}" placeholder="Contoh: Budi Santoso" required>
+                            @error('name')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="fg-row">
+                            <div class="fg">
+                                <label>Alamat Email <span class="req">*</span></label>
+                                <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" 
+                                    value="{{ old('email') }}" placeholder="Contoh: budi@perusahaan.com" required>
                                 @error('email')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-
-                            <div class="mb-3">
-                                <label class="form-label required">Password</label>
-                                <input type="password" class="form-control @error('password') is-invalid @enderror" 
-                                    name="password" placeholder="Minimal 6 karakter" required>
+                            <div class="fg">
+                                <label>Password <span class="req">*</span></label>
+                                <input type="password" name="password" class="form-control @error('password') is-invalid @enderror" 
+                                    placeholder="Minimal 6 karakter" required>
                                 @error('password')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
 
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label required">Role User</label>
-                                <select class="form-select @error('role') is-invalid @enderror" name="role" id="role-select" required>
-                                    <option value="">Pilih Role...</option>
-                                    <option value="superadmin" {{ old('role') == 'superadmin' ? 'selected' : '' }}>Superadmin (Semua Akses)</option>
-                                    <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Admin Cabang</option>
-                                    <option value="pimpinan" {{ old('role') == 'pimpinan' ? 'selected' : '' }}>Pimpinan Cabang</option>
-                                </select>
-                                @error('role')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
+                        <hr style="border-color:var(--slate-200); margin:24px 0;">
 
-                            <div class="mb-3" id="cabang-container" style="display: none;">
-                                <label class="form-label required">Pilih Cabang</label>
-                                <select class="form-select @error('kode_cabang') is-invalid @enderror" name="kode_cabang" id="cabang-select">
-                                    <option value="">Pilih Cabang...</option>
+                        <div class="fg">
+                            <label>Role Akses <span class="req">*</span></label>
+                            <select name="role" id="role-select" class="form-select @error('role') is-invalid @enderror" required>
+                                <option value="">-- Pilih Akses Role --</option>
+                                <option value="superadmin" {{ old('role') == 'superadmin' ? 'selected' : '' }}>Superadmin (Akses Penuh)</option>
+                                <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Admin Cabang</option>
+                                <option value="pimpinan" {{ old('role') == 'pimpinan' ? 'selected' : '' }}>Pimpinan Departemen</option>
+                            </select>
+                            @error('role')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="fg-row" style="margin-bottom:0;">
+                            <div class="fg" id="cabang-container" style="display:none;">
+                                <label>Pilih Cabang <span class="req">*</span></label>
+                                <select name="kode_cabang" id="cabang-select" class="form-select @error('kode_cabang') is-invalid @enderror">
+                                    <option value="">-- Pilih Cabang --</option>
                                     @foreach($cabang as $item)
                                         <option value="{{ $item->kode_cabang }}" {{ old('kode_cabang') == $item->kode_cabang ? 'selected' : '' }}>
                                             {{ $item->kode_cabang }} - {{ $item->nama_cabang }}
                                         </option>
                                     @endforeach
                                 </select>
-                                <small class="form-hint text-muted">Cabang wajib dipilih untuk role Admin dan Pimpinan.</small>
+                                <div class="form-hint"><i class="mdi mdi-information-outline"></i> Lokasi penugasan Admin/Pimpinan.</div>
                                 @error('kode_cabang')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
 
-                            <div class="mb-3" id="dept-container" style="display: none;">
-                                <label class="form-label required">Pilih Departemen</label>
-                                <select class="form-select @error('kode_dept') is-invalid @enderror" name="kode_dept" id="dept-select">
-                                    <option value="">Pilih Departemen...</option>
+                            <div class="fg" id="dept-container" style="display:none;">
+                                <label>Pilih Departemen <span class="req">*</span></label>
+                                <select name="kode_dept" id="dept-select" class="form-select @error('kode_dept') is-invalid @enderror">
+                                    <option value="">-- Pilih Departemen --</option>
                                     @foreach($departemen as $item)
                                         <option value="{{ $item->kode_dept }}" {{ old('kode_dept') == $item->kode_dept ? 'selected' : '' }}>
                                             {{ $item->kode_dept }} - {{ $item->nama_dept }}
                                         </option>
                                     @endforeach
                                 </select>
-                                <small class="form-hint text-muted">Departemen wajib dipilih untuk role Pimpinan.</small>
+                                <div class="form-hint"><i class="mdi mdi-information-outline"></i> Departemen yang dikepalai Pimpinan.</div>
                                 @error('kode_dept')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
-                    </div>
 
-                    <div class="mt-4 form-footer">
-                        <button type="submit" class="btn btn-primary">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                <path d="M5 12l5 5l10 -10" />
-                            </svg>
-                            Simpan Data
+                    </div>
+                </div>
+
+                {{-- FOOTER ACTIONS --}}
+                <div class="card" style="background:transparent; border:none; box-shadow:none;">
+                    <div class="form-actions" style="margin-top:0; border-top:none; padding-top:0;">
+                        <button type="submit" class="btn-save">
+                            <i class="mdi mdi-content-save-check"></i> Simpan Pengguna
                         </button>
                     </div>
-                </form>
+                </div>
+
+            </form>
+        </div>
+
+        {{-- RIGHT COLUMN: INFO --}}
+        <div class="side-col">
+            <div class="card">
+                <div class="card-head">
+                    <h3 class="card-title" style="display:flex;align-items:center;gap:8px;">
+                        <i class="mdi mdi-shield-check" style="color:var(--blue);font-size:18px;"></i>
+                        Tingkat Akses Role
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <ul class="info-list">
+                        <li class="info-item">
+                            <div class="ii-icon" style="color:var(--red);"><i class="mdi mdi-shield-crown"></i></div>
+                            <div class="ii-text">
+                                <strong>Superadmin</strong><br>
+                                Memiliki kontrol penuh terhadap semua sistem, pengaturan, master data cabang, departemen, dan pengguna lain.
+                            </div>
+                        </li>
+                        <li class="info-item">
+                            <div class="ii-icon" style="color:var(--blue);"><i class="mdi mdi-shield-account"></i></div>
+                            <div class="ii-text">
+                                <strong>Admin Cabang</strong><br>
+                                Dapat mengelola karyawan, presensi, jam kerja, lembur, serta memantau operasional hanya untuk cabang yang dipilih.
+                            </div>
+                        </li>
+                        <li class="info-item">
+                            <div class="ii-icon" style="color:var(--cyan);"><i class="mdi mdi-account-tie"></i></div>
+                            <div class="ii-text">
+                                <strong>Pimpinan</strong><br>
+                                Digunakan untuk level Manajer/Penyelia. Hak akses berfokus pada menyetujui Cuti, Izin, Lembur, dan memantau staf di departemennya.
+                            </div>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
-    </div>
-</div>
 
-@push('styles')
-<style>
-    .card {
-        border: none;
-        border-radius: 10px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    }
-    .card-header {
-        background: white;
-        border-bottom: 1px solid #f0f0f0;
-        padding: 20px;
-    }
-    .card-body {
-        padding: 30px;
-    }
-    .form-label {
-        font-weight: 500;
-        color: #333;
-        margin-bottom: 8px;
-    }
-    .form-label.required::after {
-        content: "*";
-        color: #ef4444;
-        margin-left: 4px;
-    }
-    .form-control, .form-select {
-        border: 1px solid #ddd;
-        border-radius: 6px;
-        padding: 10px 15px;
-        transition: all 0.3s;
-    }
-    .form-control:focus, .form-select:focus {
-        border-color: #0053C5;
-        box-shadow: 0 0 0 0.2rem rgba(0, 83, 197, 0.25);
-    }
-    .btn-primary {
-        background: linear-gradient(135deg, #0053C5 0%, #003d94 100%);
-        border: none;
-        padding: 10px 20px;
-        border-radius: 6px;
-    }
-    .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 83, 197, 0.3);
-    }
-</style>
-@endpush
+    </div>
+
+</div>
+@endsection
 
 @push('scripts')
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const roleSelect = document.getElementById('role-select');
-        const cabangContainer = document.getElementById('cabang-container');
-        const cabangSelect = document.getElementById('cabang-select');
-        const deptContainer = document.getElementById('dept-container');
-        const deptSelect = document.getElementById('dept-select');
+    $(document).ready(function() {
+        const roleSelect = $('#role-select');
+        const cabangContainer = $('#cabang-container');
+        const cabangSelect = $('#cabang-select');
+        const deptContainer = $('#dept-container');
+        const deptSelect = $('#dept-select');
 
         function toggleCabang() {
-            const role = roleSelect.value;
+            const role = roleSelect.val();
             
             // Logika Cabang
             if (role === 'admin' || role === 'pimpinan') {
-                cabangContainer.style.display = 'block';
-                cabangSelect.required = true;
+                cabangContainer.slideDown(200);
+                cabangSelect.prop('required', true);
             } else {
-                cabangContainer.style.display = 'none';
-                cabangSelect.required = false;
-                cabangSelect.value = '';
+                cabangContainer.slideUp(200);
+                cabangSelect.prop('required', false);
+                cabangSelect.val('');
             }
 
             // Logika Departemen
             if (role === 'pimpinan') {
-                deptContainer.style.display = 'block';
-                deptSelect.required = true;
+                deptContainer.slideDown(200);
+                deptSelect.prop('required', true);
             } else {
-                deptContainer.style.display = 'none';
-                deptSelect.required = false;
-                deptSelect.value = '';
+                deptContainer.slideUp(200);
+                deptSelect.prop('required', false);
+                deptSelect.val('');
             }
         }
 
-        // Run on load
+        // Initialize state
         toggleCabang();
 
-        // Run on change
-        roleSelect.addEventListener('change', toggleCabang);
+        // Listen for change
+        roleSelect.on('change', toggleCabang);
     });
 </script>
 @endpush
-@endsection

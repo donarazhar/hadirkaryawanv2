@@ -1,4 +1,4 @@
-﻿@extends('karyawan.layouts.presensi')
+@extends('karyawan.layouts.presensi')
 
 @section('content')
 
@@ -641,14 +641,31 @@
     }
 
     function errorCallback(error) {
-        var msg = '';
+        var msg = '', hint = '';
         switch(error.code) {
-            case error.PERMISSION_DENIED:     msg = 'Izin lokasi ditolak. Aktifkan GPS di pengaturan browser.'; break;
-            case error.POSITION_UNAVAILABLE:  msg = 'Informasi lokasi tidak tersedia.'; break;
-            case error.TIMEOUT:               msg = 'Request lokasi timeout. Coba lagi.'; break;
-            default:                          msg = 'Gagal mendapatkan lokasi.';
+            case error.PERMISSION_DENIED:
+                msg  = 'Izin lokasi ditolak.';
+                hint = 'Buka pengaturan browser dan aktifkan izin lokasi untuk halaman ini.';
+                break;
+            case error.POSITION_UNAVAILABLE:
+                msg  = 'Informasi lokasi tidak tersedia.';
+                hint = 'Pastikan GPS perangkat Anda aktif.';
+                break;
+            case error.TIMEOUT:
+                msg  = 'Request lokasi timeout.';
+                hint = 'Sinyal GPS lemah. Pindah ke tempat terbuka dan coba lagi.';
+                break;
+            default:
+                msg  = 'Gagal mendapatkan lokasi.';
+                hint = 'Periksa koneksi dan izin GPS Anda.';
         }
-        Swal.fire({ icon:'error', title:'Lokasi Tidak Terdeteksi', text: msg, confirmButtonColor:'#2563EB' });
+        Swal.fire({
+            icon: 'error',
+            title: '📍 Lokasi Tidak Terdeteksi',
+            html: '<b>' + msg + '</b><br><small style="color:#6B7280;">' + hint + '</small>',
+            confirmButtonColor: '#2563EB',
+            confirmButtonText: 'Mengerti'
+        });
     }
 
     /* ── Face models ── */
@@ -735,6 +752,124 @@
         }
     }
 
+    /* ══════════════════════════════════════
+       NOTIFICATION HELPER
+       Parses controller response: "status|message|type"
+       ══════════════════════════════════════ */
+    function showNotification(respond, onErrorRetry) {
+        var parts = respond.split('|');
+        var status  = parts[0];   // success / error
+        var message = parts[1];   // human message
+        var type    = parts[2];   // in / out / radius / system
+
+        if (status === 'success') {
+            var isIn = (type === 'in');
+            (isIn ? notifikasi_in : notifikasi_out).play();
+            Swal.fire({
+                icon: 'success',
+                iconColor: isIn ? '#10B981' : '#2563EB',
+                title: isIn ? '✅ Absen Masuk Berhasil!' : '🌆 Absen Pulang Berhasil!',
+                html: '<b style="font-size:15px;">' + message + '</b>' +
+                      '<br><small style="color:#6B7280;">🤖 Terverifikasi dengan Face ID</small>',
+                confirmButtonColor: isIn ? '#10B981' : '#2563EB',
+                confirmButtonText: 'OK',
+                timer: 4000,
+                timerProgressBar: true
+            }).then(function() { window.location.href = '/dashboard'; });
+
+        } else {
+            // ── ERROR: determine icon, title, hint by type & message content ──
+            var icon = 'error', title = '', hint = '', color = '#EF4444', btnText = 'Coba Lagi';
+
+            if (type === 'radius') {
+                radius_sound.play();
+                icon  = 'warning';
+                color = '#F59E0B';
+                title = '📍 Di Luar Radius Kantor';
+                hint  = 'Pastikan Anda berada di dalam area kantor atau cabang yang diizinkan. Periksa lokasi Anda di peta.';
+
+            } else if (type === 'in') {
+                icon = 'warning';
+                color = '#F59E0B';
+                if (message.indexOf('Belum waktunya') !== -1) {
+                    title = '⏳ Terlalu Awal!';
+                    hint  = 'Presensi masuk belum dibuka. Silakan tunggu hingga waktu yang ditentukan.';
+                } else if (message.indexOf('sudah habis') !== -1) {
+                    title = '⌛ Waktu Presensi Habis';
+                    hint  = 'Batas waktu absen masuk sudah terlewati. Hubungi atasan atau HR Anda.';
+                    color = '#EF4444';
+                    icon  = 'error';
+                } else {
+                    title = '❌ Gagal Absen Masuk';
+                    hint  = 'Terjadi kesalahan saat menyimpan presensi masuk.';
+                }
+
+            } else if (type === 'out') {
+                icon = 'warning';
+                color = '#F59E0B';
+                if (message.indexOf('Belum waktunya absen pulang') !== -1) {
+                    title = '⏳ Belum Waktunya Pulang';
+                    hint  = 'Jam pulang belum tiba. Harap tetap berada di tempat kerja hingga jam yang ditentukan.';
+                } else if (message.indexOf('sudah melakukan absen pulang') !== -1) {
+                    title = '✅ Sudah Absen Pulang';
+                    hint  = 'Anda sudah melakukan absen pulang sebelumnya hari ini.';
+                    icon  = 'info';
+                    color = '#06B6D4';
+                    btnText = 'OK';
+                } else {
+                    title = '❌ Gagal Absen Pulang';
+                    hint  = 'Terjadi kesalahan saat menyimpan presensi pulang.';
+                }
+
+            } else {
+                // system errors
+                if (message.indexOf('Lokasi tidak terdeteksi') !== -1) {
+                    icon  = 'warning';
+                    color = '#F59E0B';
+                    title = '📍 GPS Belum Aktif';
+                    hint  = 'Aktifkan GPS / lokasi di perangkat dan browser Anda, lalu coba lagi.';
+                } else if (message.indexOf('Foto tidak terdeteksi') !== -1) {
+                    title = '📷 Kamera Tidak Aktif';
+                    hint  = 'Izinkan akses kamera di pengaturan browser, lalu muat ulang halaman.';
+                } else if (message.indexOf('wajah tidak lengkap') !== -1 || message.indexOf('Wajah Tidak Cocok') !== -1 || message.indexOf('Verifikasi wajah gagal') !== -1) {
+                    title = '😶 Verifikasi Wajah Gagal';
+                    hint  = 'Pastikan pencahayaan cukup dan wajah Anda terlihat jelas di dalam bingkai oval.';
+                } else if (message.indexOf('Face Verification diwajibkan') !== -1) {
+                    title = '🔒 Verifikasi Wajah Diperlukan';
+                    hint  = 'Sistem akan memverifikasi wajah Anda secara otomatis. Arahkan wajah ke kamera.';
+                    icon  = 'info';
+                    color = '#2563EB';
+                } else if (message.indexOf('referensi tidak ditemukan') !== -1) {
+                    title = '🆔 Data Wajah Tidak Ditemukan';
+                    hint  = 'Silakan daftarkan wajah Anda terlebih dahulu melalui menu Face ID.';
+                    btnText = 'Ke Face ID';
+                } else if (message.indexOf('Jam kerja tidak ditemukan') !== -1) {
+                    title = '📅 Jadwal Tidak Ditemukan';
+                    hint  = 'Jadwal kerja Anda untuk hari ini belum dikonfigurasi. Hubungi admin.';
+                } else {
+                    title = '⚠️ Terjadi Kesalahan';
+                    hint  = 'Silakan coba lagi atau hubungi admin jika masalah berlanjut.';
+                }
+            }
+
+            Swal.fire({
+                icon: icon,
+                iconColor: color,
+                title: title,
+                html: '<b style="font-size:14px;color:#111827;">' + message + '</b>' +
+                      '<br><small style="color:#6B7280;margin-top:4px;display:block;">' + hint + '</small>',
+                confirmButtonColor: color,
+                confirmButtonText: btnText
+            }).then(function() {
+                if (btnText === 'Ke Face ID') {
+                    window.location.href = '/face/enrollment';
+                } else if (typeof onErrorRetry === 'function') {
+                    onErrorRetry();
+                }
+            });
+        }
+    }
+
     /* ── Auto verification loop ── */
     function startAutoVerification() {
         if (autoScanInterval) clearInterval(autoScanInterval);
@@ -770,24 +905,18 @@
                     cache: false,
                     success: function(respond) {
                         document.getElementById('loading-overlay').classList.remove('show');
-                        var status = respond.split('|');
-                        if (status[0] === 'success') {
-                            (status[2] === 'in' ? notifikasi_in : notifikasi_out).play();
-                            Swal.fire({
-                                icon: 'success', title: 'Berhasil!',
-                                html: '<strong>' + status[1] + '</strong><br><small>✅ Terverifikasi Otomatis</small>',
-                                confirmButtonColor: '#2563EB', timer: 3000, showConfirmButton: false
-                            }).then(() => window.location.href = '/dashboard');
-                        } else {
-                            if (status[2] === 'radius') radius_sound.play();
-                            Swal.fire({ icon:'error', title:'Gagal!', text: status[1], confirmButtonColor:'#2563EB' })
-                               .then(() => { isProcessing = false; setAutoScanUI('scanning'); startAutoVerification(); });
-                        }
+                        showNotification(respond, function() {
+                            isProcessing = false;
+                            setAutoScanUI('scanning');
+                            startAutoVerification();
+                        });
                     },
                     error: function() {
                         document.getElementById('loading-overlay').classList.remove('show');
-                        Swal.fire({ icon:'error', title:'Kesalahan', text:'Gagal mengirim data. Coba lagi.', confirmButtonColor:'#2563EB' })
-                           .then(() => { isProcessing = false; setAutoScanUI('scanning'); startAutoVerification(); });
+                        isProcessing = false;
+                        setAutoScanUI('scanning');
+                        Swal.fire({ icon:'error', title:'⚡ Koneksi Bermasalah', html:'<b>Gagal mengirim data ke server.</b><br><small style="color:#6B7280;">Periksa koneksi internet Anda dan coba lagi.</small>', confirmButtonColor:'#EF4444' })
+                           .then(function() { startAutoVerification(); });
                     }
                 });
             });
@@ -809,19 +938,11 @@
                 cache: false,
                 success: function(respond) {
                     document.getElementById('loading-overlay').classList.remove('show');
-                    var status = respond.split('|');
-                    if (status[0] === 'success') {
-                        (status[2] === 'in' ? notifikasi_in : notifikasi_out).play();
-                        Swal.fire({ icon:'success', title:'Berhasil!', text: status[1], confirmButtonColor:'#2563EB', timer:3000 })
-                           .then(() => window.location.href = '/dashboard');
-                    } else {
-                        if (status[2] === 'radius') radius_sound.play();
-                        Swal.fire({ icon:'error', title:'Gagal!', text: status[1], confirmButtonColor:'#2563EB' });
-                    }
+                    showNotification(respond, null);
                 },
                 error: function() {
                     document.getElementById('loading-overlay').classList.remove('show');
-                    Swal.fire({ icon:'error', title:'Kesalahan', text:'Gagal mengirim data presensi.', confirmButtonColor:'#2563EB' });
+                    Swal.fire({ icon:'error', title:'⚡ Koneksi Bermasalah', html:'<b>Gagal mengirim data ke server.</b><br><small style="color:#6B7280;">Periksa koneksi internet Anda.</small>', confirmButtonColor:'#EF4444' });
                 }
             });
         });

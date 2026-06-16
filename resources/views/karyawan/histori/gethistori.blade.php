@@ -1,375 +1,470 @@
 @php
 function selisih($jam_masuk, $jam_keluar)
 {
-[$h, $m, $s] = explode(':', $jam_masuk);
-$dtAwal = mktime($h, $m, $s, '1', '1', '1');
-[$h, $m, $s] = explode(':', $jam_keluar);
-$dtAkhir = mktime($h, $m, $s, '1', '1', '1');
-$dtSelisih = $dtAkhir - $dtAwal;
-$totalmenit = $dtSelisih / 60;
-$jam = explode('.', $totalmenit / 60);
-$sisamenit = $totalmenit / 60 - $jam[0];
-$sisamenit2 = $sisamenit * 60;
-$jml_jam = $jam[0];
-return $jml_jam . ':' . round($sisamenit2);
+    [$h, $m, $s] = explode(':', $jam_masuk);
+    $dtAwal = mktime($h, $m, $s, '1', '1', '1');
+    [$h, $m, $s] = explode(':', $jam_keluar);
+    $dtAkhir = mktime($h, $m, $s, '1', '1', '1');
+    $dtSelisih = $dtAkhir - $dtAwal;
+    $totalmenit = $dtSelisih / 60;
+    $jam = explode('.', $totalmenit / 60);
+    $sisamenit = $totalmenit / 60 - $jam[0];
+    $sisamenit2 = $sisamenit * 60;
+    return $jam[0] . 'j ' . round($sisamenit2) . 'm';
 }
 @endphp
 
 <style>
-    .history-empty {
-        text-align: center;
-        padding: 60px 20px;
-        color: #64748b;
-    }
-
-    .history-empty ion-icon {
-        font-size: 80px;
-        color: #cbd5e1;
-        margin-bottom: 16px;
-    }
-
-    .history-empty h3 {
-        font-size: 16px;
-        font-weight: 600;
-        color: #1e293b;
-        margin-bottom: 8px;
-    }
-
-    .history-empty p {
-        font-size: 14px;
-        margin: 0;
-    }
-
-    .history-item {
-        background: white;
+    /* ── HISTORY ITEM CARD ── */
+    .h-card {
+        background: #fff;
         border-radius: 16px;
-        padding: 16px;
-        margin-bottom: 12px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-        border: 1px solid rgba(0, 0, 0, 0.04);
-        border-left: 4px solid var(--status-color);
+        border: 1px solid #F1F5F9;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        overflow: hidden;
+        margin-bottom: 10px;
+        transition: box-shadow 0.2s;
     }
 
-    .history-item.status-hadir {
-        --status-color: #10b981;
+    .h-card:active { box-shadow: 0 3px 10px rgba(0,0,0,0.08); }
+
+    /* Accent stripe based on status */
+    .h-card .h-stripe {
+        height: 3px;
+        width: 100%;
     }
 
-    .history-item.status-izin {
-        --status-color: #f59e0b;
-    }
+    .h-card.s-hadir    .h-stripe { background: #10B981; }
+    .h-card.s-izin     .h-stripe { background: #F59E0B; }
+    .h-card.s-sakit    .h-stripe { background: #06B6D4; }
+    .h-card.s-cuti     .h-stripe { background: #8B5CF6; }
+    .h-card.s-alpa     .h-stripe { background: #9CA3AF; }
 
-    .history-item.status-sakit {
-        --status-color: #06b6d4;
-    }
-
-    .history-item.status-cuti {
-        --status-color: #8b5cf6;
-    }
-
-    .history-header {
+    /* ── Header row ── */
+    .h-head {
         display: flex;
+        align-items: center;
         justify-content: space-between;
-        align-items: center;
-        margin-bottom: 12px;
-        padding-bottom: 12px;
-        border-bottom: 1px solid #f1f5f9;
+        padding: 12px 14px 10px;
     }
 
-    .history-date {
-        font-size: 14px;
+    .h-date {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 13px;
         font-weight: 700;
-        color: #1e293b;
-        display: flex;
-        align-items: center;
-        gap: 6px;
+        color: #111827;
     }
 
-    .history-date ion-icon {
-        font-size: 18px;
-        color: #0053C5;
-    }
-
-    .history-status {
-        padding: 6px 12px;
+    .h-date-icon {
+        width: 30px;
+        height: 30px;
         border-radius: 8px;
-        font-size: 11px;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
-
-    .history-status.hadir {
-        background: rgba(16, 185, 129, 0.1);
-        color: #10b981;
-    }
-
-    .history-status.izin {
-        background: rgba(245, 158, 11, 0.1);
-        color: #f59e0b;
-    }
-
-    .history-status.sakit {
-        background: rgba(6, 182, 212, 0.1);
-        color: #06b6d4;
-    }
-
-    .history-status.cuti {
-        background: rgba(139, 92, 246, 0.1);
-        color: #8b5cf6;
-    }
-
-    .history-body {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-    }
-
-    .history-col {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .history-time {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .history-time-icon {
-        width: 36px;
-        height: 36px;
-        border-radius: 10px;
+        background: #EFF6FF;
         display: flex;
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
     }
 
-    .history-time-icon.in {
-        background: rgba(16, 185, 129, 0.1);
-    }
+    .h-date-icon ion-icon { font-size: 16px; color: #2563EB; }
 
-    .history-time-icon.out {
-        background: rgba(239, 68, 68, 0.1);
-    }
-
-    .history-time-icon ion-icon {
-        font-size: 18px;
-    }
-
-    .history-time-icon.in ion-icon {
-        color: #10b981;
-    }
-
-    .history-time-icon.out ion-icon {
-        color: #ef4444;
-    }
-
-    .history-time-info {
-        flex: 1;
-    }
-
-    .history-time-label {
+    .h-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        border-radius: 50px;
         font-size: 11px;
-        color: #64748b;
-        font-weight: 600;
-    }
-
-    .history-time-value {
-        font-size: 13px;
         font-weight: 700;
-        color: #1e293b;
+        flex-shrink: 0;
     }
 
-    .history-photo {
+    .h-badge ion-icon { font-size: 12px; }
+
+    .h-badge.hadir  { background: #ECFDF5; color: #10B981; }
+    .h-badge.izin   { background: #FFFBEB; color: #D97706; }
+    .h-badge.sakit  { background: #ECFEFF; color: #0891B2; }
+    .h-badge.cuti   { background: #F5F3FF; color: #7C3AED; }
+    .h-badge.alpa   { background: #F9FAFB; color: #6B7280; }
+
+    /* Divider */
+    .h-div {
+        height: 1px;
+        background: #F8FAFC;
+        margin: 0 14px;
+    }
+
+    /* ── Time row ── */
+    .h-times {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0;
+    }
+
+    .h-time-col {
+        padding: 10px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .h-time-col + .h-time-col {
+        border-left: 1px solid #F1F5F9;
+    }
+
+    .h-time-entry {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .h-time-dot {
+        width: 30px;
+        height: 30px;
+        border-radius: 9px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .h-time-dot.in  { background: #ECFDF5; }
+    .h-time-dot.out { background: #FEF2F2; }
+    .h-time-dot ion-icon { font-size: 16px; }
+    .h-time-dot.in  ion-icon { color: #10B981; }
+    .h-time-dot.out ion-icon { color: #EF4444; }
+
+    .h-time-lbl  { font-size: 10px; font-weight: 600; color: #9CA3AF; line-height: 1; }
+    .h-time-val  { font-size: 14px; font-weight: 800; color: #111827; line-height: 1; margin-top: 2px; }
+    .h-time-val.muted { color: #9CA3AF; font-weight: 600; font-size: 13px; }
+
+    /* ── Photo strip ── */
+    .h-photos {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0;
+    }
+
+    .h-photo-wrap {
+        padding: 0 14px 12px;
+        cursor: pointer;
+    }
+
+    .h-photo-wrap + .h-photo-wrap {
+        border-left: 1px solid #F1F5F9;
+    }
+
+    .h-photo {
+        width: 100%;
+        aspect-ratio: 4/3;
+        object-fit: cover;
+        border-radius: 10px;
+        border: 1.5px solid #F1F5F9;
+        transition: transform 0.2s, box-shadow 0.2s;
+        display: block;
+    }
+
+    .h-photo:active { transform: scale(0.98); box-shadow: 0 4px 12px rgba(0,0,0,0.10); }
+
+    .h-photo-empty {
         width: 100%;
         aspect-ratio: 4/3;
         border-radius: 10px;
-        object-fit: cover;
-        border: 2px solid #f1f5f9;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-
-    .history-photo:hover {
-        transform: scale(1.02);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-
-    .history-footer {
-        margin-top: 12px;
-        padding-top: 12px;
-        border-top: 1px solid #f1f5f9;
+        background: #F8FAFC;
+        border: 1.5px dashed #CBD5E1;
         display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .h-photo-empty ion-icon { font-size: 28px; color: #CBD5E1; }
+
+    /* ── Footer ── */
+    .h-foot {
+        display: flex;
+        align-items: center;
         justify-content: space-between;
+        padding: 10px 14px 12px;
+    }
+
+    .h-keterangan {
+        display: inline-flex;
         align-items: center;
-    }
-
-    .history-keterangan {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 12px;
-        padding: 6px 10px;
+        gap: 5px;
+        padding: 5px 10px;
         border-radius: 8px;
+        font-size: 11px;
+        font-weight: 700;
     }
 
-    .history-keterangan.telat {
-        background: rgba(239, 68, 68, 0.1);
-        color: #ef4444;
-    }
+    .h-keterangan ion-icon { font-size: 13px; }
 
-    .history-keterangan.tepat {
-        background: rgba(16, 185, 129, 0.1);
-        color: #10b981;
-    }
+    .h-keterangan.telat { background: #FEF2F2; color: #EF4444; }
+    .h-keterangan.tepat { background: #ECFDF5; color: #10B981; }
 
-    .history-keterangan ion-icon {
-        font-size: 14px;
-    }
-
-    .btn-map-small {
-        padding: 8px 12px;
-        background: linear-gradient(135deg, #0053C5 0%, #003d94 100%);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-size: 12px;
+    .h-duration {
+        font-size: 11px;
         font-weight: 600;
+        color: #9CA3AF;
         display: flex;
         align-items: center;
         gap: 4px;
+    }
+
+    .h-duration ion-icon { font-size: 13px; color: #2563EB; }
+
+    .btn-map {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 11px;
+        background: #EFF6FF;
+        color: #2563EB;
+        border: none;
+        border-radius: 8px;
+        font-family: 'Inter', -apple-system, sans-serif;
+        font-size: 11px;
+        font-weight: 700;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: background 0.2s;
+        -webkit-tap-highlight-color: transparent;
     }
 
-    .btn-map-small:active {
-        transform: scale(0.95);
+    .btn-map ion-icon { font-size: 14px; }
+    .btn-map:active { background: #BFDBFE; }
+
+    /* ── Non-hadir card body ── */
+    .h-nonhadir-body {
+        padding: 10px 14px 14px;
     }
 
-    .btn-map-small ion-icon {
-        font-size: 16px;
+    .h-nonhadir-info {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        background: #F8FAFC;
+        border: 1px solid #F1F5F9;
     }
 
-    @media (max-width: 375px) {
-        .history-body {
-            grid-template-columns: 1fr;
-        }
+    .h-nonhadir-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+    .h-nonhadir-icon.izin  { color: #D97706; }
+    .h-nonhadir-icon.sakit { color: #0891B2; }
+    .h-nonhadir-icon.cuti  { color: #7C3AED; }
+
+    .h-nonhadir-text {
+        font-size: 12px;
+        line-height: 1.6;
+        color: #4B5563;
+        font-weight: 500;
+    }
+
+    /* ── Empty state ── */
+    .h-empty {
+        text-align: center;
+        padding: 52px 24px;
+        background: #fff;
+        border-radius: 16px;
+        border: 1px solid #F1F5F9;
+    }
+
+    .h-empty ion-icon {
+        font-size: 60px;
+        color: #CBD5E1;
+        margin-bottom: 12px;
+        display: block;
+    }
+
+    .h-empty h3 {
+        font-size: 15px;
+        font-weight: 700;
+        color: #374151;
+        margin-bottom: 6px;
+    }
+
+    .h-empty p {
+        font-size: 13px;
+        color: #9CA3AF;
+        margin: 0;
+    }
+
+    @media (max-width: 360px) {
+        .h-times, .h-photos { grid-template-columns: 1fr; }
+        .h-time-col + .h-time-col { border-left: none; border-top: 1px solid #F1F5F9; }
+        .h-photo-wrap + .h-photo-wrap { border-left: none; }
     }
 </style>
 
 @if($histori->isEmpty())
-<div class="history-empty">
+
+<div class="h-empty">
     <ion-icon name="calendar-outline"></ion-icon>
-    <h3>Belum Ada Data Presensi</h3>
-    <p>Tidak ada riwayat presensi pada periode yang dipilih</p>
+    <h3>Tidak Ada Data</h3>
+    <p>Belum ada riwayat presensi<br>pada periode yang dipilih</p>
 </div>
+
 @else
 @foreach($histori as $d)
 @php
-// Check foto exists
-$foto_in_path = 'uploads/absensi/' . $d->foto_in;
-$foto_in_exists = !empty($d->foto_in) && Storage::disk('public')->exists($foto_in_path);
+    $foto_in_path   = 'uploads/absensi/' . $d->foto_in;
+    $foto_in_exists = !empty($d->foto_in) && Storage::disk('public')->exists($foto_in_path);
 
-$foto_out_path = 'uploads/absensi/' . $d->foto_out;
-$foto_out_exists = !empty($d->foto_out) && Storage::disk('public')->exists($foto_out_path);
+    $foto_out_path   = 'uploads/absensi/' . $d->foto_out;
+    $foto_out_exists = !empty($d->foto_out) && Storage::disk('public')->exists($foto_out_path);
 
-$statusClass = '';
-$statusText = '';
-$statusIcon = '';
-
-if ($d->status == 'h') {
-$statusClass = 'hadir';
-$statusText = 'Hadir';
-$statusIcon = 'checkmark-circle';
-} elseif ($d->status == 'i') {
-$statusClass = 'izin';
-$statusText = 'Izin';
-$statusIcon = 'document-text';
-} elseif ($d->status == 's') {
-$statusClass = 'sakit';
-$statusText = 'Sakit';
-$statusIcon = 'medkit';
-} elseif ($d->status == 'c') {
-$statusClass = 'cuti';
-$statusText = 'Cuti';
-$statusIcon = 'calendar';
-}
+    switch($d->status) {
+        case 'h': $sClass = 'hadir'; $sText = 'Hadir'; $sIcon = 'checkmark-circle'; break;
+        case 'i': $sClass = 'izin';  $sText = 'Izin';  $sIcon = 'document-text';   break;
+        case 's': $sClass = 'sakit'; $sText = 'Sakit'; $sIcon = 'medkit';          break;
+        case 'c': $sClass = 'cuti';  $sText = 'Cuti';  $sIcon = 'leaf';            break;
+        default:  $sClass = 'alpa';  $sText = 'Alpa';  $sIcon = 'close-circle';    break;
+    }
 @endphp
 
-<div class="history-item status-{{ $statusClass }}">
-    <!-- Header -->
-    <div class="history-header">
-        <div class="history-date">
-            <ion-icon name="calendar-outline"></ion-icon>
+<div class="h-card s-{{ $sClass }}">
+    {{-- Stripe --}}
+    <div class="h-stripe"></div>
+
+    {{-- Header --}}
+    <div class="h-head">
+        <div class="h-date">
+            <div class="h-date-icon">
+                <ion-icon name="calendar-outline"></ion-icon>
+            </div>
             {{ \Carbon\Carbon::parse($d->tgl_presensi)->isoFormat('dddd, D MMM Y') }}
         </div>
-        <div class="history-status {{ $statusClass }}">
-            <ion-icon name="{{ $statusIcon }}"></ion-icon>
-            {{ $statusText }}
-        </div>
+        <span class="h-badge {{ $sClass }}">
+            <ion-icon name="{{ $sIcon }}"></ion-icon>
+            {{ $sText }}
+        </span>
     </div>
 
     @if($d->status == 'h')
-    <!-- Body untuk status hadir -->
-    <div class="history-body">
-        <!-- Jam Masuk -->
-        <div class="history-col">
-            <div class="history-time">
-                <div class="history-time-icon in">
-                    <ion-icon name="log-in"></ion-icon>
+    {{-- ── HADIR ── --}}
+    <div class="h-div"></div>
+
+    {{-- Times --}}
+    <div class="h-times">
+        <div class="h-time-col">
+            <div class="h-time-entry">
+                <div class="h-time-dot in">
+                    <ion-icon name="log-in-outline"></ion-icon>
                 </div>
-                <div class="history-time-info">
-                    <div class="history-time-label">Jam Masuk</div>
-                    <div class="history-time-value">{{ $d->jam_in }}</div>
+                <div>
+                    <div class="h-time-lbl">Jam Masuk</div>
+                    <div class="h-time-val">{{ $d->jam_in }}</div>
                 </div>
             </div>
+        </div>
+        <div class="h-time-col">
+            <div class="h-time-entry">
+                <div class="h-time-dot out">
+                    <ion-icon name="log-out-outline"></ion-icon>
+                </div>
+                <div>
+                    <div class="h-time-lbl">Jam Pulang</div>
+                    @if($d->jam_out)
+                        <div class="h-time-val">{{ $d->jam_out }}</div>
+                    @else
+                        <div class="h-time-val muted">—</div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Photos --}}
+    <div class="h-div"></div>
+    <div class="h-photos">
+        {{-- Foto Masuk --}}
+        <div class="h-photo-wrap">
             @if($foto_in_exists)
-            <img src="{{ Storage::url($foto_in_path) }}" class="history-photo" alt="Foto Masuk"
-                onclick="previewImage('{{ Storage::url($foto_in_path) }}', 'Foto Masuk')"
-                onerror="this.src='{{ asset('assets/img/sample/avatar/noprofile.svg') }}'">
+                <img src="{{ Storage::url($foto_in_path) }}" class="h-photo" alt="Foto Masuk"
+                     onclick="previewImage('{{ Storage::url($foto_in_path) }}', 'Foto Masuk')"
+                     onerror="this.src='{{ asset('assets/img/sample/avatar/noprofile.svg') }}'">
             @else
-            <img src="{{ asset('assets/img/sample/avatar/noprofile.png') }}" class="history-photo" alt="No Photo">
+                <div class="h-photo-empty">
+                    <ion-icon name="image-outline"></ion-icon>
+                </div>
             @endif
         </div>
 
-        <!-- Jam Keluar -->
-        <div class="history-col">
-            <div class="history-time">
-                <div class="history-time-icon out">
-                    <ion-icon name="log-out"></ion-icon>
-                </div>
-                <div class="history-time-info">
-                    <div class="history-time-label">Jam Pulang</div>
-                    <div class="history-time-value">
-                        {{ $d->jam_out ?? '-' }}
-                    </div>
-                </div>
-            </div>
+        {{-- Foto Pulang --}}
+        <div class="h-photo-wrap">
             @if(!empty($d->jam_out) && $foto_out_exists)
-            <img src="{{ Storage::url($foto_out_path) }}" class="history-photo" alt="Foto Pulang"
-                onclick="previewImage('{{ Storage::url($foto_out_path) }}', 'Foto Pulang')"
-                onerror="this.src='{{ asset('assets/img/sample/avatar/noprofile.svg') }}'">
+                <img src="{{ Storage::url($foto_out_path) }}" class="h-photo" alt="Foto Pulang"
+                     onclick="previewImage('{{ Storage::url($foto_out_path) }}', 'Foto Pulang')"
+                     onerror="this.src='{{ asset('assets/img/sample/avatar/noprofile.svg') }}'">
             @else
-            <div style="width: 100%; aspect-ratio: 4/3; border-radius: 10px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; border: 2px dashed #cbd5e1;">
-                <ion-icon name="time-outline" style="font-size: 32px; color: #94a3b8;"></ion-icon>
-            </div>
+                <div class="h-photo-empty">
+                    <ion-icon name="time-outline"></ion-icon>
+                </div>
             @endif
         </div>
     </div>
 
-    <!-- Footer tetap sama -->
+    {{-- Footer --}}
+    <div class="h-div"></div>
+    <div class="h-foot">
+        @if($d->keterangan == 'T')
+            <span class="h-keterangan telat">
+                <ion-icon name="alert-circle-outline"></ion-icon>
+                Terlambat
+            </span>
+        @else
+            <span class="h-keterangan tepat">
+                <ion-icon name="checkmark-circle-outline"></ion-icon>
+                Tepat Waktu
+            </span>
+        @endif
+
+        @if($d->jam_out)
+            <span class="h-duration">
+                <ion-icon name="time-outline"></ion-icon>
+                {{ selisih($d->jam_in, $d->jam_out) }}
+            </span>
+        @endif
+
+        <button type="button" class="btn-map tampilkanpeta" data-id="{{ $d->id }}">
+            <ion-icon name="location-outline"></ion-icon>
+            Lokasi
+        </button>
+    </div>
+
     @else
-    <!-- Body untuk izin/sakit/cuti tetap sama -->
+    {{-- ── NON-HADIR (Izin / Sakit / Cuti / Alpa) ── --}}
+    <div class="h-div"></div>
+    <div class="h-nonhadir-body">
+        <div class="h-nonhadir-info">
+            <ion-icon name="{{ $sIcon }}" class="h-nonhadir-icon {{ $sClass }}"></ion-icon>
+            <div class="h-nonhadir-text">
+                @if($d->status == 'i')
+                    Karyawan mengambil izin pada tanggal ini.
+                    @if(!empty($d->keterangan)) <br><strong>Ket:</strong> {{ $d->keterangan }} @endif
+                @elseif($d->status == 's')
+                    Karyawan tidak masuk karena sakit.
+                    @if(!empty($d->keterangan)) <br><strong>Ket:</strong> {{ $d->keterangan }} @endif
+                @elseif($d->status == 'c')
+                    Karyawan sedang dalam periode cuti.
+                    @if(!empty($d->keterangan)) <br><strong>Ket:</strong> {{ $d->keterangan }} @endif
+                @else
+                    Karyawan tidak hadir tanpa keterangan.
+                @endif
+            </div>
+        </div>
+    </div>
     @endif
+
 </div>
+
 @endforeach
 @endif
 
 <script>
-    // Preview image
+    /* ── Preview image ── */
     function previewImage(src, title) {
         Swal.fire({
             title: title,
@@ -377,57 +472,33 @@ $statusIcon = 'calendar';
             imageAlt: title,
             showCloseButton: true,
             showConfirmButton: false,
-            width: '90%',
-            padding: '20px',
-            customClass: {
-                image: 'img-fluid rounded'
-            }
+            width: '92%',
+            padding: '16px',
+            customClass: { image: 'img-fluid rounded' }
         });
     }
 
-    // Tampilkan peta
-    $(function() {
-        $(".tampilkanpeta").click(function(e) {
+    /* ── Tampilkan peta ── */
+    $(function () {
+        $('.tampilkanpeta').click(function (e) {
             e.preventDefault();
-            var id = $(this).data("id");
+            var id = $(this).data('id');
 
-            Swal.fire({
-                title: 'Loading...',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
+            Swal.fire({ title: 'Memuat peta…', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
             $.ajax({
-                type: 'POST',
-                url: '/tampilkanpeta',
-                data: {
-                    _token: "{{ csrf_token() }}",
-                    id: id
-                },
+                type: 'POST', url: '/tampilkanpeta',
+                data: { _token: '{{ csrf_token() }}', id: id },
                 cache: false,
-                success: function(respond) {
+                success: function (respond) {
                     Swal.close();
-
                     Swal.fire({
-                        html: respond,
-                        width: '90%',
-                        showCloseButton: true,
-                        showConfirmButton: false,
-                        padding: '20px',
-                        customClass: {
-                            popup: 'rounded-lg'
-                        }
+                        html: respond, width: '92%',
+                        showCloseButton: true, showConfirmButton: false, padding: '16px'
                     });
                 },
-                error: function() {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error!',
-                        text: 'Gagal memuat peta',
-                        confirmButtonColor: '#0053C5'
-                    });
+                error: function () {
+                    Swal.fire({ icon: 'error', title: 'Gagal', text: 'Tidak dapat memuat peta.', confirmButtonColor: '#2563EB' });
                 }
             });
         });

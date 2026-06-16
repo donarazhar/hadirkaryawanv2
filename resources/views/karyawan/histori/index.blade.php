@@ -3,233 +3,231 @@
 @section('content')
 
 <style>
-    /* ===== MODERN HISTORY PAGE ===== */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
     :root {
-        --primary: #0053C5;
-        --primary-dark: #003d94;
-        --primary-light: #2E7CE6;
-        --success: #10b981;
-        --danger: #ef4444;
-        --warning: #f59e0b;
-        --info: #06b6d4;
-        --bg-main: #f8fafc;
-        --bg-card: #ffffff;
-        --text-primary: #0f172a;
-        --text-secondary: #64748b;
+        --primary:       #2563EB;
+        --primary-soft:  #EFF6FF;
+        --primary-mid:   #BFDBFE;
+        --success:       #10B981;
+        --success-soft:  #ECFDF5;
+        --danger:        #EF4444;
+        --danger-soft:   #FEF2F2;
+        --warning:       #F59E0B;
+        --warning-soft:  #FFFBEB;
+        --info:          #06B6D4;
+        --info-soft:     #ECFEFF;
+        --purple:        #8B5CF6;
+        --purple-soft:   #F5F3FF;
+        --text-900:      #111827;
+        --text-600:      #4B5563;
+        --text-400:      #9CA3AF;
+        --border:        #F1F5F9;
+        --border-med:    #E2E8F0;
+        --surface:       #FFFFFF;
+        --bg:            #F8FAFC;
+        --radius-sm:     10px;
+        --radius-md:     14px;
+        --radius-lg:     18px;
+        --shadow-sm:     0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+        --shadow-md:     0 4px 6px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.04);
     }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-        background: var(--bg-main);
+        font-family: 'Inter', -apple-system, sans-serif;
+        background: var(--bg);
+        color: var(--text-900);
+        -webkit-font-smoothing: antialiased;
     }
 
-    /* ===== PAGE HEADER ===== */
-    .page-header {
-        background: white;
-        padding: 24px 20px 70px 20px;
-        position: relative;
-        overflow: hidden;
-        margin: 0;
-        border-bottom: 1px solid rgba(0, 83, 197, 0.08);
-    }
-
-    .header-content {
-        position: relative;
-        z-index: 2;
+    /* ── PAGE HEADER ── */
+    .pg-header {
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        padding: 16px 20px;
         display: flex;
         align-items: center;
-        gap: 16px;
+        justify-content: space-between;
+        position: sticky;
+        top: 0;
+        z-index: 50;
+    }
+
+    .pg-header-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
     }
 
     .btn-back {
-        width: 40px;
-        height: 40px;
-        background: #f1f5f9;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
+        width: 36px;
+        height: 36px;
+        background: var(--bg);
+        border: 1px solid var(--border-med);
+        border-radius: var(--radius-sm);
         display: flex;
         align-items: center;
         justify-content: center;
         text-decoration: none;
-        transition: all 0.3s ease;
+        flex-shrink: 0;
+        transition: background 0.2s;
+        -webkit-tap-highlight-color: transparent;
     }
 
-    .btn-back ion-icon {
-        font-size: 24px;
-        color: var(--text-secondary);
-    }
+    .btn-back:active { background: var(--border-med); }
+    .btn-back ion-icon { font-size: 20px; color: var(--text-600); }
 
-    .btn-back:active, .btn-back:hover {
-        background: #e2e8f0;
-        color: var(--primary);
-    }
-
-    .btn-back:hover ion-icon {
-        color: var(--primary);
-    }
-
-    .header-title {
-        flex: 1;
-    }
-
-    .header-title h1 {
-        font-size: 22px;
+    .pg-title {
+        font-size: 17px;
         font-weight: 700;
-        color: var(--text-primary);
-        margin: 0 0 4px 0;
+        color: var(--text-900);
+        line-height: 1.2;
     }
 
-    .header-title p {
-        font-size: 12px;
-        font-weight: 600;
+    .pg-sub {
+        font-size: 11px;
+        font-weight: 500;
         color: var(--primary);
-        margin: 0;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+        display: block;
+        margin-top: 1px;
     }
 
-    /* ===== FILTER CARD ===== */
-    .filter-section {
-        padding: 0 20px;
-        margin-top: -55px;
-        margin-bottom: 20px;
-        position: relative;
-        z-index: 10;
-    }
-
-    .filter-card {
-        background: var(--bg-card);
-        border-radius: 20px;
-        padding: 20px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-        border: 1px solid rgba(0, 83, 197, 0.05);
-    }
-
-    .filter-title {
-        font-size: 15px;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin-bottom: 16px;
+    .btn-export-top {
         display: flex;
         align-items: center;
+        gap: 5px;
+        padding: 7px 12px;
+        background: var(--primary-soft);
+        color: var(--primary);
+        border: 1px solid var(--primary-mid);
+        border-radius: var(--radius-sm);
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background 0.2s;
+        -webkit-tap-highlight-color: transparent;
+        display: none; /* hidden until data loaded */
+    }
+
+    .btn-export-top.show { display: flex; }
+    .btn-export-top:active { background: var(--primary-mid); }
+    .btn-export-top ion-icon { font-size: 15px; }
+
+    /* ── PAGE BODY ── */
+    .pg-body {
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        padding-bottom: 100px;
+    }
+
+    /* ── CARD BASE ── */
+    .card {
+        background: var(--surface);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow-sm);
+    }
+
+    /* ── SECTION LABEL ── */
+    .sec-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--text-400);
+        text-transform: uppercase;
+        letter-spacing: 0.7px;
+        margin-bottom: 6px;
+        padding: 0 2px;
+    }
+
+    /* ── QUICK DATE CHIPS ── */
+    .quick-chips {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
         gap: 8px;
     }
 
-    .filter-title ion-icon {
-        font-size: 20px;
-        color: var(--primary);
-    }
-
-    .form-group {
-        margin-bottom: 16px;
-    }
-
-    .form-group label {
+    .chip-btn {
+        padding: 10px 12px;
+        background: var(--bg);
+        border: 1px solid var(--border-med);
+        border-radius: var(--radius-sm);
+        font-family: 'Inter', sans-serif;
         font-size: 12px;
         font-weight: 600;
-        color: var(--text-secondary);
-        margin-bottom: 8px;
+        color: var(--text-600);
         display: flex;
         align-items: center;
+        justify-content: center;
         gap: 6px;
+        cursor: pointer;
+        transition: all 0.18s ease;
+        -webkit-tap-highlight-color: transparent;
     }
 
-    .form-group label ion-icon {
-        font-size: 16px;
+    .chip-btn ion-icon { font-size: 15px; color: var(--primary); }
+    .chip-btn:active,
+    .chip-btn.active {
+        background: var(--primary-soft);
+        border-color: var(--primary-mid);
         color: var(--primary);
     }
 
-    .form-control {
-        width: 100%;
-        padding: 14px 16px 14px 44px;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        font-size: 14px;
-        color: var(--text-primary);
-        background: #f8fafc;
-        transition: all 0.3s ease;
+    /* ── DATE INPUT ── */
+    .date-input-wrap {
         position: relative;
+        margin-top: 10px;
     }
 
-    .input-wrapper {
-        position: relative;
-    }
-
-    .input-icon {
+    .date-input-icon {
         position: absolute;
-        left: 14px;
+        left: 13px;
         top: 50%;
         transform: translateY(-50%);
-        font-size: 20px;
+        font-size: 18px;
         color: var(--primary);
-        z-index: 1;
         pointer-events: none;
+        z-index: 1;
     }
 
-    .form-control {
+    .date-input {
         width: 100%;
-        padding: 14px 16px 14px 44px;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        font-size: 14px;
-        color: var(--text-primary);
-        background: white !important;
-        /* Force white background */
-        transition: all 0.3s ease;
-        cursor: pointer;
-        /* Tambahkan cursor pointer */
-    }
-
-    .form-control:focus {
+        padding: 13px 14px 13px 40px;
+        border: 1.5px solid var(--border-med);
+        border-radius: var(--radius-md);
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-900);
+        background: var(--surface);
         outline: none;
+        cursor: pointer;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .date-input:focus {
         border-color: var(--primary);
-        background: white !important;
-        box-shadow: 0 0 0 3px rgba(0, 83, 197, 0.1);
+        box-shadow: 0 0 0 3px rgba(37,99,235,0.10);
     }
 
-    .form-control:hover {
-        border-color: var(--primary-light);
-    }
-
-    /* Flatpickr custom styling */
+    /* Flatpickr custom */
     .flatpickr-calendar {
         border-radius: 16px !important;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15) !important;
-        border: 1px solid #e2e8f0 !important;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.12) !important;
+        border: 1px solid var(--border-med) !important;
+        font-family: 'Inter', sans-serif !important;
         z-index: 9999 !important;
     }
 
-    .flatpickr-day.selected,
-    .flatpickr-day.startRange,
-    .flatpickr-day.endRange,
-    .flatpickr-day.selected.inRange,
-    .flatpickr-day.startRange.inRange,
-    .flatpickr-day.endRange.inRange,
-    .flatpickr-day.selected:focus,
-    .flatpickr-day.startRange:focus,
-    .flatpickr-day.endRange:focus,
-    .flatpickr-day.selected:hover,
-    .flatpickr-day.startRange:hover,
-    .flatpickr-day.endRange:hover,
-    .flatpickr-day.selected.prevMonthDay,
-    .flatpickr-day.startRange.prevMonthDay,
-    .flatpickr-day.endRange.prevMonthDay,
-    .flatpickr-day.selected.nextMonthDay,
-    .flatpickr-day.startRange.nextMonthDay,
-    .flatpickr-day.endRange.nextMonthDay {
-        background: #0053C5 !important;
-        border-color: #0053C5 !important;
-    }
-
-    .flatpickr-day.inRange {
-        background: rgba(0, 83, 197, 0.1) !important;
-        border-color: transparent !important;
-        box-shadow: none !important;
-    }
-
     .flatpickr-months .flatpickr-month {
-        background: var(--primary-gradient) !important;
+        background: var(--primary) !important;
+        border-radius: 14px 14px 0 0 !important;
         color: white !important;
-        border-radius: 12px 12px 0 0 !important;
     }
 
     .flatpickr-current-month .flatpickr-monthDropdown-months {
@@ -237,483 +235,312 @@
         color: white !important;
     }
 
+    .flatpickr-current-month input.cur-year {
+        color: white !important;
+        font-weight: 700 !important;
+    }
+
     .flatpickr-weekday {
         color: var(--primary) !important;
         font-weight: 600 !important;
     }
 
-    .flatpickr-day.today {
-        border-color: var(--primary) !important;
-    }
-
-    /* Selected date display */
-    .selected-dates-display {
-        margin-top: 8px;
-        padding: 10px 14px;
-        background: linear-gradient(135deg, rgba(0, 83, 197, 0.05) 0%, rgba(46, 124, 230, 0.05) 100%);
-        border-radius: 10px;
-        border: 1px solid rgba(0, 83, 197, 0.2);
-        display: none;
-    }
-
-    .selected-dates-display.show {
-        display: block;
-        animation: slideDown 0.3s ease;
-    }
-
-    @keyframes slideDown {
-        from {
-            opacity: 0;
-            transform: translateY(-10px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .selected-dates-display p {
-        margin: 0;
-        font-size: 12px;
-        color: var(--primary);
-        font-weight: 600;
-    }
-
-    .selected-dates-display .dates {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-top: 6px;
-    }
-
-    .selected-dates-display .date-item {
-        flex: 1;
-        padding: 6px 10px;
-        background: white;
-        border-radius: 8px;
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--text-primary);
-        text-align: center;
-    }
-
-    .selected-dates-display .separator {
-        color: var(--primary);
-        font-weight: 700;
-    }
-
-    .form-control:focus {
-        outline: none;
-        border-color: var(--primary);
-        background: white;
-        box-shadow: 0 0 0 3px rgba(0, 83, 197, 0.1);
-    }
-
-    /* Date Range Picker Custom Style */
-    .flatpickr-calendar {
-        border-radius: 16px;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-        border: 1px solid #e2e8f0;
-    }
-
     .flatpickr-day.selected,
-    .flatpickr-day.selected:hover {
-        background: var(--primary-gradient);
-        border-color: var(--primary);
+    .flatpickr-day.startRange,
+    .flatpickr-day.endRange,
+    .flatpickr-day.selected:hover,
+    .flatpickr-day.startRange:hover,
+    .flatpickr-day.endRange:hover {
+        background: var(--primary) !important;
+        border-color: var(--primary) !important;
+        color: white !important;
     }
 
     .flatpickr-day.inRange {
-        background: rgba(0, 83, 197, 0.1);
-        border-color: transparent;
+        background: var(--primary-soft) !important;
+        border-color: transparent !important;
+        box-shadow: none !important;
+        color: var(--primary) !important;
     }
 
-    .flatpickr-months .flatpickr-month {
-        background: var(--primary-gradient);
-        color: white;
-        border-radius: 12px 12px 0 0;
+    .flatpickr-day.today:not(.selected) {
+        border-color: var(--primary) !important;
+        color: var(--primary) !important;
     }
 
-    .flatpickr-current-month .flatpickr-monthDropdown-months {
-        background: transparent;
-        color: white;
-    }
-
-    .flatpickr-weekday {
-        color: var(--primary);
-        font-weight: 600;
-    }
-
-    .quick-dates {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
+    /* Selected range pill */
+    .date-range-pill {
+        display: none;
+        align-items: center;
         gap: 8px;
-        margin-bottom: 16px;
+        padding: 10px 12px;
+        background: var(--primary-soft);
+        border: 1px solid var(--primary-mid);
+        border-radius: var(--radius-sm);
+        margin-top: 8px;
+        animation: fadeIn 0.2s ease;
     }
 
-    .btn-quick {
-        padding: 10px 14px;
-        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-        border: 1px solid #e2e8f0;
-        border-radius: 10px;
+    .date-range-pill.show { display: flex; }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-4px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .date-pill-icon { font-size: 16px; color: var(--primary); flex-shrink: 0; }
+
+    .date-pill-text {
         font-size: 12px;
         font-weight: 600;
-        color: var(--text-primary);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-
-    .btn-quick ion-icon {
-        font-size: 16px;
         color: var(--primary);
+        flex: 1;
     }
 
-    .btn-quick:active {
-        background: var(--primary-gradient);
-        color: white;
-        border-color: var(--primary);
-        transform: scale(0.98);
-    }
-
-    .btn-quick:active ion-icon {
-        color: white;
-    }
-
+    /* ── SEARCH BUTTON ── */
     .btn-search {
         width: 100%;
-        padding: 14px 20px;
-        background: var(--primary-gradient);
+        padding: 14px;
+        background: var(--primary);
         color: white;
         border: none;
-        border-radius: 12px;
-        font-size: 15px;
-        font-weight: 600;
+        border-radius: var(--radius-md);
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        font-weight: 700;
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 8px;
         cursor: pointer;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 12px rgba(0, 83, 197, 0.3);
+        box-shadow: 0 4px 14px rgba(37,99,235,0.28);
+        transition: opacity 0.2s, transform 0.15s;
+        -webkit-tap-highlight-color: transparent;
+        margin-top: 4px;
     }
 
-    .btn-search ion-icon {
-        font-size: 20px;
-    }
+    .btn-search ion-icon { font-size: 18px; }
+    .btn-search:active { opacity: 0.88; transform: scale(0.98); }
+    .btn-search:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
-    .btn-search:active {
-        transform: scale(0.98);
-        box-shadow: 0 2px 8px rgba(0, 83, 197, 0.3);
-    }
-
-    .btn-search:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-    }
-
-    /* ===== STATS SECTION ===== */
-    .stats-section {
-        padding: 0 20px 20px;
-    }
-
-    .stats-card {
-        background: var(--bg-card);
-        border-radius: 16px;
-        padding: 16px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-        border: 1px solid rgba(0, 83, 197, 0.05);
-        margin-bottom: 16px;
-    }
-
-    .stats-title {
-        font-size: 14px;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin-bottom: 12px;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .stats-title ion-icon {
-        font-size: 18px;
-        color: var(--primary);
-    }
-
+    /* ── STATS GRID ── */
     .stats-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 10px;
+        gap: 8px;
+        padding: 14px;
     }
 
-    .stat-item {
-        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-        border-radius: 12px;
-        padding: 12px;
+    .stat-box {
+        border-radius: var(--radius-md);
+        padding: 12px 8px;
         text-align: center;
-        border-left: 3px solid var(--stat-color);
+        border: 1px solid transparent;
     }
 
-    .stat-value {
-        font-size: 20px;
-        font-weight: 700;
-        color: var(--text-primary);
+    .stat-box.hadir    { background: var(--primary-soft);  border-color: var(--primary-mid); }
+    .stat-box.terlambat{ background: var(--danger-soft);   border-color: #FECACA; }
+    .stat-box.izin     { background: var(--warning-soft);  border-color: #FDE68A; }
+    .stat-box.sakit    { background: var(--info-soft);     border-color: #A5F3FC; }
+    .stat-box.cuti     { background: var(--success-soft);  border-color: #A7F3D0; }
+    .stat-box.alpa     { background: #F9FAFB;              border-color: #E5E7EB; }
+
+    .stat-val {
+        font-size: 22px;
+        font-weight: 800;
+        line-height: 1;
         margin-bottom: 4px;
     }
 
-    .stat-label {
+    .stat-box.hadir     .stat-val { color: var(--primary); }
+    .stat-box.terlambat .stat-val { color: var(--danger); }
+    .stat-box.izin      .stat-val { color: var(--warning); }
+    .stat-box.sakit     .stat-val { color: var(--info); }
+    .stat-box.cuti      .stat-val { color: var(--success); }
+    .stat-box.alpa      .stat-val { color: var(--text-600); }
+
+    .stat-lbl {
         font-size: 10px;
-        color: var(--text-secondary);
         font-weight: 600;
+        color: var(--text-400);
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
     }
 
-    .stat-item.hadir {
-        --stat-color: var(--primary);
-    }
-
-    .stat-item.terlambat {
-        --stat-color: var(--danger);
-    }
-
-    .stat-item.izin {
-        --stat-color: var(--warning);
-    }
-
-    .stat-item.sakit {
-        --stat-color: var(--info);
-    }
-
-    .stat-item.cuti {
-        --stat-color: var(--success);
-    }
-
-    .stat-item.alpa {
-        --stat-color: #6c757d;
-    }
-
-    /* ===== HISTORY CONTENT ===== */
-    .history-section {
-        padding: 0 20px 100px;
-    }
-
-    .history-header {
+    /* ── HISTORY LIST ── */
+    .history-list {
         display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    /* ── PERIOD LABEL ── */
+    .period-row {
+        display: flex;
+        align-items: center;
         justify-content: space-between;
-        align-items: center;
-        margin-bottom: 16px;
+        margin-bottom: 2px;
     }
 
-    .history-title {
-        font-size: 16px;
-        font-weight: 700;
-        color: var(--text-primary);
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .history-title ion-icon {
-        font-size: 20px;
-        color: var(--primary);
-    }
-
-    .btn-export {
-        padding: 8px 16px;
-        background: white;
-        color: var(--primary);
-        border: 1px solid var(--primary);
-        border-radius: 10px;
+    .period-text {
         font-size: 12px;
         font-weight: 600;
+        color: var(--text-600);
         display: flex;
         align-items: center;
-        gap: 6px;
-        text-decoration: none;
-        transition: all 0.3s ease;
+        gap: 5px;
     }
 
-    .btn-export ion-icon {
-        font-size: 16px;
-    }
+    .period-text ion-icon { font-size: 15px; color: var(--primary); }
 
-    .btn-export:active {
-        background: var(--primary);
-        color: white;
-        transform: scale(0.98);
-    }
-
-    /* ===== LOADING & EMPTY STATE ===== */
-    .loading-state,
-    .empty-state {
+    /* ── LOADING / EMPTY ── */
+    .state-box {
         text-align: center;
-        padding: 40px 20px;
-        color: var(--text-secondary);
+        padding: 48px 20px;
+        background: var(--surface);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border);
     }
 
-    .loading-state ion-icon,
-    .empty-state ion-icon {
-        font-size: 64px;
-        color: #cbd5e1;
-        margin-bottom: 16px;
-        animation: pulse 2s ease-in-out infinite;
+    .state-box ion-icon {
+        font-size: 56px;
+        color: #CBD5E1;
+        margin-bottom: 12px;
+        display: block;
     }
 
-    .empty-state ion-icon {
-        animation: none;
-    }
-
-    .loading-state p,
-    .empty-state p {
+    .state-box p {
         font-size: 14px;
-        margin: 0;
+        color: var(--text-600);
+        font-weight: 500;
     }
 
-    @keyframes pulse {
-
-        0%,
-        100% {
-            opacity: 1;
-        }
-
-        50% {
-            opacity: 0.5;
-        }
+    .state-box small {
+        font-size: 12px;
+        color: var(--text-400);
+        margin-top: 4px;
+        display: block;
     }
 
-    /* ===== RESPONSIVE ===== */
-    @media (max-width: 375px) {
+    /* ── Animations ── */
+    @keyframes fadeSlide {
+        from { opacity: 0; transform: translateY(8px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
 
-        .filter-section,
-        .stats-section,
-        .history-section {
-            padding-left: 16px;
-            padding-right: 16px;
-        }
+    .pg-body > * {
+        animation: fadeSlide 0.3s ease both;
+    }
+    .pg-body > *:nth-child(1) { animation-delay: 0.04s; }
+    .pg-body > *:nth-child(2) { animation-delay: 0.08s; }
+    .pg-body > *:nth-child(3) { animation-delay: 0.12s; }
+    .pg-body > *:nth-child(4) { animation-delay: 0.16s; }
 
-        .stats-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-
-        .quick-dates {
-            grid-template-columns: 1fr;
-        }
+    /* ── Responsive ── */
+    @media (max-width: 360px) {
+        .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        .quick-chips { grid-template-columns: 1fr 1fr; }
     }
 </style>
 
-<!-- Page Header -->
-<div class="page-header">
-    <div class="header-content">
+{{-- ── PAGE HEADER ── --}}
+<div class="pg-header">
+    <div class="pg-header-left">
         <a href="{{ route('dashboard') }}" class="btn-back">
             <ion-icon name="chevron-back-outline"></ion-icon>
         </a>
-        <div class="header-title">
-            <h1>Histori Presensi</h1>
-            <p>Lihat riwayat kehadiran Anda</p>
+        <div>
+            <div class="pg-title">Histori Presensi</div>
+            <span class="pg-sub">Riwayat kehadiran Anda</span>
         </div>
     </div>
+    <a href="#" class="btn-export-top" id="btn-export">
+        <ion-icon name="download-outline"></ion-icon>
+        Export
+    </a>
 </div>
 
-<!-- Filter Section -->
-<div class="filter-section">
-    <div class="filter-card">
-        <div class="filter-title">
-            <ion-icon name="calendar-outline"></ion-icon>
-            Pilih Rentang Tanggal
-        </div>
+{{-- ── PAGE BODY ── --}}
+<div class="pg-body">
 
-        <!-- Quick Date Buttons -->
-        <div class="quick-dates">
-            <button type="button" class="btn-quick" onclick="setDateRange('week')">
-                <ion-icon name="calendar"></ion-icon>
-                <span>7 Hari Terakhir</span>
-            </button>
-            <button type="button" class="btn-quick" onclick="setDateRange('month')">
-                <ion-icon name="calendar"></ion-icon>
-                <span>30 Hari Terakhir</span>
-            </button>
-            <button type="button" class="btn-quick" onclick="setDateRange('thismonth')">
-                <ion-icon name="calendar"></ion-icon>
-                <span>Bulan Ini</span>
-            </button>
-            <button type="button" class="btn-quick" onclick="setDateRange('lastmonth')">
-                <ion-icon name="calendar"></ion-icon>
-                <span>Bulan Lalu</span>
-            </button>
-        </div>
+    {{-- Filter Card --}}
+    <div>
+        <div class="sec-label">Filter Tanggal</div>
+        <div class="card" style="padding: 14px;">
 
-        <div class="form-group">
-            <label>
-                <ion-icon name="calendar-outline"></ion-icon>
-                Atau Pilih Manual
-            </label>
-            <div class="input-wrapper">
-                <ion-icon name="calendar-outline" class="input-icon"></ion-icon>
-                <input
-                    type="text"
-                    id="daterange"
-                    class="form-control"
-                    placeholder="Klik untuk pilih tanggal...">
+            {{-- Quick chips --}}
+            <div class="quick-chips" style="margin-bottom: 12px;">
+                <button type="button" class="chip-btn" id="chip-week"      onclick="setDateRange('week')">
+                    <ion-icon name="calendar-outline"></ion-icon> 7 Hari
+                </button>
+                <button type="button" class="chip-btn" id="chip-month"     onclick="setDateRange('month')">
+                    <ion-icon name="calendar-outline"></ion-icon> 30 Hari
+                </button>
+                <button type="button" class="chip-btn" id="chip-thismonth" onclick="setDateRange('thismonth')">
+                    <ion-icon name="today-outline"></ion-icon> Bulan Ini
+                </button>
+                <button type="button" class="chip-btn" id="chip-lastmonth" onclick="setDateRange('lastmonth')">
+                    <ion-icon name="chevron-back-circle-outline"></ion-icon> Bulan Lalu
+                </button>
             </div>
 
-            <!-- Display Selected Dates -->
-            <div class="selected-dates-display" id="selected-dates-display">
-                <p>Periode Dipilih:</p>
-                <div class="dates">
-                    <div class="date-item" id="date-from">-</div>
-                    <span class="separator">→</span>
-                    <div class="date-item" id="date-to">-</div>
-                </div>
+            {{-- Date input --}}
+            <div class="date-input-wrap">
+                <ion-icon name="calendar-outline" class="date-input-icon"></ion-icon>
+                <input type="text" id="daterange" class="date-input" placeholder="Pilih rentang tanggal…" readonly>
+            </div>
+
+            {{-- Date range pill --}}
+            <div class="date-range-pill" id="date-range-pill">
+                <ion-icon name="swap-horizontal-outline" class="date-pill-icon"></ion-icon>
+                <div class="date-pill-text" id="date-pill-text">—</div>
+            </div>
+
+            {{-- Search button --}}
+            <button class="btn-search" id="getdata" style="margin-top: 12px;">
+                <ion-icon name="search-outline"></ion-icon>
+                Tampilkan Data
+            </button>
+        </div>
+    </div>
+
+    {{-- Stats Section (hidden until data loaded) --}}
+    <div id="stats-container" style="display:none;">
+        <div class="sec-label">Ringkasan Periode</div>
+        <div class="card" style="margin-top: 6px;">
+            <div class="stats-grid" id="stats-grid">
+                {{-- filled via AJAX --}}
+            </div>
+        </div>
+    </div>
+
+    {{-- History List --}}
+    <div id="history-wrap">
+
+        {{-- Period row (hidden until data loaded) --}}
+        <div class="period-row" id="period-row" style="display:none; margin-bottom: 8px;">
+            <div class="period-text">
+                <ion-icon name="time-outline"></ion-icon>
+                <span id="period-label">Riwayat</span>
             </div>
         </div>
 
-        <button class="btn-search" id="getdata">
-            <ion-icon name="search-outline"></ion-icon>
-            <span>Tampilkan Data</span>
-        </button>
-    </div>
-</div>
-
-<!-- Stats Section -->
-<div class="stats-section" id="stats-container" style="display: none;">
-    <div class="stats-card">
-        <div class="stats-title">
-            <ion-icon name="bar-chart"></ion-icon>
-            Ringkasan Kehadiran
-        </div>
-        <div class="stats-grid" id="stats-grid">
-            <!-- Stats akan dimuat via AJAX -->
-        </div>
-    </div>
-</div>
-
-<!-- History Section -->
-<div class="history-section">
-    <div class="history-header" id="history-header" style="display: none;">
-        <div class="history-title">
-            <ion-icon name="time"></ion-icon>
-            <span id="period-label">Riwayat</span>
-        </div>
-        <a href="#" class="btn-export" id="btn-export">
-            <ion-icon name="download-outline"></ion-icon>
-            Export
-        </a>
-    </div>
-    <div id="showhistori">
-        <div class="empty-state">
+        {{-- Default empty state --}}
+        <div class="state-box" id="default-state">
             <ion-icon name="calendar-outline"></ion-icon>
-            <p>Pilih rentang tanggal untuk melihat histori presensi</p>
+            <p>Pilih rentang tanggal</p>
+            <small>untuk melihat riwayat presensi Anda</small>
         </div>
+
+        {{-- AJAX result --}}
+        <div id="showhistori" class="history-list"></div>
     </div>
+
 </div>
 
 @endsection
 
 @push('myscript')
-<!-- Flatpickr CSS & JS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
@@ -721,316 +548,226 @@
 <script>
     let dateRangePicker;
     let selectedStartDate = null;
-    let selectedEndDate = null;
+    let selectedEndDate   = null;
+    let activeChip = null;
 
-    $(function() {
-        console.log('Initializing date range picker...');
-
-        // Initialize Flatpickr Date Range Picker
-        dateRangePicker = flatpickr("#daterange", {
-            mode: "range",
-            dateFormat: "d M Y",
-            locale: "id",
-            maxDate: "today",
+    $(function () {
+        /* ── Flatpickr init ── */
+        dateRangePicker = flatpickr('#daterange', {
+            mode: 'range',
+            dateFormat: 'd M Y',
+            locale: 'id',
+            maxDate: 'today',
             defaultDate: [
                 new Date(new Date().getFullYear(), new Date().getMonth(), 1),
                 new Date()
             ],
-            onReady: function(selectedDates, dateStr, instance) {
-                console.log('Flatpickr ready');
-                // Set initial dates
-                if (selectedDates.length === 2) {
-                    selectedStartDate = selectedDates[0];
-                    selectedEndDate = selectedDates[1];
-                    updateSelectedDatesDisplay();
+            onReady: function (dates) {
+                if (dates.length === 2) {
+                    selectedStartDate = dates[0];
+                    selectedEndDate   = dates[1];
+                    updatePill();
                 }
             },
-            onChange: function(selectedDates, dateStr, instance) {
-                console.log('Date changed:', selectedDates, dateStr);
-
-                if (selectedDates.length === 2) {
-                    selectedStartDate = selectedDates[0];
-                    selectedEndDate = selectedDates[1];
-
-                    console.log('Both dates selected:', {
-                        start: selectedStartDate,
-                        end: selectedEndDate
-                    });
-
-                    // Update display
-                    updateSelectedDatesDisplay();
-
-                    // Enable button
-                    $("#getdata").prop('disabled', false);
-                } else if (selectedDates.length === 1) {
-                    console.log('First date selected:', selectedDates[0]);
-                    selectedStartDate = selectedDates[0];
-                    selectedEndDate = null;
-
-                    // Update display
-                    updateSelectedDatesDisplay();
+            onChange: function (dates) {
+                if (dates.length === 2) {
+                    selectedStartDate = dates[0];
+                    selectedEndDate   = dates[1];
+                    updatePill();
+                    clearActiveChip();
+                } else if (dates.length === 1) {
+                    selectedStartDate = dates[0];
+                    selectedEndDate   = null;
+                    updatePill();
                 }
             },
-            onClose: function(selectedDates, dateStr, instance) {
-                console.log('Calendar closed with:', selectedDates.length, 'dates');
-
-                // Auto load jika sudah pilih 2 tanggal
-                if (selectedDates.length === 2) {
-                    setTimeout(function() {
-                        loadHistori();
-                    }, 100);
-                }
+            onClose: function (dates) {
+                if (dates.length === 2) setTimeout(loadHistori, 100);
             }
         });
 
-        // Test klik pada input
-        $("#daterange").on('click', function() {
-            console.log('Input clicked!');
-        });
+        /* ── Auto-load bulan ini on ready ── */
+        setTimeout(loadHistori, 400);
 
-        // Auto load data untuk bulan ini
-        setTimeout(function() {
-            loadHistori();
-        }, 500);
-
-        // Event click button search
-        $("#getdata").click(function(e) {
+        /* ── Search button ── */
+        $('#getdata').click(function (e) {
             e.preventDefault();
-            console.log('Search button clicked');
             loadHistori();
         });
     });
 
-    // Function untuk update display tanggal yang dipilih
-    function updateSelectedDatesDisplay() {
-        if (selectedStartDate) {
-            $("#date-from").text(formatDisplayDate(selectedStartDate));
+    /* ── Chip helpers ── */
+    function clearActiveChip() {
+        $('.chip-btn').removeClass('active');
+        activeChip = null;
+    }
 
-            if (selectedEndDate) {
-                $("#date-to").text(formatDisplayDate(selectedEndDate));
-                $("#selected-dates-display").addClass('show');
-            } else {
-                $("#date-to").text('Pilih tanggal akhir...');
-                $("#selected-dates-display").addClass('show');
-            }
+    function setActiveChip(id) {
+        clearActiveChip();
+        $('#' + id).addClass('active');
+        activeChip = id;
+    }
+
+    /* ── Update range pill ── */
+    function updatePill() {
+        var pill = $('#date-range-pill');
+        var txt  = $('#date-pill-text');
+        if (selectedStartDate) {
+            var from = formatDisplay(selectedStartDate);
+            var to   = selectedEndDate ? formatDisplay(selectedEndDate) : '—';
+            txt.text(from + '  →  ' + to);
+            pill.addClass('show');
         } else {
-            $("#selected-dates-display").removeClass('show');
+            pill.removeClass('show');
         }
     }
 
-    // Function set quick date range
+    /* ── Quick date range ── */
     function setDateRange(type) {
-        let startDate, endDate;
-        const today = new Date();
+        var today = new Date();
+        var start, end;
 
         switch (type) {
             case 'week':
-                startDate = new Date(today.getTime() - 6 * 24 * 60 * 60 * 1000);
-                endDate = today;
+                start = new Date(today.getTime() - 6 * 864e5);
+                end   = today;
+                setActiveChip('chip-week');
                 break;
             case 'month':
-                startDate = new Date(today.getTime() - 29 * 24 * 60 * 60 * 1000);
-                endDate = today;
+                start = new Date(today.getTime() - 29 * 864e5);
+                end   = today;
+                setActiveChip('chip-month');
                 break;
             case 'thismonth':
-                startDate = new Date(today.getFullYear(), today.getMonth(), 1);
-                endDate = today;
+                start = new Date(today.getFullYear(), today.getMonth(), 1);
+                end   = today;
+                setActiveChip('chip-thismonth');
                 break;
             case 'lastmonth':
-                startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-                endDate = new Date(today.getFullYear(), today.getMonth(), 0);
+                start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                end   = new Date(today.getFullYear(), today.getMonth(), 0);
+                setActiveChip('chip-lastmonth');
                 break;
         }
 
-        console.log('Quick date selected:', type, startDate, endDate);
-
-        selectedStartDate = startDate;
-        selectedEndDate = endDate;
-
-        dateRangePicker.setDate([startDate, endDate]);
-        updateSelectedDatesDisplay();
-
-        // Delay sedikit agar flatpickr selesai set date
-        setTimeout(function() {
-            loadHistori();
-        }, 100);
+        selectedStartDate = start;
+        selectedEndDate   = end;
+        dateRangePicker.setDate([start, end]);
+        updatePill();
+        setTimeout(loadHistori, 100);
     }
 
-    // Function untuk load histori
+    /* ── Load histori ── */
     function loadHistori() {
-        console.log('Loading histori...');
-        console.log('Selected dates:', selectedStartDate, selectedEndDate);
-
-        // Validasi
         if (!selectedStartDate || !selectedEndDate) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Perhatian',
-                text: 'Silakan pilih rentang tanggal terlebih dahulu (mulai dan akhir)',
-                confirmButtonColor: '#0053C5'
-            });
+            Swal.fire({ icon: 'warning', title: 'Pilih Tanggal', text: 'Pilih rentang tanggal mulai dan akhir terlebih dahulu.', confirmButtonColor: '#2563EB' });
             return;
         }
 
-        const dari = formatDate(selectedStartDate);
-        const sampai = formatDate(selectedEndDate);
-
-        console.log('Formatted dates - Dari:', dari, 'Sampai:', sampai);
-
-        // Cek maksimal 3 bulan
-        const daysDiff = Math.floor((selectedEndDate - selectedStartDate) / (1000 * 60 * 60 * 24));
-        console.log('Days difference:', daysDiff);
-
+        var daysDiff = Math.floor((selectedEndDate - selectedStartDate) / 864e5);
         if (daysDiff > 93) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Rentang Terlalu Lama',
-                text: 'Maksimal rentang tanggal adalah 3 bulan (93 hari)',
-                confirmButtonColor: '#0053C5'
-            });
+            Swal.fire({ icon: 'warning', title: 'Rentang Terlalu Lama', text: 'Maksimal rentang tanggal adalah 3 bulan (93 hari).', confirmButtonColor: '#2563EB' });
             return;
         }
 
-        // Show loading
-        $("#showhistori").html(`
-            <div class="loading-state">
-                <ion-icon name="hourglass-outline"></ion-icon>
-                <p>Memuat data...</p>
+        var dari   = formatDate(selectedStartDate);
+        var sampai = formatDate(selectedEndDate);
+
+        /* Show loading */
+        $('#default-state').hide();
+        $('#showhistori').html('');
+        $('#showhistori').html(`
+            <div class="state-box">
+                <ion-icon name="hourglass-outline" style="animation: spin 1.2s linear infinite;"></ion-icon>
+                <p>Memuat data…</p>
             </div>
         `);
 
-        // Disable button
-        $("#getdata").prop('disabled', true).html(`
-            <ion-icon name="hourglass-outline"></ion-icon>
-            <span>Loading...</span>
-        `);
+        $('#getdata').prop('disabled', true).html('<ion-icon name="hourglass-outline"></ion-icon> Memuat…');
 
-        // Prepare data
-        const postData = {
-            _token: "{{ csrf_token() }}",
-            dari: dari,
-            sampai: sampai
-        };
-
-        console.log('Sending AJAX request with data:', postData);
-
-        // Load histori via AJAX
         $.ajax({
-            type: 'POST',
-            url: '/gethistori',
-            data: postData,
+            type: 'POST', url: '/gethistori',
+            data: { _token: '{{ csrf_token() }}', dari: dari, sampai: sampai },
             cache: false,
-            success: function(respond) {
-                console.log('AJAX Success - Response received');
-                $("#showhistori").html(respond);
+            success: function (respond) {
+                $('#showhistori').html(respond);
 
-                // Format tanggal untuk label
-                const fromDate = formatDisplayDate(selectedStartDate);
-                const toDate = formatDisplayDate(selectedEndDate);
+                /* Period row */
+                $('#period-label').text(formatDisplay(selectedStartDate) + ' – ' + formatDisplay(selectedEndDate));
+                $('#period-row').show();
 
-                $("#period-label").text(fromDate + " - " + toDate);
-                $("#history-header").show();
+                /* Export button */
+                $('#btn-export').attr('href', '/presensi/histori/export-excel?dari=' + dari + '&sampai=' + sampai).addClass('show');
 
-                // Load statistik
+                /* Load stats */
                 loadStatistik(dari, sampai);
-
-                // Update export link
-                $("#btn-export").attr('href', '/presensi/histori/export-excel?dari=' + dari + '&sampai=' + sampai);
             },
-            error: function(xhr, status, error) {
-                console.error('AJAX Error:', {
-                    status: status,
-                    error: error,
-                    response: xhr.responseText
-                });
-
-                $("#showhistori").html(`
-                    <div class="empty-state">
-                        <ion-icon name="alert-circle-outline"></ion-icon>
-                        <p>Gagal memuat data. Silakan coba lagi.</p>
-                        <small style="color: #ef4444; font-size: 11px; margin-top: 8px; display: block;">Error: ${error}</small>
+            error: function () {
+                $('#showhistori').html(`
+                    <div class="state-box">
+                        <ion-icon name="alert-circle-outline" style="color:#EF4444;"></ion-icon>
+                        <p>Gagal memuat data</p>
+                        <small>Periksa koneksi internet dan coba lagi</small>
                     </div>
                 `);
             },
-            complete: function() {
-                console.log('AJAX Complete');
-                // Enable button
-                $("#getdata").prop('disabled', false).html(`
-                    <ion-icon name="search-outline"></ion-icon>
-                    <span>Tampilkan Data</span>
-                `);
+            complete: function () {
+                $('#getdata').prop('disabled', false).html('<ion-icon name="search-outline"></ion-icon> Tampilkan Data');
             }
         });
     }
 
-    // Function untuk format tanggal ke Y-m-d
-    function formatDate(date) {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    }
-
-    // Function untuk format tanggal display
-    function formatDisplayDate(date) {
-        const options = {
-            day: 'numeric',
-            month: 'short',
-            year: 'numeric'
-        };
-        return date.toLocaleDateString('id-ID', options);
-    }
-
-    // Function untuk load statistik
+    /* ── Load statistik ── */
     function loadStatistik(dari, sampai) {
-        console.log('Loading statistik untuk:', dari, 'sampai', sampai);
-
         $.ajax({
-            type: 'GET',
-            url: '/presensi/histori/statistik',
-            data: {
-                dari: dari,
-                sampai: sampai
-            },
-            success: function(response) {
-                console.log('Statistik loaded:', response);
-
-                if (response.success) {
-                    var data = response.data;
-                    var statsHtml = `
-                        <div class="stat-item hadir">
-                            <div class="stat-value">${data.total_hadir}</div>
-                            <div class="stat-label">Hadir</div>
-                        </div>
-                        <div class="stat-item terlambat">
-                            <div class="stat-value">${data.total_terlambat}</div>
-                            <div class="stat-label">Telat</div>
-                        </div>
-                        <div class="stat-item izin">
-                            <div class="stat-value">${data.total_izin}</div>
-                            <div class="stat-label">Izin</div>
-                        </div>
-                        <div class="stat-item sakit">
-                            <div class="stat-value">${data.total_sakit}</div>
-                            <div class="stat-label">Sakit</div>
-                        </div>
-                        <div class="stat-item cuti">
-                            <div class="stat-value">${data.total_cuti}</div>
-                            <div class="stat-label">Cuti</div>
-                        </div>
-                        <div class="stat-item alpa">
-                            <div class="stat-value">${data.total_alpa}</div>
-                            <div class="stat-label">Alpa</div>
-                        </div>
-                    `;
-                    $("#stats-grid").html(statsHtml);
-                    $("#stats-container").show();
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error('Statistik Error:', error);
+            type: 'GET', url: '/presensi/histori/statistik',
+            data: { dari: dari, sampai: sampai },
+            success: function (res) {
+                if (!res.success) return;
+                var d = res.data;
+                $('#stats-grid').html(`
+                    <div class="stat-box hadir">
+                        <div class="stat-val">${d.total_hadir}</div>
+                        <div class="stat-lbl">Hadir</div>
+                    </div>
+                    <div class="stat-box terlambat">
+                        <div class="stat-val">${d.total_terlambat}</div>
+                        <div class="stat-lbl">Telat</div>
+                    </div>
+                    <div class="stat-box izin">
+                        <div class="stat-val">${d.total_izin}</div>
+                        <div class="stat-lbl">Izin</div>
+                    </div>
+                    <div class="stat-box sakit">
+                        <div class="stat-val">${d.total_sakit}</div>
+                        <div class="stat-lbl">Sakit</div>
+                    </div>
+                    <div class="stat-box cuti">
+                        <div class="stat-val">${d.total_cuti}</div>
+                        <div class="stat-lbl">Cuti</div>
+                    </div>
+                    <div class="stat-box alpa">
+                        <div class="stat-val">${d.total_alpa}</div>
+                        <div class="stat-lbl">Alpa</div>
+                    </div>
+                `);
+                $('#stats-container').show();
             }
         });
     }
+
+    /* ── Helpers ── */
+    function formatDate(d) {
+        return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    }
+
+    function formatDisplay(d) {
+        return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+
+    /* Spinner keyframe */
+    const style = document.createElement('style');
+    style.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
+    document.head.appendChild(style);
 </script>
 @endpush

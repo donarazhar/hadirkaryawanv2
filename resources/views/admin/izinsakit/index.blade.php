@@ -413,6 +413,15 @@
                         </select>
                     </div>
                     <div class="fg">
+                        <label>Tipe Pengajuan</label>
+                        <select name="tipe">
+                            <option value="">Semua Tipe</option>
+                            <option value="i" {{ request('tipe') === 'i' ? 'selected' : '' }}>Izin</option>
+                            <option value="s" {{ request('tipe') === 's' ? 'selected' : '' }}>Sakit</option>
+                            <option value="c" {{ request('tipe') === 'c' ? 'selected' : '' }}>Cuti</option>
+                        </select>
+                    </div>
+                    <div class="fg">
                         <label>Cari Karyawan</label>
                         <input type="text" name="nik_nama" placeholder="NIK atau Nama..." value="{{ request('nik_nama') }}">
                     </div>
@@ -488,11 +497,10 @@
                                     </div>
                                 </div>
                             @else
-                                {{-- Cuti: perlu approval berjenjang --}}
+                                {{-- Cuti: hanya perlu persetujuan Pimpinan --}}
                                 <div class="appr-group">
-                                    {{-- Pimpinan --}}
                                     <div class="appr-item">
-                                        <div class="appr-label">Pimpinan</div>
+                                        <div class="appr-label">Pimpinan Dept</div>
                                         @if($item->status_approved_atasan == '0')
                                             <div class="appr-stat st-wait">Menunggu</div>
                                         @elseif($item->status_approved_atasan == '1')
@@ -504,20 +512,11 @@
                                             <div class="appr-note">"{{ $item->catatan_atasan }}"</div>
                                         @endif
                                     </div>
-                                    {{-- HRD / Admin --}}
-                                    <div class="appr-item mt-1">
-                                        <div class="appr-label">HRD</div>
-                                        @if($item->status_approved == '0')
-                                            <div class="appr-stat st-wait">Menunggu</div>
-                                        @elseif($item->status_approved == '1')
-                                            <div class="appr-stat st-acc">Disetujui</div>
-                                        @elseif($item->status_approved == '2')
-                                            <div class="appr-stat st-rej">Ditolak</div>
-                                        @endif
-                                        @if($item->catatan_admin)
-                                            <div class="appr-note">"{{ $item->catatan_admin }}"</div>
-                                        @endif
-                                    </div>
+                                    @if($item->status_approved == '1')
+                                        <div class="appr-note" style="margin-top:4px; color:#059669; font-weight:600;">
+                                            <i class="mdi mdi-printer" style="font-size:11px;"></i> Surat cuti siap dicetak karyawan
+                                        </div>
+                                    @endif
                                 </div>
                             @endif
                         </td>
@@ -527,37 +526,38 @@
                             @endphp
 
                             @if(in_array($item->status, ['i', 's']))
-                                {{-- Izin & Sakit: tidak perlu action, tampilkan label saja --}}
+                                {{-- Izin & Sakit: tidak perlu action --}}
                                 <span class="appr-stat st-acc" style="font-size:11px; padding:4px 10px;">
                                     <i class="mdi mdi-check"></i> Auto
                                 </span>
                             @elseif($userRole == 'pimpinan')
-                                {{-- Pimpinan: approval untuk Cuti --}}
+                                {{-- Pimpinan: satu-satunya yang bisa approve/cancel Cuti --}}
                                 @if($item->status_approved_atasan == '0')
                                     <button class="btn-act btn-act-blue" onclick="openApprovalModal('{{ $item->kode_izin }}')">
-                                        <i class="mdi mdi-check-decagram"></i> Action
+                                        <i class="mdi mdi-check-decagram"></i> Setujui
                                     </button>
                                 @else
                                     <form action="{{ route('panel.izinsakit.cancel', $item->kode_izin) }}" method="POST" style="display:inline;">
                                         @csrf
-                                        <button type="submit" class="btn-act btn-act-outline" onclick="return confirm('Yakin batalkan status pengajuan ini?')">
+                                        <button type="submit" class="btn-act btn-act-outline" onclick="return confirm('Yakin batalkan persetujuan cuti ini?')">
                                             <i class="mdi mdi-close"></i> Batal
                                         </button>
                                     </form>
                                 @endif
                             @else
-                                {{-- HRD / Admin: approval untuk Cuti --}}
+                                {{-- Admin/HRD: hanya melihat, tidak bisa approve Cuti --}}
                                 @if($item->status_approved == '0')
-                                    <button class="btn-act btn-act-blue" onclick="openApprovalModal('{{ $item->kode_izin }}')" {{ $item->status_approved_atasan != '1' ? 'disabled' : '' }} title="{{ $item->status_approved_atasan != '1' ? 'Menunggu Approval Pimpinan' : 'Lakukan Action' }}">
-                                        <i class="mdi mdi-check-decagram"></i> Action
-                                    </button>
+                                    <span class="appr-stat st-wait" style="font-size:11px; padding:4px 10px;">
+                                        <i class="mdi mdi-clock-outline"></i> Menunggu
+                                    </span>
+                                @elseif($item->status_approved == '1')
+                                    <span class="appr-stat st-acc" style="font-size:11px; padding:4px 10px;">
+                                        <i class="mdi mdi-check-circle-outline"></i> Disetujui
+                                    </span>
                                 @else
-                                    <form action="{{ route('panel.izinsakit.cancel', $item->kode_izin) }}" method="POST" style="display:inline;">
-                                        @csrf
-                                        <button type="submit" class="btn-act btn-act-outline" onclick="return confirm('Yakin batalkan status pengajuan ini?')">
-                                            <i class="mdi mdi-close"></i> Batal
-                                        </button>
-                                    </form>
+                                    <span class="appr-stat st-rej" style="font-size:11px; padding:4px 10px;">
+                                        <i class="mdi mdi-close-circle-outline"></i> Ditolak
+                                    </span>
                                 @endif
                             @endif
                         </td>

@@ -364,6 +364,46 @@ class IzinKaryawanController extends Controller
     }
 
     /**
+     * Cek apakah ada pengajuan aktif pada rentang tanggal (untuk validasi form AJAX)
+     */
+    public function cekPengajuan(Request $request)
+    {
+        try {
+            $nik = Auth::guard('karyawan')->user()->nik;
+
+            $request->validate([
+                'tgl_izin_dari'   => 'required|date',
+                'tgl_izin_sampai' => 'required|date|after_or_equal:tgl_izin_dari',
+            ]);
+
+            $ada = DB::table('pengajuan_izin')
+                ->where('nik', $nik)
+                ->where(function ($q) use ($request) {
+                    $q->whereBetween('tgl_izin_dari',  [$request->tgl_izin_dari, $request->tgl_izin_sampai])
+                      ->orWhereBetween('tgl_izin_sampai', [$request->tgl_izin_dari, $request->tgl_izin_sampai])
+                      ->orWhere(function ($q2) use ($request) {
+                          $q2->where('tgl_izin_dari',  '<=', $request->tgl_izin_dari)
+                             ->where('tgl_izin_sampai', '>=', $request->tgl_izin_sampai);
+                      });
+                })
+                ->whereIn('status_approved', [0, 1]) // pending atau approved
+                ->exists();
+
+            return response()->json([
+                'success' => true,
+                'ada'     => $ada,
+                'pesan'   => $ada ? 'Anda sudah memiliki pengajuan pada rentang tanggal tersebut.' : null,
+            ]);
+        } catch (Exception $e) {
+            Log::error('IzinKaryawan@cekPengajuan Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memeriksa pengajuan'
+            ], 500);
+        }
+    }
+
+    /**
      * Download dokumen surat izin sakit
      */
     public function downloadDokumen($kode_izin)
@@ -390,6 +430,53 @@ class IzinKaryawanController extends Controller
         } catch (Exception $e) {
             Log::error('IzinKaryawan@downloadDokumen Error: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Gagal mengunduh dokumen');
+        }
+    }
+
+    /**
+     * Print Surat Cuti (hanya jika sudah disetujui Pimpinan)
+     */
+    public function printSuratCuti($kode_izin)
+    {
+        try {
+            $nik = Auth::guard('karyawan')->user()->nik;
+
+            $izin = DB::table('pengajuan_izin')
+                ->leftJoin('pengajuan_cuti', 'pengajuan_izin.kode_cuti', '=', 'pengajuan_cuti.kode_cuti')
+                ->select('pengajuan_izin.*', 'pengajuan_cuti.nama_cuti', 'pengajuan_cuti.jml_hari')
+                ->where('pengajuan_izin.kode_izin', $kode_izin)
+                ->where('pengajuan_izin.nik', $nik)
+                ->first();
+
+            if (!$izin) {
+                return redirect('/presensi/izin')->with('error', 'Data tidak ditemukan');
+            }
+
+            // Hanya cuti yang sudah disetujui yang bisa dicetak
+            if ($izin->status !== 'c') {
+                return redirect()->back()->with('error', 'Hanya pengajuan Cuti yang dapat dicetak suratnya');
+            }
+
+            if ($izin->status_approved != 1) {
+                return redirect()->back()->with('error', 'Surat Cuti hanya dapat dicetak setelah disetujui Pimpinan');
+            }
+
+            // Ambil data karyawan + relasi departemen & cabang
+            $karyawan = DB::table('karyawan')
+                ->leftJoin('departemen', 'karyawan.kode_dept', '=', 'departemen.kode_dept')
+                ->leftJoin('cabang', 'karyawan.kode_cabang', '=', 'cabang.kode_cabang')
+                ->select(
+                    'karyawan.*',
+                    'departemen.nama_dept',
+                    'cabang.nama_cabang'
+                )
+                ->where('karyawan.nik', $nik)
+                ->first();
+
+            return view('karyawan.izin.print_cuti', compact('izin', 'karyawan'));
+        } catch (Exception $e) {
+            Log::error('IzinKaryawan@printSuratCuti Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal memuat surat cuti');
         }
     }
 }

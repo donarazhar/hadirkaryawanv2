@@ -77,6 +77,7 @@ Route::middleware('auth:karyawan')->group(function () {
         Route::get('/statistik', 'getStatistik')->name('statistik');
         Route::post('/cek-pengajuan', 'cekPengajuan')->name('cekPengajuan');
         Route::get('/{kode_izin}/download', 'downloadDokumen')->name('download');
+        Route::get('/{kode_izin}/print-cuti', 'printSuratCuti')->name('printCuti');
     });
 
     Route::get('/presensi/buatizin', [IzinKaryawanController::class, 'create']);

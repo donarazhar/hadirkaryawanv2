@@ -55,7 +55,9 @@ class PengajuanIzin extends Model
         'status',
         'keterangan',
         'status_approved',
+        'status_approved_atasan',
         'catatan_admin',
+        'catatan_atasan',
         'doc_sid',
     ];
 

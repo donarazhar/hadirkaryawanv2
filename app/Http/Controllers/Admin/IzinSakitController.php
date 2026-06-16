@@ -33,13 +33,15 @@ class IzinSakitController extends Controller
             });
         }
 
-        // Filter Status Approved
+        // Filter Status Approved — gunakan status_approved sebagai final status untuk semua role
+        // (pimpinan approval sekarang langsung update status_approved juga)
         if ($request->filled('status_approved')) {
-            if ($user && $user->role == 'pimpinan') {
-                $query->where('status_approved_atasan', $request->status_approved);
-            } else {
-                $query->where('status_approved', $request->status_approved);
-            }
+            $query->where('status_approved', $request->status_approved);
+        }
+
+        // Filter Tipe Pengajuan (izin/sakit/cuti)
+        if ($request->filled('tipe')) {
+            $query->where('pengajuan_izin.status', $request->tipe);
         }
 
         $izinsakit = $query->orderBy('tgl_izin_dari', 'desc')->paginate(15);
@@ -63,44 +65,40 @@ class IzinSakitController extends Controller
             if (in_array($izin->status, ['i', 's'])) {
                 return redirect()->back()->with('error', 'Izin dan Sakit tidak memerlukan persetujuan — sudah disetujui otomatis.');
             }
-            
+
             $user = \Illuminate\Support\Facades\Auth::guard('user')->user();
             $userRole = $user ? $user->role : 'admin';
-            
-            if ($userRole == 'pimpinan') {
-                $izin->update([
-                    'status_approved_atasan' => $request->status_approved,
-                    'catatan_atasan' => $request->catatan_admin
-                ]);
-            } else {
-                if ($izin->status_approved_atasan == '0') {
-                    return redirect()->back()->with('error', 'Menunggu persetujuan Pimpinan terlebih dahulu.');
-                }
-                if ($izin->status_approved_atasan == '2') {
-                    return redirect()->back()->with('error', 'Pengajuan ini sudah ditolak oleh Pimpinan.');
-                }
-                
-                $izin->update([
-                    'status_approved' => $request->status_approved,
-                    'catatan_admin' => $request->catatan_admin
-                ]);
+
+            // Hanya Pimpinan yang bisa approve Cuti
+            if ($userRole !== 'pimpinan') {
+                return redirect()->back()->with('error', 'Hanya Pimpinan yang berwenang menyetujui pengajuan Cuti.');
             }
+
+            // Pimpinan approve Cuti → langsung final (tidak perlu HRD)
+            $izin->update([
+                'status_approved_atasan' => $request->status_approved,
+                'catatan_atasan'         => $request->catatan_admin,
+                'status_approved'        => $request->status_approved, // mirror ke status final
+                'catatan_admin'          => $request->catatan_admin,
+            ]);
 
             // Catat log
             $statusTeks = $request->status_approved == '1' ? 'Disetujui' : 'Ditolak';
             \App\Helpers\LogHelper::record(
-                'APPROVE_PENGJUAN', 
-                "Melakukan approval pengajuan ($statusTeks) dengan kode: $kode_izin"
+                'APPROVE_PENGJUAN',
+                "Melakukan approval pengajuan Cuti ($statusTeks) dengan kode: $kode_izin"
             );
 
             // Notifikasi WA ke Karyawan
             $karyawan = \App\Models\Karyawan::where('nik', $izin->nik)->first();
             if ($karyawan && $karyawan->no_hp) {
                 $status_teks = $request->status_approved == '1' ? 'DISETUJUI' : 'DITOLAK';
-                $tipe = $izin->status == 'i' ? 'Izin' : ($izin->status == 's' ? 'Sakit' : 'Cuti');
-                $pesan = "Halo {$karyawan->nama_lengkap},\n\nPengajuan *{$tipe}* Anda untuk tanggal {$izin->tgl_izin_dari} s/d {$izin->tgl_izin_sampai} telah *{$status_teks}* oleh Admin.\n";
+                $pesan = "Halo {$karyawan->nama_lengkap},\n\nPengajuan *Cuti* Anda untuk tanggal {$izin->tgl_izin_dari} s/d {$izin->tgl_izin_sampai} telah *{$status_teks}* oleh Pimpinan.\n";
                 if ($request->catatan_admin) {
                     $pesan .= "Catatan: {$request->catatan_admin}\n";
+                }
+                if ($request->status_approved == '1') {
+                    $pesan .= "\nSilakan cetak Surat Cuti melalui aplikasi dan serahkan ke HRD.\n";
                 }
                 $pesan .= "\nTerima kasih.";
 
@@ -108,7 +106,7 @@ class IzinSakitController extends Controller
             }
 
             DB::commit();
-            return redirect()->back()->with('success', 'Status pengajuan berhasil diupdate');
+            return redirect()->back()->with('success', 'Status pengajuan Cuti berhasil diupdate oleh Pimpinan');
         } catch (\Exception $e) {
             DB::rollback();
             return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
@@ -124,28 +122,29 @@ class IzinSakitController extends Controller
             if (in_array($izin->status, ['i', 's'])) {
                 return redirect()->back()->with('error', 'Izin dan Sakit tidak memerlukan persetujuan, tidak ada yang perlu dibatalkan.');
             }
-            
+
             $user = \Illuminate\Support\Facades\Auth::guard('user')->user();
             $userRole = $user ? $user->role : 'admin';
-            
-            if ($userRole == 'pimpinan') {
-                $izin->update([
-                    'status_approved_atasan' => '0',
-                    'catatan_atasan' => null
-                ]);
-            } else {
-                $izin->update([
-                    'status_approved' => '0',
-                    'catatan_admin' => null
-                ]);
+
+            // Hanya Pimpinan yang bisa cancel Cuti
+            if ($userRole !== 'pimpinan') {
+                return redirect()->back()->with('error', 'Hanya Pimpinan yang berwenang membatalkan status Cuti.');
             }
 
+            // Reset kedua field status sekaligus (karena pimpinan adalah approver final)
+            $izin->update([
+                'status_approved_atasan' => '0',
+                'catatan_atasan'         => null,
+                'status_approved'        => '0',
+                'catatan_admin'          => null,
+            ]);
+
             \App\Helpers\LogHelper::record(
-                'CANCEL_PENGJUAN', 
-                "Membatalkan persetujuan pengajuan dengan kode: $kode_izin"
+                'CANCEL_PENGJUAN',
+                "Membatalkan persetujuan pengajuan Cuti dengan kode: $kode_izin"
             );
 
-            return redirect()->back()->with('success', 'Status pengajuan berhasil dibatalkan (dikembalikan ke status Menunggu)');
+            return redirect()->back()->with('success', 'Status Cuti berhasil dikembalikan ke Menunggu Persetujuan');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }

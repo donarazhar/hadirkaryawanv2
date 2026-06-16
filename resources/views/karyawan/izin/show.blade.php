@@ -304,6 +304,31 @@
     .btn-delete-full ion-icon { font-size: 18px; }
     .btn-delete-full:active { background: var(--danger-soft); transform: scale(0.98); }
 
+    /* ── PRINT CUTI BUTTON ── */
+    .btn-print-cuti {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 14px;
+        background: linear-gradient(135deg, #059669, #10B981);
+        color: #fff;
+        border: none;
+        border-radius: var(--radius-lg);
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        text-decoration: none;
+        transition: opacity 0.2s, transform 0.15s;
+        -webkit-tap-highlight-color: transparent;
+        box-shadow: 0 4px 14px rgba(16,185,129,0.35);
+    }
+
+    .btn-print-cuti ion-icon { font-size: 18px; }
+    .btn-print-cuti:active { opacity: 0.88; transform: scale(0.98); }
+
     /* ── Animations ── */
     @keyframes fadeSlide {
         from { opacity: 0; transform: translateY(8px); }
@@ -321,17 +346,33 @@
 </style>
 
 @php
-    // Status hero: izin/sakit otomatis disetujui, cuti ikuti status_approved
+    // Status hero: izin/sakit otomatis disetujui, cuti ikuti status_approved (dari pimpinan)
     if (in_array($dataizin->status, ['i', 's'])) {
         $sClass = 'approved';
         $sText  = 'Disetujui Otomatis';
         $sIcon  = 'checkmark-circle-outline';
         $sSub   = 'Izin dan Sakit langsung disetujui secara otomatis';
     } else {
+        // Cuti — keputusan dari Pimpinan Departemen
         switch($dataizin->status_approved) {
-            case 0:  $sClass = 'pending';  $sText = 'Menunggu Persetujuan'; $sIcon = 'time-outline';             $sSub = 'Menunggu konfirmasi dari atasan'; break;
-            case 1:  $sClass = 'approved'; $sText = 'Pengajuan Disetujui';  $sIcon = 'checkmark-circle-outline'; $sSub = 'Pengajuan Anda telah disetujui'; break;
-            default: $sClass = 'rejected'; $sText = 'Pengajuan Ditolak';    $sIcon = 'close-circle-outline';     $sSub = 'Silakan hubungi atasan untuk informasi lebih lanjut'; break;
+            case 0:
+                $sClass = 'pending';
+                $sText  = 'Menunggu Persetujuan Pimpinan';
+                $sIcon  = 'time-outline';
+                $sSub   = 'Pengajuan cuti menunggu konfirmasi dari Pimpinan Departemen';
+                break;
+            case 1:
+                $sClass = 'approved';
+                $sText  = 'Disetujui oleh Pimpinan';
+                $sIcon  = 'checkmark-circle-outline';
+                $sSub   = 'Cetak Surat Cuti dan serahkan ke HRD';
+                break;
+            default:
+                $sClass = 'rejected';
+                $sText  = 'Ditolak oleh Pimpinan';
+                $sIcon  = 'close-circle-outline';
+                $sSub   = 'Pengajuan cuti ditolak, silakan hubungi Pimpinan';
+                break;
         }
     }
 
@@ -452,6 +493,14 @@
             Download Dokumen
         </a>
     </div>
+    @endif
+
+    {{-- Tombol Print Surat Cuti: tampil jika cuti sudah disetujui Pimpinan --}}
+    @if($dataizin->status == 'c' && $dataizin->status_approved == 1)
+    <a href="{{ route('izin.printCuti', $dataizin->kode_izin) }}" target="_blank" class="btn-print-cuti">
+        <ion-icon name="print-outline"></ion-icon>
+        Cetak Surat Cuti
+    </a>
     @endif
 
     {{-- Delete button: izin/sakit bisa dihapus kapan saja, cuti hanya jika masih pending --}}

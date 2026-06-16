@@ -340,6 +340,103 @@
                     .catch(err => console.log('Service Worker registration failed: ', err));
             });
         }
+
+        // --- OFFLINE SYNC LOGIC (IndexedDB) ---
+        const DB_NAME = 'presensigps_db';
+        const DB_VERSION = 1;
+        const STORE_NAME = 'offline_presensi';
+
+        function openIndexedDB() {
+            return new Promise((resolve, reject) => {
+                let request = indexedDB.open(DB_NAME, DB_VERSION);
+                request.onupgradeneeded = function(event) {
+                    let db = event.target.result;
+                    if (!db.objectStoreNames.contains(STORE_NAME)) {
+                        db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
+                    }
+                };
+                request.onsuccess = function(event) {
+                    resolve(event.target.result);
+                };
+                request.onerror = function(event) {
+                    reject('Error opening IndexedDB');
+                };
+            });
+        }
+
+        async function saveOfflinePresensi(data) {
+            try {
+                let db = await openIndexedDB();
+                let transaction = db.transaction([STORE_NAME], 'readwrite');
+                let store = transaction.objectStore(STORE_NAME);
+                store.add(data);
+                return new Promise((resolve) => {
+                    transaction.oncomplete = () => resolve(true);
+                });
+            } catch (err) {
+                console.error(err);
+                return false;
+            }
+        }
+
+        async function syncOfflinePresensi() {
+            if (!navigator.onLine) return; // double check
+
+            try {
+                let db = await openIndexedDB();
+                let transaction = db.transaction([STORE_NAME], 'readonly');
+                let store = transaction.objectStore(STORE_NAME);
+                let request = store.getAll();
+
+                request.onsuccess = async function() {
+                    let records = request.result;
+                    if (records.length > 0) {
+                        console.log(`Menemukan ${records.length} data presensi offline. Memulai sinkronisasi...`);
+                        
+                        // Show simple toast if needed, but background sync is better silent.
+                        // We will sync one by one
+                        for (let record of records) {
+                            try {
+                                await $.ajax({
+                                    type: 'POST',
+                                    url: '/presensi/store',
+                                    data: record.payload,
+                                    cache: false
+                                });
+                                // Jika sukses dikirim (bisa jadi respon error logika absen, tapi request sukses)
+                                // Hapus dari IndexedDB
+                                let deleteTx = db.transaction([STORE_NAME], 'readwrite');
+                                let deleteStore = deleteTx.objectStore(STORE_NAME);
+                                deleteStore.delete(record.id);
+                            } catch (e) {
+                                console.error('Gagal sinkronisasi data:', record, e);
+                            }
+                        }
+                        
+                        if (records.length > 0) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Sinkronisasi Selesai',
+                                text: 'Data presensi offline berhasil diunggah.',
+                                toast: true,
+                                position: 'top-end',
+                                showConfirmButton: false,
+                                timer: 3000
+                            });
+                        }
+                    }
+                };
+            } catch (err) {
+                console.error('Error saat sinkronisasi:', err);
+            }
+        }
+
+        // Listen for online event
+        window.addEventListener('online', syncOfflinePresensi);
+        // Also run on load if already online
+        if (navigator.onLine) {
+            window.addEventListener('load', syncOfflinePresensi);
+        }
     </script>
 </body>
 

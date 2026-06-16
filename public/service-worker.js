@@ -1,5 +1,5 @@
 // Service Worker untuk PWA
-const CACHE_NAME = 'presensigps-cache-v2';
+const CACHE_NAME = 'presensigps-cache-v3';
 const urlsToCache = [
   '/login',
   '/manifest.json',
@@ -46,6 +46,27 @@ self.addEventListener('fetch', event => {
         return;
     }
 
+    // Network First strategy for specific dynamic paths
+    const networkFirstPaths = ['/dashboard', '/presensi/create', '/kalender'];
+    const isNetworkFirst = networkFirstPaths.some(path => url.pathname === path || url.pathname.startsWith(path + '?'));
+
+    if (isNetworkFirst) {
+        event.respondWith(
+            fetch(event.request)
+                .then(networkResponse => {
+                    return caches.open(CACHE_NAME).then(cache => {
+                        cache.put(event.request, networkResponse.clone());
+                        return networkResponse;
+                    });
+                })
+                .catch(() => {
+                    return caches.match(event.request);
+                })
+        );
+        return;
+    }
+
+    // Default Cache First strategy
     event.respondWith(
         caches.match(event.request)
             .then(response => response || fetch(event.request))

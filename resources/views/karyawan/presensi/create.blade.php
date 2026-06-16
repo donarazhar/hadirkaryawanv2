@@ -933,20 +933,41 @@
             setAutoScanUI('matched');
             document.getElementById('loading-overlay').classList.add('show');
 
-            Webcam.snap(function(uri) {
+            Webcam.snap(async function(uri) {
+                const payload = {
+                    _token:           '{{ csrf_token() }}',
+                    image:            uri,
+                    lokasi:           lokasi_val,
+                    verified:         true,
+                    face_descriptor:  JSON.stringify(result.descriptor),
+                    shift_ke:         $('#shift_ke_val').val(),
+                    shift_nama:       $('#shift_nama_val').val(),
+                    shift_jam_masuk:  $('#shift_jam_masuk_val').val(),
+                    shift_jam_pulang: $('#shift_jam_pulang_val').val()
+                };
+
+                if (!navigator.onLine) {
+                    const now = new Date();
+                    const pad = (n) => String(n).padStart(2, '0');
+                    payload.offline_time = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+                    
+                    await saveOfflinePresensi({ payload: payload, timestamp: payload.offline_time });
+                    
+                    document.getElementById('loading-overlay').classList.remove('show');
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Disimpan Offline',
+                        html: 'Data presensi berhasil disimpan di perangkat.<br><small style="color:#6B7280;">Sistem akan melakukan sinkronisasi otomatis saat internet tersedia.</small>',
+                        confirmButtonColor: '#10B981'
+                    }).then(() => {
+                        window.location.href = '/dashboard';
+                    });
+                    return;
+                }
+
                 $.ajax({
                     type: 'POST', url: '/presensi/store',
-                    data: {
-                        _token:           '{{ csrf_token() }}',
-                        image:            uri,
-                        lokasi:           lokasi_val,
-                        verified:         true,
-                        face_descriptor:  JSON.stringify(result.descriptor),
-                        shift_ke:         $('#shift_ke_val').val(),
-                        shift_nama:       $('#shift_nama_val').val(),
-                        shift_jam_masuk:  $('#shift_jam_masuk_val').val(),
-                        shift_jam_pulang: $('#shift_jam_pulang_val').val()
-                    },
+                    data: payload,
                     cache: false,
                     success: function(respond) {
                         document.getElementById('loading-overlay').classList.remove('show');
@@ -954,10 +975,8 @@
                         var status = parts[0];
 
                         if (status === 'success') {
-                            // Sukses: tampilkan notifikasi, jangan restart scan
                             showNotification(respond, null);
                         } else {
-                            // Error: baru restart scan setelah notifikasi ditutup
                             showNotification(respond, function() {
                                 isProcessing = false;
                                 startAutoVerification();
@@ -989,10 +1008,31 @@
         if (!webcamReady) return Swal.fire({ icon:'error', title:'Kamera Belum Siap', text:'Mohon tunggu hingga kamera aktif', confirmButtonColor:'#2563EB' });
 
         document.getElementById('loading-overlay').classList.add('show');
-        Webcam.snap(function(uri) {
+        Webcam.snap(async function(uri) {
+            const payload = { _token: '{{ csrf_token() }}', image: uri, lokasi: lokasi_val };
+
+            if (!navigator.onLine) {
+                const now = new Date();
+                const pad = (n) => String(n).padStart(2, '0');
+                payload.offline_time = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+                
+                await saveOfflinePresensi({ payload: payload, timestamp: payload.offline_time });
+                
+                document.getElementById('loading-overlay').classList.remove('show');
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Disimpan Offline',
+                    html: 'Data presensi berhasil disimpan di perangkat.<br><small style="color:#6B7280;">Sistem akan melakukan sinkronisasi otomatis saat internet tersedia.</small>',
+                    confirmButtonColor: '#10B981'
+                }).then(() => {
+                    window.location.href = '/dashboard';
+                });
+                return;
+            }
+
             $.ajax({
                 type: 'POST', url: '/presensi/store',
-                data: { _token: '{{ csrf_token() }}', image: uri, lokasi: lokasi_val },
+                data: payload,
                 cache: false,
                 success: function(respond) {
                     document.getElementById('loading-overlay').classList.remove('show');

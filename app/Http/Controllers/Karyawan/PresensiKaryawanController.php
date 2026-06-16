@@ -235,12 +235,23 @@ class PresensiKaryawanController extends Controller
             $jam = Carbon::now('Asia/Jakarta')->format('H:i:s');
             $jamsekarang = Carbon::now('Asia/Jakarta')->format('H:i');
 
+            // Handle Offline Presensi Time
+            $is_offline_sync = false;
+            if ($request->filled('offline_time')) {
+                $offline_carbon = Carbon::parse($request->offline_time, 'Asia/Jakarta');
+                $hariini = $offline_carbon->format('Y-m-d');
+                $jam = $offline_carbon->format('H:i:s');
+                $jamsekarang = $offline_carbon->format('H:i');
+                $is_offline_sync = true;
+            }
+
             Log::info('Presensi Store Started', [
                 'nik' => $nik,
                 'kode_cabang' => $kode_cabang,
                 'kode_dept' => $kode_dept,
                 'tanggal' => $hariini,
-                'jam' => $jam
+                'jam' => $jam,
+                'is_offline_sync' => $is_offline_sync
             ]);
 
             // Validasi input
@@ -254,8 +265,11 @@ class PresensiKaryawanController extends Controller
                 return response("error|Foto tidak terdeteksi. Izinkan akses kamera|system", 200);
             }
 
-            // Check lintas hari
-            $tgl_sebelumnya = Carbon::now('Asia/Jakarta')->subDay()->format('Y-m-d');
+            // Check lintas hari (berdasarkan hari presensi)
+            $tgl_sebelumnya = $is_offline_sync 
+                ? Carbon::parse($request->offline_time)->subDay()->format('Y-m-d')
+                : Carbon::now('Asia/Jakarta')->subDay()->format('Y-m-d');
+                
             $cekpresensi_sebelumnya = DB::table('presensi')
                 ->join('jam_kerja', 'presensi.kode_jam_kerja', '=', 'jam_kerja.kode_jam_kerja')
                 ->where('tgl_presensi', $tgl_sebelumnya)

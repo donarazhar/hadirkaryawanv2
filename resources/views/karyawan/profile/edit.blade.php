@@ -3,740 +3,843 @@
 @section('content')
 
 <style>
-    /* ===== MODERN PROFILE PAGE ===== */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
     :root {
-        --primary: #0053C5;
-        --primary-dark: #003d94;
-        --primary-light: #2E7CE6;
-        --primary-gradient: linear-gradient(135deg, #0053C5 0%, #2E7CE6 100%);
-        --success: #10b981;
-        --danger: #ef4444;
-        --warning: #f59e0b;
-        --info: #06b6d4;
-        --bg-main: #f8fafc;
-        --bg-card: #ffffff;
-        --text-primary: #0f172a;
-        --text-secondary: #64748b;
+        --primary:       #2563EB;
+        --primary-soft:  #EFF6FF;
+        --primary-mid:   #BFDBFE;
+        --success:       #10B981;
+        --success-soft:  #ECFDF5;
+        --danger:        #EF4444;
+        --danger-soft:   #FEF2F2;
+        --warning:       #F59E0B;
+        --text-900:      #111827;
+        --text-600:      #4B5563;
+        --text-400:      #9CA3AF;
+        --border:        #F1F5F9;
+        --border-med:    #E2E8F0;
+        --surface:       #FFFFFF;
+        --bg:            #F8FAFC;
+        --radius-sm:     10px;
+        --radius-md:     14px;
+        --radius-lg:     18px;
+        --radius-full:   9999px;
+        --shadow-sm:     0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+        --shadow-md:     0 4px 12px rgba(0,0,0,0.08);
     }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-        background: var(--bg-main);
+        font-family: 'Inter', -apple-system, sans-serif;
+        background: var(--bg);
+        color: var(--text-900);
+        -webkit-font-smoothing: antialiased;
     }
 
-    .page-header {
-        background: white;
-        padding: 24px 20px 100px 20px;
-        position: relative;
-        overflow: hidden;
-        margin: 0;
-        border-bottom: 1px solid rgba(0, 83, 197, 0.08);
-    }
-
-    .header-content {
-        position: relative;
-        z-index: 2;
+    /* ── STICKY HEADER ── */
+    .pg-header {
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        padding: 16px 20px;
         display: flex;
         align-items: center;
-        gap: 16px;
+        gap: 12px;
+        position: sticky;
+        top: 0;
+        z-index: 50;
     }
 
     .btn-back {
-        width: 40px;
-        height: 40px;
-        background: #f1f5f9;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        width: 36px; height: 36px;
+        background: var(--bg);
+        border: 1px solid var(--border-med);
+        border-radius: var(--radius-sm);
+        display: flex; align-items: center; justify-content: center;
         text-decoration: none;
-        transition: all 0.3s ease;
+        flex-shrink: 0;
+        transition: background 0.2s;
+        -webkit-tap-highlight-color: transparent;
     }
 
-    .btn-back ion-icon {
-        font-size: 24px;
-        color: var(--text-secondary);
-    }
+    .btn-back:active { background: var(--border-med); }
+    .btn-back ion-icon { font-size: 20px; color: var(--text-600); }
 
-    .btn-back:active, .btn-back:hover {
-        background: #e2e8f0;
-        color: var(--primary);
-    }
-
-    .btn-back:hover ion-icon {
-        color: var(--primary);
-    }
-
-    .header-title {
-        flex: 1;
-    }
-
-    .header-title h1 {
-        font-size: 22px;
+    .pg-title {
+        font-size: 17px;
         font-weight: 700;
-        color: var(--text-primary);
-        margin: 0 0 4px 0;
+        color: var(--text-900);
+        line-height: 1.2;
     }
 
-    .header-title p {
-        font-size: 12px;
-        font-weight: 600;
+    .pg-sub {
+        font-size: 11px;
+        font-weight: 500;
         color: var(--primary);
-        margin: 0;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+        display: block;
+        margin-top: 1px;
     }
 
-    /* ===== PROFILE CARD ===== */
-    .profile-section {
-        padding: 0 20px;
-        margin-top: -85px;
-        margin-bottom: 20px;
-        position: relative;
-        z-index: 10;
+    /* ── PAGE BODY ── */
+    .pg-body {
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding-bottom: 110px;
     }
 
-    .profile-card {
-        background: var(--bg-card);
-        border-radius: 20px;
-        padding: 24px 20px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-        border: 1px solid rgba(0, 83, 197, 0.05);
+    /* ── PROFILE HERO CARD ── */
+    .profile-hero {
+        background: var(--surface);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow-sm);
+        padding: 24px 16px 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
         text-align: center;
-    }
-
-    .photo-wrapper {
         position: relative;
-        width: 120px;
-        height: 120px;
-        margin: 0 auto 16px;
+        overflow: hidden;
     }
 
-    .profile-photo {
-        width: 120px;
-        height: 120px;
+    /* Subtle top accent band */
+    .profile-hero::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 52px;
+        background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+    }
+
+    /* Avatar wrapper */
+    .avatar-wrap {
+        position: relative;
+        width: 88px; height: 88px;
+        margin-bottom: 12px;
+        z-index: 1;
+    }
+
+    .avatar-img {
+        width: 88px; height: 88px;
         border-radius: 50%;
         object-fit: cover;
-        border: 4px solid white;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        border: 3px solid var(--surface);
+        box-shadow: 0 4px 12px rgba(37,99,235,0.18);
+        display: block;
+        background: #EFF6FF;
     }
 
-    .photo-upload-btn {
+    .avatar-btn {
         position: absolute;
-        bottom: 0;
-        right: 0;
-        width: 40px;
-        height: 40px;
-        background: var(--primary-gradient);
+        bottom: 0; right: 0;
+        width: 28px; height: 28px;
+        background: var(--primary);
         border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        border: 2px solid var(--surface);
+        display: flex; align-items: center; justify-content: center;
         cursor: pointer;
-        box-shadow: 0 4px 12px rgba(0, 83, 197, 0.4);
-        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(37,99,235,0.35);
+        transition: transform 0.2s;
+        -webkit-tap-highlight-color: transparent;
     }
 
-    .photo-upload-btn ion-icon {
-        font-size: 20px;
-        color: white;
+    .avatar-btn:active { transform: scale(0.9); }
+    .avatar-btn ion-icon { font-size: 14px; color: white; }
+
+    /* Name & NIK */
+    .hero-name {
+        font-size: 18px;
+        font-weight: 800;
+        color: var(--text-900);
+        margin-bottom: 3px;
     }
 
-    .photo-upload-btn:active {
-        transform: scale(0.95);
-    }
-
-    .profile-name {
-        font-size: 20px;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin-bottom: 4px;
-    }
-
-    .profile-nik {
-        font-size: 13px;
-        color: var(--text-secondary);
+    .hero-nik {
+        font-size: 12px;
         font-weight: 500;
+        color: var(--text-400);
+        font-family: monospace;
     }
 
-    .profile-info-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-        margin-top: 20px;
-        padding-top: 20px;
-        border-top: 1px solid #f1f5f9;
+    /* Info chips row */
+    .hero-chips {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 6px;
+        margin-top: 14px;
+        padding-top: 14px;
+        border-top: 1px solid var(--border);
+        width: 100%;
     }
 
-    .info-item {
-        text-align: center;
-        padding: 12px;
-        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-        border-radius: 12px;
+    .hero-chip {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 8px 12px;
+        background: var(--bg);
+        border: 1px solid var(--border-med);
+        border-radius: var(--radius-sm);
+        flex: 1;
+        min-width: 70px;
     }
 
-    .info-label {
-        font-size: 11px;
-        color: var(--text-secondary);
+    .chip-lbl {
+        font-size: 10px;
         font-weight: 600;
-        margin-bottom: 4px;
+        color: var(--text-400);
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        margin-bottom: 3px;
     }
 
-    .info-value {
-        font-size: 14px;
+    .chip-val {
+        font-size: 12px;
         font-weight: 700;
-        color: var(--text-primary);
+        color: var(--text-900);
+        text-align: center;
+        line-height: 1.3;
     }
 
-    /* ===== FORM SECTION ===== */
-    .form-section {
-        padding: 0 20px 20px;
+    /* ── ALERTS ── */
+    .alert-box {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 12px 14px;
+        border-radius: var(--radius-md);
+        animation: fadeSlide 0.3s ease;
     }
 
+    .alert-box.success { background: var(--success-soft); border: 1px solid #A7F3D0; }
+    .alert-box.error   { background: var(--danger-soft);  border: 1px solid #FECACA; }
+
+    .alert-box ion-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+    .alert-box.success ion-icon { color: var(--success); }
+    .alert-box.error   ion-icon { color: var(--danger); }
+
+    .alert-body {
+        flex: 1;
+        font-size: 13px;
+        line-height: 1.5;
+    }
+
+    .alert-body strong { display: block; margin-bottom: 3px; }
+    .alert-body.success strong { color: #065F46; }
+    .alert-body.error   strong { color: #991B1B; }
+    .alert-body ul { padding-left: 16px; margin-top: 4px; }
+    .alert-body ul li { font-size: 12px; color: #991B1B; }
+
+    /* ── FORM CARD ── */
     .form-card {
-        background: var(--bg-card);
-        border-radius: 16px;
-        padding: 20px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-        border: 1px solid rgba(0, 83, 197, 0.05);
-        margin-bottom: 16px;
+        background: var(--surface);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
     }
 
-    .form-card-title {
-        font-size: 16px;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin-bottom: 16px;
+    .card-head {
         display: flex;
         align-items: center;
         gap: 8px;
+        padding: 13px 16px;
+        border-bottom: 1px solid var(--border);
+        background: var(--surface);
     }
 
-    .form-card-title ion-icon {
-        font-size: 20px;
-        color: var(--primary);
+    .card-head-icon {
+        width: 28px; height: 28px;
+        border-radius: 8px;
+        background: var(--primary-soft);
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
     }
 
-    .form-group {
-        margin-bottom: 16px;
+    .card-head-icon ion-icon { font-size: 14px; color: var(--primary); }
+
+    .card-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--text-900);
     }
 
-    .form-group:last-child {
-        margin-bottom: 0;
+    /* ── FORM FIELDS ── */
+    .form-body {
+        padding: 14px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
     }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
 
     .form-label {
-        font-size: 13px;
+        font-size: 12px;
         font-weight: 600;
-        color: var(--text-secondary);
-        margin-bottom: 8px;
+        color: var(--text-600);
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 5px;
     }
 
-    .form-label ion-icon {
+    .form-label ion-icon { font-size: 14px; color: var(--primary); }
+
+    /* Input wrapper for icon + eye toggle */
+    .input-wrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .input-left-icon {
+        position: absolute;
+        left: 12px;
         font-size: 16px;
-        color: var(--primary);
+        color: var(--text-400);
+        pointer-events: none;
+        z-index: 1;
     }
 
     .form-control {
         width: 100%;
-        padding: 12px 16px;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        font-size: 14px;
-        color: var(--text-primary);
-        background: #f8fafc;
-        transition: all 0.3s ease;
+        padding: 11px 14px 11px 38px;
+        border: 1.5px solid var(--border-med);
+        border-radius: var(--radius-sm);
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-900);
+        background: var(--surface);
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        -webkit-appearance: none;
     }
 
     .form-control:focus {
-        outline: none;
         border-color: var(--primary);
-        background: white;
-        box-shadow: 0 0 0 3px rgba(0, 83, 197, 0.1);
+        box-shadow: 0 0 0 3px rgba(37,99,235,0.10);
     }
 
+    .form-control.no-icon { padding-left: 14px; }
+
+    /* Eye toggle for password */
+    .eye-toggle {
+        position: absolute;
+        right: 12px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 4px;
+        display: flex; align-items: center;
+        color: var(--text-400);
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .eye-toggle ion-icon { font-size: 18px; }
+
+    /* Hint */
     .form-hint {
-        font-size: 11px;
-        color: var(--text-secondary);
-        margin-top: 6px;
         display: flex;
         align-items: center;
         gap: 4px;
+        font-size: 11px;
+        color: var(--text-400);
     }
 
-    .form-hint ion-icon {
-        font-size: 14px;
-    }
+    .form-hint ion-icon { font-size: 13px; color: var(--primary); }
 
-    /* ===== BUTTONS ===== */
-    .btn-custom-primary {
-        width: 100%;
-        padding: 14px 20px;
-        background: white;
-        color: var(--primary);
-        border: 1px solid var(--primary);
-        border-radius: 12px;
-        font-size: 15px;
-        font-weight: 600;
+    /* ── PHOTO CHANGE ROW (inside card) ── */
+    .photo-change-row {
         display: flex;
         align-items: center;
-        justify-content: center;
-        gap: 8px;
+        gap: 12px;
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .photo-mini {
+        width: 52px; height: 52px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid var(--border-med);
+        flex-shrink: 0;
+    }
+
+    .photo-change-text {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .photo-change-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--text-900);
+        margin-bottom: 2px;
+    }
+
+    .photo-change-sub {
+        font-size: 11px;
+        color: var(--text-400);
+    }
+
+    .btn-photo-change {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 7px 12px;
+        background: var(--primary-soft);
+        color: var(--primary);
+        border: 1px solid var(--primary-mid);
+        border-radius: var(--radius-sm);
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        font-weight: 700;
         cursor: pointer;
-        transition: all 0.3s ease;
-        box-shadow: 0 2px 8px rgba(0, 83, 197, 0.05);
-        margin-top: 20px;
+        flex-shrink: 0;
+        -webkit-tap-highlight-color: transparent;
+        transition: background 0.2s;
     }
 
-    .btn-custom-primary ion-icon {
-        font-size: 20px;
-    }
+    .btn-photo-change:active { background: var(--primary-mid); }
+    .btn-photo-change ion-icon { font-size: 15px; }
 
-    .btn-custom-primary:active {
+    /* ── SUBMIT BUTTON ── */
+    .btn-submit {
+        width: 100%;
+        padding: 14px;
         background: var(--primary);
         color: white;
-        transform: scale(0.98);
-    }
-
-    .btn-custom-primary:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-    }
-
-    .btn-custom-danger {
-        width: 100%;
-        padding: 12px 20px;
-        background: white;
-        color: var(--danger);
-        border: 1px solid var(--danger);
-        border-radius: 12px;
-        font-size: 14px;
-        font-weight: 600;
+        border: none;
+        border-radius: var(--radius-lg);
+        font-family: 'Inter', sans-serif;
+        font-size: 15px;
+        font-weight: 700;
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 8px;
         cursor: pointer;
-        transition: all 0.3s ease;
-        margin-top: 12px;
-        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.05);
+        box-shadow: 0 4px 14px rgba(37,99,235,0.28);
+        transition: opacity 0.2s, transform 0.15s;
+        -webkit-tap-highlight-color: transparent;
     }
 
-    .btn-custom-danger:active {
-        background: var(--danger);
-        color: white;
-        transform: scale(0.98);
-    }
+    .btn-submit ion-icon { font-size: 18px; }
+    .btn-submit:active   { opacity: 0.88; transform: scale(0.98); }
+    .btn-submit:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
 
-    /* ===== ALERTS ===== */
-    .alert {
-        padding: 14px 16px;
-        border-radius: 12px;
-        margin-bottom: 16px;
+    /* ── DELETE PHOTO BUTTON ── */
+    .btn-delete-photo {
+        width: 100%;
         display: flex;
-        align-items: flex-start;
-        gap: 10px;
-        animation: slideDown 0.3s ease;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 13px;
+        background: var(--surface);
+        color: var(--danger);
+        border: 1.5px solid #FECACA;
+        border-radius: var(--radius-lg);
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: var(--shadow-sm);
+        transition: background 0.2s, transform 0.15s;
+        -webkit-tap-highlight-color: transparent;
     }
 
-    .alert ion-icon {
-        font-size: 20px;
-        flex-shrink: 0;
-        margin-top: 2px;
+    .btn-delete-photo ion-icon { font-size: 17px; }
+    .btn-delete-photo:active { background: var(--danger-soft); transform: scale(0.98); }
+
+    /* ── PHOTO CHANGED TOAST ── */
+    .photo-toast {
+        display: none;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 12px;
+        background: var(--success-soft);
+        border: 1px solid #A7F3D0;
+        border-radius: var(--radius-sm);
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--success);
+        margin-top: 8px;
+        animation: fadeSlide 0.25s ease;
     }
 
-    .alert-success {
-        background: #dcfce7;
-        color: #16a34a;
-        border: 1px solid #86efac;
+    .photo-toast.show { display: flex; }
+    .photo-toast ion-icon { font-size: 15px; }
+
+    /* ── Animations ── */
+    @keyframes fadeSlide {
+        from { opacity: 0; transform: translateY(-5px); }
+        to   { opacity: 1; transform: translateY(0); }
     }
 
-    .alert-error {
-        background: #fee2e2;
-        color: #dc2626;
-        border: 1px solid #fca5a5;
+    .pg-body > * {
+        animation: fadeSlide 0.28s ease both;
     }
+    .pg-body > *:nth-child(1) { animation-delay: 0.04s; }
+    .pg-body > *:nth-child(2) { animation-delay: 0.07s; }
+    .pg-body > *:nth-child(3) { animation-delay: 0.10s; }
+    .pg-body > *:nth-child(4) { animation-delay: 0.13s; }
+    .pg-body > *:nth-child(5) { animation-delay: 0.16s; }
+    .pg-body > *:nth-child(6) { animation-delay: 0.19s; }
 
-    .alert-content {
-        flex: 1;
-    }
-
-    .alert-content strong {
-        display: block;
-        margin-bottom: 4px;
-    }
-
-    .alert-content p {
-        margin: 0;
-        font-size: 13px;
-    }
-
-    @keyframes slideDown {
-        from {
-            opacity: 0;
-            transform: translateY(-10px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    /* ===== BOTTOM SPACING ===== */
-    .bottom-spacer {
-        padding-bottom: 100px;
-    }
-
-    /* ===== RESPONSIVE ===== */
-    @media (max-width: 375px) {
-
-        .profile-section,
-        .form-section {
-            padding-left: 16px;
-            padding-right: 16px;
-        }
-
-        .profile-info-grid {
-            grid-template-columns: 1fr;
-        }
+    @media (max-width: 360px) {
+        .hero-chips { gap: 5px; }
+        .hero-chip  { padding: 7px 8px; }
     }
 </style>
 
-<!-- Page Header -->
-<div class="page-header">
-    <div class="header-content">
-        <a href="{{ route('dashboard') }}" class="btn-back">
-            <ion-icon name="chevron-back-outline"></ion-icon>
-        </a>
-        <div class="header-title">
-            <h1>Edit Profil</h1>
-            <p>Kelola informasi akun Anda</p>
+{{-- ── STICKY HEADER ── --}}
+<div class="pg-header">
+    <a href="{{ route('dashboard') }}" class="btn-back">
+        <ion-icon name="chevron-back-outline"></ion-icon>
+    </a>
+    <div>
+        <div class="pg-title">Edit Profil</div>
+        <span class="pg-sub">Kelola informasi akun Anda</span>
+    </div>
+</div>
+
+{{-- ── PAGE BODY ── --}}
+<div class="pg-body">
+
+    {{-- Profile Hero Card --}}
+    <div class="profile-hero">
+        <div class="avatar-wrap">
+            @if(!empty($karyawan->foto))
+                @php $photoUrl = url(Storage::url('uploads/karyawan/' . $karyawan->foto)); @endphp
+                <img src="{{ $photoUrl }}" class="avatar-img" id="photo-preview" alt="Foto Profil">
+            @else
+                <img src="https://ui-avatars.com/api/?name={{ urlencode($karyawan->nama_lengkap) }}&background=2563EB&color=fff&size=176&bold=true"
+                     class="avatar-img" id="photo-preview" alt="Foto Profil">
+            @endif
+
+            <label for="foto-input" class="avatar-btn" title="Ganti Foto">
+                <ion-icon name="camera-outline"></ion-icon>
+            </label>
+
+            <input type="file" id="foto-input" name="foto_preview" accept="image/*"
+                   style="display:none;" onchange="handlePhotoChange(event)">
+        </div>
+
+        <div class="hero-name">{{ $karyawan->nama_lengkap }}</div>
+        <div class="hero-nik">NIK: {{ $karyawan->nik }}</div>
+
+        <div class="photo-toast" id="photo-toast">
+            <ion-icon name="checkmark-circle-outline"></ion-icon>
+            Foto siap diupload — klik Simpan
+        </div>
+
+        <div class="hero-chips">
+            <div class="hero-chip">
+                <div class="chip-lbl">Jabatan</div>
+                <div class="chip-val">{{ $karyawan->jabatan ?? '—' }}</div>
+            </div>
+            <div class="hero-chip">
+                <div class="chip-lbl">Departemen</div>
+                <div class="chip-val">{{ $karyawan->nama_dept ?? '—' }}</div>
+            </div>
+            <div class="hero-chip">
+                <div class="chip-lbl">Cabang</div>
+                <div class="chip-val">{{ $karyawan->nama_cabang ?? '—' }}</div>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- Profile Card -->
-<div class="profile-section">
-    <div class="profile-card">
-        <form id="form-profile" action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data">
-            @csrf
-
-            <div class="photo-wrapper">
-                @if (!empty($karyawan->foto))
-                @php
-                $path = Storage::url('uploads/karyawan/' . $karyawan->foto);
-                @endphp
-                <img src="{{ url($path) }}" class="profile-photo" id="photo-preview" alt="Avatar">
-                @else
-                <img src="https://ui-avatars.com/api/?name={{ urlencode($karyawan->nama_lengkap) }}&background=0053C5&color=fff&size=240"
-                    class="profile-photo" id="photo-preview" alt="Avatar">
-                @endif
-
-                <input type="file" name="foto" id="foto-input" accept="image/*" style="display: none;" onchange="previewPhoto(event)">
-                <label for="foto-input" class="photo-upload-btn">
-                    <ion-icon name="camera"></ion-icon>
-                </label>
-            </div>
-
-            <div class="profile-name">{{ $karyawan->nama_lengkap }}</div>
-            <div class="profile-nik">NIK: {{ $karyawan->nik }}</div>
-
-            <div class="profile-info-grid">
-                <div class="info-item">
-                    <div class="info-label">Jabatan</div>
-                    <div class="info-value">{{ $karyawan->jabatan }}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Departemen</div>
-                    <div class="info-value">{{ $karyawan->nama_dept ?? 'N/A' }}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Cabang</div>
-                    <div class="info-value">{{ $karyawan->nama_cabang ?? 'N/A' }}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">No. HP</div>
-                    <div class="info-value">{{ $karyawan->no_hp }}</div>
-                </div>
-                <div class="info-item" style="grid-column: span 2;">
-                    <div class="info-label">Email</div>
-                    <div class="info-value">{{ $karyawan->email ?? 'Belum diatur' }}</div>
-                </div>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Form Section -->
-<div class="form-section bottom-spacer">
-    <!-- Alerts -->
+    {{-- Alerts --}}
     @if(session('success'))
-    <div class="alert alert-success">
-        <ion-icon name="checkmark-circle"></ion-icon>
-        <div class="alert-content">
+    <div class="alert-box success">
+        <ion-icon name="checkmark-circle-outline"></ion-icon>
+        <div class="alert-body success">
             <strong>Berhasil!</strong>
-            <p>{{ session('success') }}</p>
+            {{ session('success') }}
         </div>
     </div>
     @endif
 
     @if(session('error'))
-    <div class="alert alert-error">
-        <ion-icon name="alert-circle"></ion-icon>
-        <div class="alert-content">
+    <div class="alert-box error">
+        <ion-icon name="alert-circle-outline"></ion-icon>
+        <div class="alert-body error">
             <strong>Gagal!</strong>
-            <p>{{ session('error') }}</p>
+            {{ session('error') }}
         </div>
     </div>
     @endif
 
     @if($errors->any())
-    <div class="alert alert-error">
-        <ion-icon name="alert-circle"></ion-icon>
-        <div class="alert-content">
+    <div class="alert-box error">
+        <ion-icon name="alert-circle-outline"></ion-icon>
+        <div class="alert-body error">
             <strong>Periksa kembali form Anda:</strong>
-            <ul style="margin: 8px 0 0 0; padding-left: 20px;">
+            <ul>
                 @foreach($errors->all() as $error)
-                <li style="font-size: 13px;">{{ $error }}</li>
+                    <li>{{ $error }}</li>
                 @endforeach
             </ul>
         </div>
     </div>
     @endif
 
-    <!-- Form Edit Informasi -->
+    {{-- Edit Form --}}
     <form action="/updateprofile" method="POST" enctype="multipart/form-data" id="form-update">
         @csrf
 
-        <div class="form-card">
-            <div class="form-card-title">
-                <ion-icon name="person-circle"></ion-icon>
-                Informasi Pribadi
-            </div>
+        {{-- Hidden foto field (will be filled via JS) --}}
+        <input type="file" name="foto" id="foto-hidden" accept="image/*" style="display:none;">
 
-            <div class="form-group">
-                <label class="form-label">
-                    <ion-icon name="person"></ion-icon>
-                    Nama Lengkap
+        {{-- Foto Section inside form card --}}
+        <div class="form-card" style="margin-bottom: 12px;">
+            <div class="card-head">
+                <div class="card-head-icon"><ion-icon name="image-outline"></ion-icon></div>
+                <div class="card-title">Foto Profil</div>
+            </div>
+            <div class="photo-change-row">
+                @if(!empty($karyawan->foto))
+                    <img src="{{ url(Storage::url('uploads/karyawan/' . $karyawan->foto)) }}"
+                         class="photo-mini" id="photo-mini" alt="Foto">
+                @else
+                    <img src="https://ui-avatars.com/api/?name={{ urlencode($karyawan->nama_lengkap) }}&background=2563EB&color=fff&size=104&bold=true"
+                         class="photo-mini" id="photo-mini" alt="Foto">
+                @endif
+                <div class="photo-change-text">
+                    <div class="photo-change-title">Ganti foto profil</div>
+                    <div class="photo-change-sub">JPG, PNG — maks. 2MB</div>
+                </div>
+                <label for="foto-input" class="btn-photo-change">
+                    <ion-icon name="camera-outline"></ion-icon>
+                    Pilih
                 </label>
-                <input type="text" name="nama_lengkap" class="form-control"
-                    value="{{ old('nama_lengkap', $karyawan->nama_lengkap) }}" required>
             </div>
-
-            <div class="form-group">
-                <label class="form-label">
-                    <ion-icon name="call"></ion-icon>
-                    Nomor HP
-                </label>
-                <input type="text" name="no_hp" class="form-control"
-                    value="{{ old('no_hp', $karyawan->no_hp) }}" required>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">
-                    <ion-icon name="mail"></ion-icon>
-                    Email
-                </label>
-                <input type="email" name="email" class="form-control"
-                    value="{{ old('email', $karyawan->email) }}" placeholder="Masukkan alamat email">
-            </div>
-
-            <input type="file" name="foto" id="foto" accept="image/*" style="display: none;">
         </div>
 
-        <div class="form-card">
-            <div class="form-card-title">
-                <ion-icon name="lock-closed"></ion-icon>
-                Ubah Password
+        {{-- Informasi Pribadi --}}
+        <div class="form-card" style="margin-bottom: 12px;">
+            <div class="card-head">
+                <div class="card-head-icon"><ion-icon name="person-outline"></ion-icon></div>
+                <div class="card-title">Informasi Pribadi</div>
             </div>
+            <div class="form-body">
+                <div class="form-group">
+                    <label class="form-label">
+                        <ion-icon name="person-outline"></ion-icon>
+                        Nama Lengkap
+                    </label>
+                    <div class="input-wrap">
+                        <ion-icon name="person-outline" class="input-left-icon"></ion-icon>
+                        <input type="text" name="nama_lengkap" class="form-control"
+                               value="{{ old('nama_lengkap', $karyawan->nama_lengkap) }}" required>
+                    </div>
+                </div>
 
-            <div class="form-group">
-                <label class="form-label">
-                    <ion-icon name="lock-closed"></ion-icon>
-                    Password Baru
-                </label>
-                <input type="password" name="password" class="form-control"
-                    placeholder="Masukkan password baru">
-                <div class="form-hint">
-                    <ion-icon name="information-circle"></ion-icon>
-                    Kosongkan jika tidak ingin mengubah password
+                <div class="form-group">
+                    <label class="form-label">
+                        <ion-icon name="call-outline"></ion-icon>
+                        Nomor HP
+                    </label>
+                    <div class="input-wrap">
+                        <ion-icon name="call-outline" class="input-left-icon"></ion-icon>
+                        <input type="tel" name="no_hp" class="form-control"
+                               value="{{ old('no_hp', $karyawan->no_hp) }}" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        <ion-icon name="mail-outline"></ion-icon>
+                        Email
+                    </label>
+                    <div class="input-wrap">
+                        <ion-icon name="mail-outline" class="input-left-icon"></ion-icon>
+                        <input type="email" name="email" class="form-control"
+                               value="{{ old('email', $karyawan->email) }}"
+                               placeholder="Masukkan alamat email">
+                    </div>
                 </div>
             </div>
+        </div>
 
-            <div class="form-group">
-                <label class="form-label">
-                    <ion-icon name="lock-closed"></ion-icon>
-                    Konfirmasi Password
-                </label>
-                <input type="password" name="password_confirmation" class="form-control"
-                    placeholder="Konfirmasi password baru">
+        {{-- Ubah Password --}}
+        <div class="form-card" style="margin-bottom: 12px;">
+            <div class="card-head">
+                <div class="card-head-icon"><ion-icon name="lock-closed-outline"></ion-icon></div>
+                <div class="card-title">Ubah Password</div>
+            </div>
+            <div class="form-body">
+                <div class="form-group">
+                    <label class="form-label">
+                        <ion-icon name="lock-closed-outline"></ion-icon>
+                        Password Baru
+                    </label>
+                    <div class="input-wrap">
+                        <ion-icon name="lock-closed-outline" class="input-left-icon"></ion-icon>
+                        <input type="password" name="password" id="password" class="form-control"
+                               placeholder="Masukkan password baru">
+                        <button type="button" class="eye-toggle" onclick="toggleEye('password','eye1')">
+                            <ion-icon name="eye-outline" id="eye1"></ion-icon>
+                        </button>
+                    </div>
+                    <div class="form-hint">
+                        <ion-icon name="information-circle-outline"></ion-icon>
+                        Kosongkan jika tidak ingin mengubah password
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        <ion-icon name="lock-closed-outline"></ion-icon>
+                        Konfirmasi Password
+                    </label>
+                    <div class="input-wrap">
+                        <ion-icon name="lock-closed-outline" class="input-left-icon"></ion-icon>
+                        <input type="password" name="password_confirmation" id="password-confirm" class="form-control"
+                               placeholder="Ulangi password baru">
+                        <button type="button" class="eye-toggle" onclick="toggleEye('password-confirm','eye2')">
+                            <ion-icon name="eye-outline" id="eye2"></ion-icon>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <button type="submit" class="btn-custom-primary" id="btn-save">
-            <ion-icon name="save"></ion-icon>
-            <span>Simpan Perubahan</span>
+        {{-- Submit --}}
+        <button type="submit" class="btn-submit" id="btn-save">
+            <ion-icon name="checkmark-circle-outline"></ion-icon>
+            Simpan Perubahan
         </button>
+
     </form>
 
-    <!-- Button Hapus Foto -->
+    {{-- Delete photo button (only if has photo) --}}
     @if(!empty($karyawan->foto))
-    <button type="button" class="btn-custom-danger" onclick="confirmDeletePhoto()">
-        <ion-icon name="trash"></ion-icon>
-        <span>Hapus Foto Profil</span>
+    <button type="button" class="btn-delete-photo" onclick="confirmDeletePhoto()">
+        <ion-icon name="trash-outline"></ion-icon>
+        Hapus Foto Profil
     </button>
     @endif
+
 </div>
 
 @endsection
 
 @push('myscript')
 <script>
-    // Preview foto saat dipilih
-    function previewPhoto(event) {
-        const file = event.target.files[0];
-
-        if (file) {
-            // Validasi ukuran (max 2MB)
-            if (file.size > 2048000) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'File Terlalu Besar',
-                    text: 'Ukuran file maksimal 2MB',
-                    confirmButtonColor: '#0053C5'
-                });
-                event.target.value = '';
-                return;
-            }
-
-            // Validasi tipe file
-            if (!file.type.match('image.*')) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Format File Salah',
-                    text: 'File harus berupa gambar (PNG, JPG, JPEG)',
-                    confirmButtonColor: '#0053C5'
-                });
-                event.target.value = '';
-                return;
-            }
-
-            // Preview
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                document.getElementById('photo-preview').src = e.target.result;
-
-                // Copy file ke form utama
-                const dataTransfer = new DataTransfer();
-                dataTransfer.items.add(file);
-                document.getElementById('foto').files = dataTransfer.files;
-
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Foto Dipilih',
-                    text: 'Klik "Simpan Perubahan" untuk mengupload foto',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-            }
-            reader.readAsDataURL(file);
+    /* ── Password eye toggle ── */
+    function toggleEye(inputId, iconId) {
+        var inp  = document.getElementById(inputId);
+        var icon = document.getElementById(iconId);
+        if (inp.type === 'password') {
+            inp.type = 'text';
+            icon.setAttribute('name', 'eye-off-outline');
+        } else {
+            inp.type = 'password';
+            icon.setAttribute('name', 'eye-outline');
         }
     }
 
-    // Confirm hapus foto
+    /* ── Handle photo change ── */
+    function handlePhotoChange(event) {
+        var file = event.target.files[0];
+        if (!file) return;
+
+        if (file.size > 2048000) {
+            Swal.fire({ icon:'error', title:'File Terlalu Besar', text:'Ukuran file maksimal 2MB', confirmButtonColor:'#2563EB' });
+            event.target.value = '';
+            return;
+        }
+
+        if (!file.type.match('image.*')) {
+            Swal.fire({ icon:'error', title:'Format Salah', text:'File harus berupa gambar (PNG, JPG, JPEG)', confirmButtonColor:'#2563EB' });
+            event.target.value = '';
+            return;
+        }
+
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            /* Update hero avatar & mini photo */
+            document.getElementById('photo-preview').src = e.target.result;
+            document.getElementById('photo-mini').src    = e.target.result;
+
+            /* Copy file to hidden input used by form */
+            var dt = new DataTransfer();
+            dt.items.add(file);
+            document.getElementById('foto-hidden').files = dt.files;
+
+            /* Show toast */
+            document.getElementById('photo-toast').classList.add('show');
+        };
+        reader.readAsDataURL(file);
+    }
+
+    /* ── Form validation ── */
+    $(function () {
+        $('#form-update').on('submit', function (e) {
+            var pwd  = $('[name="password"]').val();
+            var conf = $('[name="password_confirmation"]').val();
+
+            if (pwd !== '') {
+                if (pwd.length < 6) {
+                    e.preventDefault();
+                    return Swal.fire({ icon:'error', title:'Password Terlalu Pendek', text:'Password minimal 6 karakter', confirmButtonColor:'#2563EB' });
+                }
+                if (pwd !== conf) {
+                    e.preventDefault();
+                    return Swal.fire({ icon:'error', title:'Password Tidak Cocok', text:'Konfirmasi password tidak sesuai', confirmButtonColor:'#2563EB' });
+                }
+            }
+
+            var btn = $('#btn-save');
+            btn.prop('disabled', true).html('<ion-icon name="hourglass-outline"></ion-icon> Menyimpan…');
+        });
+
+        /* Auto-dismiss alerts */
+        setTimeout(function () {
+            $('.alert-box').fadeOut(400, function () { $(this).remove(); });
+        }, 5000);
+    });
+
+    /* ── Delete photo confirm ── */
     function confirmDeletePhoto() {
         Swal.fire({
             title: 'Hapus Foto Profil?',
-            text: 'Foto profil Anda akan dihapus',
+            text: 'Foto profil Anda akan dihapus secara permanen',
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#ef4444',
-            cancelButtonColor: '#64748b',
+            confirmButtonColor: '#EF4444',
+            cancelButtonColor: '#6B7280',
             confirmButtonText: 'Ya, Hapus',
             cancelButtonText: 'Batal'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Show loading
-                Swal.fire({
-                    title: 'Menghapus...',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
+        }).then(function (result) {
+            if (!result.isConfirmed) return;
 
-                // Create form dan submit
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = '/deleteprofilefoto';
+            Swal.fire({ title: 'Menghapus…', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
-                const csrfInput = document.createElement('input');
-                csrfInput.type = 'hidden';
-                csrfInput.name = '_token';
-                csrfInput.value = '{{ csrf_token() }}';
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/deleteprofilefoto';
 
-                const methodInput = document.createElement('input');
-                methodInput.type = 'hidden';
-                methodInput.name = '_method';
-                methodInput.value = 'DELETE';
+            var csrf = document.createElement('input');
+            csrf.type = 'hidden'; csrf.name = '_token';
+            csrf.value = '{{ csrf_token() }}';
 
-                form.appendChild(csrfInput);
-                form.appendChild(methodInput);
-                document.body.appendChild(form);
-                form.submit();
-            }
+            var method = document.createElement('input');
+            method.type = 'hidden'; method.name = '_method';
+            method.value = 'DELETE';
+
+            form.appendChild(csrf);
+            form.appendChild(method);
+            document.body.appendChild(form);
+            form.submit();
         });
     }
-
-    // Simple form validation
-    $(document).ready(function() {
-        $('#form-update').on('submit', function(e) {
-            const password = $(this).find('[name="password"]').val();
-            const password_confirmation = $(this).find('[name="password_confirmation"]').val();
-
-            // Validasi password jika diisi
-            if (password !== '') {
-                if (password.length < 6) {
-                    e.preventDefault();
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Password Terlalu Pendek',
-                        text: 'Password minimal 6 karakter',
-                        confirmButtonColor: '#0053C5'
-                    });
-                    return false;
-                }
-
-                if (password !== password_confirmation) {
-                    e.preventDefault();
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Password Tidak Cocok',
-                        text: 'Konfirmasi password tidak sesuai',
-                        confirmButtonColor: '#0053C5'
-                    });
-                    return false;
-                }
-            }
-
-            // Show loading
-            const btnSave = $('#btn-save');
-            btnSave.prop('disabled', true);
-            btnSave.html('<ion-icon name="hourglass-outline"></ion-icon> <span>Menyimpan...</span>');
-
-            // Form akan submit secara natural
-        });
-    });
-
-    // Auto hide alerts
-    setTimeout(function() {
-        $('.alert').fadeOut(300, function() {
-            $(this).remove();
-        });
-    }, 5000);
 </script>
 @endpush

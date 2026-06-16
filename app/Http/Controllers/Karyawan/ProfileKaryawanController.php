@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Karyawan;
 
 use App\Http\Controllers\Controller;
+use App\Models\FaceData;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -38,7 +39,9 @@ class ProfileKaryawanController extends Controller
                 return redirect('/dashboard')->with('error', 'Data karyawan tidak ditemukan');
             }
 
-            return view('karyawan.profile.edit', compact('karyawan')); // UPDATED PATH
+            return view('karyawan.profile.edit', compact('karyawan'))
+                ->with('hasFaceData', FaceData::where('nik', $nik)->where('status', 'active')->exists())
+                ->with('hasBiometric', !empty($karyawan->webauthn_id));
         } catch (Exception $e) {
             Log::error('ProfileKaryawan@edit Error: ' . $e->getMessage());
             return redirect('/dashboard')->with('error', 'Terjadi kesalahan saat memuat halaman profile');

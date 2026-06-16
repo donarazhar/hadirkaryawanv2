@@ -757,12 +757,9 @@
                     <div class="sec-nav-title">Face ID / Verifikasi Wajah</div>
                     <div class="sec-nav-desc">Daftar atau perbarui data wajah untuk absensi</div>
                 </div>
-                @php
-                    $hasFaceData = !empty($karyawan->foto_muka ?? null);
-                @endphp
                 <span class="sec-nav-badge {{ $hasFaceData ? 'active' : 'setup' }}">
                     <ion-icon name="{{ $hasFaceData ? 'checkmark-circle-outline' : 'alert-circle-outline' }}"></ion-icon>
-                    {{ $hasFaceData ? 'Aktif' : 'Siapkan' }}
+                    {{ $hasFaceData ? 'Terdaftar' : 'Siapkan' }}
                 </span>
                 <div class="sec-nav-arrow"><ion-icon name="chevron-forward-outline"></ion-icon></div>
             </a>
@@ -776,12 +773,9 @@
                     <div class="sec-nav-title">Fingerprint / Biometrik HP</div>
                     <div class="sec-nav-desc">Gunakan sensor sidik jari bawaan HP Anda</div>
                 </div>
-                @php
-                    $hasBiometric = !empty($karyawan->credential_id ?? null);
-                @endphp
                 <span class="sec-nav-badge {{ $hasBiometric ? 'active' : 'setup' }}">
                     <ion-icon name="{{ $hasBiometric ? 'checkmark-circle-outline' : 'alert-circle-outline' }}"></ion-icon>
-                    {{ $hasBiometric ? 'Aktif' : 'Siapkan' }}
+                    {{ $hasBiometric ? 'Terdaftar' : 'Siapkan' }}
                 </span>
                 <div class="sec-nav-arrow"><ion-icon name="chevron-forward-outline"></ion-icon></div>
             </a>

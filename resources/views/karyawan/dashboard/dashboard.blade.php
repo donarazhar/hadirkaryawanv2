@@ -2,1177 +2,1163 @@
 @section('content')
 
 <style>
-    /* ===== COMPACT & ELEGANT DASHBOARD (CLEAN WHITE) ===== */
+    /* ===== GOOGLE FONTS ===== */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+    /* ===== DESIGN TOKENS ===== */
     :root {
-        --primary: #0053C5;
-        --primary-dark: #003d94;
-        --primary-light: #2E7CE6;
-        --success: #10b981;
-        --danger: #ef4444;
-        --warning: #f59e0b;
-        --info: #06b6d4;
-        --purple: #8b5cf6;
-        --bg-main: #f8fafc;
-        --bg-card: #ffffff;
-        --text-primary: #0f172a;
-        --text-secondary: #64748b;
+        --primary: #2563EB;
+        --primary-soft: #EFF6FF;
+        --primary-border: #BFDBFE;
+        --success: #10B981;
+        --success-soft: #ECFDF5;
+        --danger: #EF4444;
+        --danger-soft: #FEF2F2;
+        --warning: #F59E0B;
+        --warning-soft: #FFFBEB;
+        --info: #06B6D4;
+        --info-soft: #ECFEFF;
+        --purple: #8B5CF6;
+        --purple-soft: #F5F3FF;
+        --text-900: #111827;
+        --text-600: #4B5563;
+        --text-400: #9CA3AF;
+        --border: #F1F5F9;
+        --border-medium: #E5E7EB;
+        --surface: #FFFFFF;
+        --bg: #F8FAFC;
+        --shadow-xs: 0 1px 2px rgba(0,0,0,0.04);
+        --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+        --shadow-md: 0 4px 6px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.04);
+        --shadow-lg: 0 10px 15px rgba(0,0,0,0.05), 0 4px 6px rgba(0,0,0,0.04);
+        --radius-sm: 10px;
+        --radius-md: 14px;
+        --radius-lg: 18px;
+        --radius-xl: 22px;
     }
 
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-        background: var(--bg-main);
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        background: var(--bg);
+        color: var(--text-900);
+        -webkit-font-smoothing: antialiased;
     }
 
-    /* ===== PROPER SPACING ===== */
-    .content-wrapper {
-        padding: 0 20px;
-        max-width: 100%;
+    /* ===== HEADER ===== */
+    .db-header {
+        background: var(--surface);
+        padding: 20px 20px 16px;
+        border-bottom: 1px solid var(--border);
+        position: sticky;
+        top: 0;
+        z-index: 100;
     }
 
-    /* ===== COMPACT HERO HEADER ===== */
-    .hero-header {
-        background: white;
-        padding: 24px 20px 70px 20px;
-        position: relative;
-        overflow: hidden;
-        border-bottom: 1px solid rgba(0, 83, 197, 0.08);
-    }
-
-    .hero-content {
-        position: relative;
-        z-index: 2;
-    }
-
-    .hero-top {
+    .db-header-top {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 16px;
     }
 
-    .hero-greeting h4 {
-        font-size: 12px;
+    .db-date {
+        font-size: 11px;
         font-weight: 600;
         color: var(--primary);
-        margin-bottom: 4px;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.8px;
+        margin-bottom: 3px;
     }
 
-    .hero-greeting h2 {
+    .db-greeting {
         font-size: 20px;
         font-weight: 700;
-        color: var(--text-primary);
-        margin: 0;
+        color: var(--text-900);
+        line-height: 1.2;
     }
 
-    .hero-avatar img {
-        width: 44px;
-        height: 44px;
-        border-radius: 12px;
-        border: 2.5px solid rgba(0, 83, 197, 0.1);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        object-fit: cover;
-    }
-
-    .hero-stats {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-    }
-
-    /* ===== LOGOUT BUTTON ===== */
-    .hero-actions {
+    .db-header-right {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 8px;
     }
 
-    .btn-logout {
-        width: 40px;
-        height: 40px;
-        background: #f1f5f9;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
+    .btn-icon {
+        width: 38px;
+        height: 38px;
+        background: var(--bg);
+        border: 1px solid var(--border-medium);
+        border-radius: var(--radius-sm);
         display: flex;
         align-items: center;
         justify-content: center;
+        text-decoration: none;
+        transition: background 0.2s, border-color 0.2s;
         cursor: pointer;
-        transition: all 0.3s ease;
+    }
+
+    .btn-icon:hover {
+        background: var(--danger-soft);
+        border-color: #FCA5A5;
+    }
+
+    .btn-icon:hover ion-icon {
+        color: var(--danger);
+    }
+
+    .btn-icon ion-icon {
+        font-size: 19px;
+        color: var(--text-600);
+        transition: color 0.2s;
+    }
+
+    .db-avatar {
+        width: 38px;
+        height: 38px;
+        border-radius: var(--radius-sm);
+        object-fit: cover;
+        border: 2px solid var(--border-medium);
+    }
+
+    /* ===== INFO CHIPS ===== */
+    .info-chips {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 14px;
+    }
+
+    .info-chip {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        background: var(--primary-soft);
+        border: 1px solid var(--primary-border);
+        border-radius: var(--radius-md);
+        padding: 10px 12px;
+        min-width: 0;
+    }
+
+    .info-chip-icon {
+        width: 28px;
+        height: 28px;
+        background: var(--primary);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        margin-top: 1px;
+    }
+
+    .info-chip-icon ion-icon {
+        font-size: 14px;
+        color: white;
+    }
+
+    .info-chip-body {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .info-chip-label {
+        font-size: 10px;
+        color: var(--primary);
+        font-weight: 500;
+        display: block;
+        line-height: 1;
+        margin-bottom: 3px;
+        opacity: 0.75;
+    }
+
+    .info-chip-value {
+        font-size: 12px;
+        color: var(--primary);
+        font-weight: 700;
+        display: block;
+        line-height: 1.35;
+        word-break: break-word;
+    }
+
+    /* ===== MAIN CONTENT ===== */
+    .db-body {
+        padding: 16px 16px 0;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    /* ===== SECTION HEADING ===== */
+    .sec-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .sec-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--text-900);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .sec-title ion-icon {
+        font-size: 16px;
+        color: var(--primary);
+    }
+
+    .sec-link {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--primary);
         text-decoration: none;
     }
 
-    .btn-logout ion-icon {
-        font-size: 22px;
-        color: var(--text-secondary);
+    /* ===== CARD BASE ===== */
+    .card {
+        background: var(--surface);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
     }
 
-    .btn-logout:active, .btn-logout:hover {
-        background: #e2e8f0;
-        color: var(--danger);
+    /* ===== ATTENDANCE CARD ===== */
+    .attend-card {
+        background: var(--surface);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
     }
 
-    .btn-logout:hover ion-icon {
-        color: var(--danger);
+    .shift-tag {
+        text-align: center;
+        padding: 8px 16px;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--primary);
+        background: var(--primary-soft);
+        border-bottom: 1px solid var(--primary-border);
+        letter-spacing: 0.3px;
     }
 
-    /* ===== LOGOUT MODAL ===== */
-    .logout-modal {
-        display: none;
-        position: fixed;
-        top: 0;
+    .attend-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0;
+    }
+
+    .attend-item {
+        padding: 16px;
+        position: relative;
+    }
+
+    .attend-item:first-child {
+        border-right: 1px solid var(--border);
+    }
+
+    .attend-item-head {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+
+    .attend-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .attend-dot.in { background: var(--success); }
+    .attend-dot.out { background: var(--danger); }
+
+    .attend-type {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--text-400);
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+    }
+
+    .attend-photo {
+        width: 44px;
+        height: 44px;
+        border-radius: var(--radius-sm);
+        object-fit: cover;
+        border: 1.5px solid var(--border-medium);
+        margin-bottom: 10px;
+    }
+
+    .attend-photo-placeholder {
+        width: 44px;
+        height: 44px;
+        border-radius: var(--radius-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 10px;
+        border: 1.5px dashed var(--border-medium);
+    }
+
+    .attend-photo-placeholder.in { background: var(--success-soft); }
+    .attend-photo-placeholder.out { background: var(--danger-soft); }
+
+    .attend-photo-placeholder ion-icon {
+        font-size: 20px;
+    }
+
+    .attend-photo-placeholder.in ion-icon { color: var(--success); }
+    .attend-photo-placeholder.out ion-icon { color: var(--danger); }
+
+    .attend-time {
+        font-size: 20px;
+        font-weight: 800;
+        color: var(--text-900);
+        letter-spacing: -0.5px;
+        margin-bottom: 6px;
+    }
+
+    .attend-time.empty {
+        color: var(--text-400);
+        font-size: 18px;
+    }
+
+    .attend-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        font-size: 10px;
+        font-weight: 600;
+        padding: 3px 8px;
+        border-radius: 50px;
+    }
+
+    .attend-badge.success {
+        background: var(--success-soft);
+        color: var(--success);
+    }
+
+    .attend-badge.pending {
+        background: var(--warning-soft);
+        color: #B45309;
+    }
+
+    .attend-badge ion-icon { font-size: 10px; }
+
+    /* ===== QR BUTTON ===== */
+    .qr-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin: 0;
+        padding: 13px 16px;
+        background: var(--surface);
+        border: 1.5px dashed var(--primary-border);
+        border-radius: var(--radius-lg);
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--primary);
+        transition: background 0.2s, border-color 0.2s;
+    }
+
+    .qr-btn:hover, .qr-btn:active {
+        background: var(--primary-soft);
+        border-color: var(--primary);
+    }
+
+    .qr-btn ion-icon {
+        font-size: 18px;
+    }
+
+    /* ===== STATS GRID ===== */
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 8px;
+    }
+
+    .stat-item {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 12px 8px;
+        text-align: center;
+        box-shadow: var(--shadow-xs);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-item::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
         left: 0;
         right: 0;
-        bottom: 0;
-        background: rgba(15, 23, 42, 0.4);
-        backdrop-filter: blur(4px);
-        z-index: 9999;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-        animation: fadeIn 0.3s ease;
+        height: 2.5px;
+        background: var(--stat-color);
+        border-radius: 0 0 2px 2px;
     }
 
-    .logout-modal.active {
-        display: flex;
-    }
-
-    .logout-modal-content {
-        background: white;
-        border-radius: 24px;
-        padding: 32px 24px 24px 24px;
-        max-width: 340px;
-        width: 100%;
-        text-align: center;
-        animation: slideUp 0.3s ease;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(0, 83, 197, 0.05);
-    }
-
-    .logout-modal-icon {
-        width: 64px;
-        height: 64px;
-        background: #fee2e2;
-        border-radius: 50%;
+    .stat-icon-wrap {
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin: 0 auto 20px;
+        margin: 0 auto 7px;
+        background: var(--stat-bg);
     }
 
-    .logout-modal-icon ion-icon {
-        font-size: 32px;
+    .stat-icon-wrap ion-icon {
+        font-size: 16px;
+        color: var(--stat-color);
+    }
+
+    .stat-num {
+        font-size: 18px;
+        font-weight: 800;
+        color: var(--text-900);
+        line-height: 1;
+        margin-bottom: 3px;
+    }
+
+    .stat-lbl {
+        font-size: 9px;
+        font-weight: 600;
+        color: var(--text-400);
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
+    .stat-item.hadir   { --stat-color: var(--primary);  --stat-bg: var(--primary-soft); }
+    .stat-item.telat   { --stat-color: var(--danger);   --stat-bg: var(--danger-soft); }
+    .stat-item.izin    { --stat-color: var(--info);     --stat-bg: var(--info-soft); }
+    .stat-item.sakit   { --stat-color: var(--warning);  --stat-bg: var(--warning-soft); }
+    .stat-item.cuti    { --stat-color: var(--purple);   --stat-bg: var(--purple-soft); }
+
+    /* ===== LEADERBOARD ===== */
+    .lb-list { display: flex; flex-direction: column; gap: 0; }
+
+    .lb-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 11px 14px;
+        border-bottom: 1px solid var(--border);
+        transition: background 0.15s;
+    }
+
+    .lb-item:last-child { border-bottom: none; }
+    .lb-item:hover { background: var(--bg); }
+
+    .lb-rank {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 12px;
+        flex-shrink: 0;
+        background: var(--rank-bg);
+        color: var(--rank-color);
+    }
+
+    .lb-item:nth-child(1) { --rank-bg: #FEF3C7; --rank-color: #D97706; }
+    .lb-item:nth-child(2) { --rank-bg: #F1F5F9; --rank-color: #475569; }
+    .lb-item:nth-child(3) { --rank-bg: #FEF2F2; --rank-color: #DC2626; }
+    .lb-item:nth-child(n+4) { --rank-bg: var(--bg); --rank-color: var(--text-400); }
+
+    .lb-avatar {
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
+        object-fit: cover;
+        border: 1.5px solid var(--border-medium);
+        flex-shrink: 0;
+    }
+
+    .lb-info { flex: 1; min-width: 0; }
+
+    .lb-name {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-900);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-bottom: 1px;
+    }
+
+    .lb-role {
+        font-size: 10px;
+        color: var(--text-400);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .lb-time {
+        font-size: 11px;
+        font-weight: 700;
+        padding: 4px 9px;
+        border-radius: 50px;
+        background: var(--success-soft);
+        color: var(--success);
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    /* ===== TAB NAV ===== */
+    .tab-nav {
+        display: flex;
+        background: var(--bg);
+        border-radius: var(--radius-sm);
+        padding: 3px;
+        border: 1px solid var(--border);
+        margin-bottom: 10px;
+    }
+
+    .tab-btn {
+        flex: 1;
+        padding: 9px 10px;
+        border: none;
+        background: transparent;
+        color: var(--text-400);
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        border-radius: 7px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        transition: all 0.2s;
+    }
+
+    .tab-btn ion-icon { font-size: 15px; }
+
+    .tab-btn.active {
+        background: var(--surface);
+        color: var(--primary);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    /* ===== HISTORY LIST ===== */
+    .hist-list { display: flex; flex-direction: column; gap: 0; }
+
+    .hist-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 11px 14px;
+        border-bottom: 1px solid var(--border);
+        transition: background 0.15s;
+    }
+
+    .hist-item:last-child { border-bottom: none; }
+    .hist-item:hover { background: var(--bg); }
+
+    .hist-photo {
+        width: 36px;
+        height: 36px;
+        border-radius: 9px;
+        object-fit: cover;
+        border: 1.5px solid var(--border-medium);
+        flex-shrink: 0;
+    }
+
+    .hist-info { flex: 1; min-width: 0; }
+
+    .hist-name {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-900);
+        margin-bottom: 1px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .hist-meta {
+        font-size: 10px;
+        color: var(--text-400);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .hist-badge {
+        font-size: 10px;
+        font-weight: 700;
+        padding: 3px 8px;
+        border-radius: 50px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .hist-badge.ontime {
+        background: var(--success-soft);
+        color: var(--success);
+    }
+
+    .hist-badge.late {
+        background: var(--danger-soft);
         color: var(--danger);
     }
 
-    .logout-modal-title {
-        font-size: 20px;
-        font-weight: 700;
-        color: var(--text-primary);
+    /* ===== EMPTY STATE ===== */
+    .empty-box {
+        text-align: center;
+        padding: 28px 20px;
+    }
+
+    .empty-box ion-icon {
+        font-size: 40px;
+        color: var(--border-medium);
         margin-bottom: 8px;
     }
 
-    .logout-modal-text {
-        font-size: 14px;
-        color: var(--text-secondary);
-        margin-bottom: 24px;
-        line-height: 1.5;
+    .empty-box p {
+        font-size: 12px;
+        color: var(--text-400);
+        font-weight: 500;
     }
 
-    .logout-modal-buttons {
+    /* ===== LOGOUT MODAL ===== */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(17, 24, 39, 0.35);
+        backdrop-filter: blur(6px);
+        z-index: 9999;
+        align-items: flex-end;
+        padding: 16px;
+        animation: fadeIn 0.25s ease;
+    }
+
+    .modal-overlay.active { display: flex; }
+
+    .modal-sheet {
+        background: var(--surface);
+        border-radius: var(--radius-xl) var(--radius-xl) var(--radius-lg) var(--radius-lg);
+        padding: 24px;
+        width: 100%;
+        max-width: 420px;
+        margin: 0 auto;
+        animation: slideUp 0.3s cubic-bezier(0.34, 1.2, 0.64, 1);
+        box-shadow: 0 -4px 32px rgba(0,0,0,0.08);
+    }
+
+    .modal-handle {
+        width: 36px;
+        height: 4px;
+        background: var(--border-medium);
+        border-radius: 2px;
+        margin: 0 auto 20px;
+    }
+
+    .modal-icon-ring {
+        width: 56px;
+        height: 56px;
+        background: var(--danger-soft);
+        border-radius: 16px;
         display: flex;
-        gap: 10px;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 14px;
     }
 
-    .btn-modal {
-        flex: 1;
-        padding: 12px 20px;
-        border: none;
-        border-radius: 12px;
-        font-size: 14px;
+    .modal-icon-ring ion-icon {
+        font-size: 28px;
+        color: var(--danger);
+    }
+
+    .modal-title {
+        font-size: 17px;
+        font-weight: 700;
+        color: var(--text-900);
+        text-align: center;
+        margin-bottom: 6px;
+    }
+
+    .modal-desc {
+        font-size: 13px;
+        color: var(--text-600);
+        text-align: center;
+        line-height: 1.6;
+        margin-bottom: 20px;
+    }
+
+    .modal-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .btn-cancel {
+        padding: 12px;
+        border: 1.5px solid var(--border-medium);
+        background: var(--surface);
+        border-radius: var(--radius-md);
+        font-size: 13px;
         font-weight: 600;
+        color: var(--text-600);
         cursor: pointer;
-        transition: all 0.3s ease;
+        font-family: 'Inter', sans-serif;
+        transition: background 0.2s;
     }
 
-    .btn-modal-cancel {
-        background: #f1f5f9;
-        color: var(--text-secondary);
-    }
+    .btn-cancel:hover { background: var(--bg); }
 
-    .btn-modal-cancel:active {
-        background: #e2e8f0;
-        transform: scale(0.98);
-    }
-
-    .btn-modal-confirm {
+    .btn-confirm {
+        padding: 12px;
+        border: none;
         background: var(--danger);
+        border-radius: var(--radius-md);
+        font-size: 13px;
+        font-weight: 600;
         color: white;
-        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+        cursor: pointer;
+        font-family: 'Inter', sans-serif;
+        width: 100%;
+        transition: opacity 0.2s;
     }
 
-    .btn-modal-confirm:active {
-        opacity: 0.9;
-        transform: scale(0.98);
+    .btn-confirm:hover { opacity: 0.9; }
+
+    /* ===== DIVIDER ===== */
+    .divider {
+        height: 1px;
+        background: var(--border);
+        margin: 0 -16px;
     }
 
+    /* ===== BOTTOM SPACER ===== */
+    .bottom-spacer { height: 100px; }
+
+    /* ===== ANIMATIONS ===== */
     @keyframes fadeIn {
         from { opacity: 0; }
         to { opacity: 1; }
     }
 
     @keyframes slideUp {
-        from { opacity: 0; transform: translateY(30px); }
+        from { opacity: 0; transform: translateY(40px); }
         to { opacity: 1; transform: translateY(0); }
     }
 
-    .stat-badge {
-        background: #f8fafc;
-        border-radius: 12px;
-        padding: 10px 12px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        border: 1px solid rgba(0, 83, 197, 0.1);
+    @keyframes fadeSlideIn {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
     }
 
-    .stat-badge-icon {
-        width: 36px;
-        height: 36px;
-        background: rgba(0, 83, 197, 0.08);
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+    .db-body > * {
+        animation: fadeSlideIn 0.3s ease both;
     }
 
-    .stat-badge-icon ion-icon {
-        font-size: 20px;
-        color: var(--primary);
-    }
-
-    .stat-badge-info span {
-        display: block;
-        font-size: 10px;
-        color: var(--text-secondary);
-        margin-bottom: 2px;
-    }
-
-    .stat-badge-info strong {
-        font-size: 13px;
-        color: var(--text-primary);
-        font-weight: 600;
-    }
-
-    /* ===== COMPACT PRESENCE CARD ===== */
-    .floating-presence {
-        position: relative;
-        margin-top: -55px;
-        padding: 0 20px;
-        z-index: 10;
-        margin-bottom: 20px;
-    }
-
-    .presence-card {
-        background: var(--bg-card);
-        border-radius: 20px;
-        padding: 16px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-        border: 1px solid rgba(0, 83, 197, 0.08);
-    }
-
-    .presence-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-    }
-
-    .presence-item {
-        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-        border-radius: 14px;
-        padding: 14px;
-        position: relative;
-        border-left: 3px solid var(--border-color);
-    }
-
-    .presence-item.check-in {
-        --border-color: var(--success);
-    }
-
-    .presence-item.check-out {
-        --border-color: var(--danger);
-    }
-
-    .presence-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 10px;
-        background: var(--icon-bg);
-    }
-
-    .presence-item.check-in .presence-icon {
-        --icon-bg: linear-gradient(135deg, var(--success) 0%, #34d399 100%);
-    }
-
-    .presence-item.check-out .presence-icon {
-        --icon-bg: linear-gradient(135deg, var(--danger) 0%, #f87171 100%);
-    }
-
-    .presence-icon ion-icon {
-        font-size: 20px;
-        color: white;
-    }
-
-    .presence-icon img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        border-radius: 12px;
-    }
-
-    .presence-label {
-        font-size: 10px;
-        font-weight: 600;
-        color: var(--text-secondary);
-        text-transform: uppercase;
-        letter-spacing: 0.3px;
-        margin-bottom: 4px;
-    }
-
-    .presence-time {
-        font-size: 16px;
-        font-weight: 700;
-        color: var(--text-primary);
-    }
-
-    .presence-status {
-        display: inline-flex;
-        align-items: center;
-        gap: 3px;
-        font-size: 9px;
-        padding: 3px 8px;
-        border-radius: 6px;
-        font-weight: 600;
-        margin-top: 6px;
-        background: var(--status-bg);
-        color: var(--status-color);
-    }
-
-    .presence-status.success {
-        --status-bg: #dcfce7;
-        --status-color: #16a34a;
-    }
-
-    .presence-status.pending {
-        --status-bg: #fef3c7;
-        --status-color: #d97706;
-    }
-
-    /* ===== SECTION WRAPPER ===== */
-    .section-wrapper {
-        padding: 0 20px 20px 20px;
-    }
-
-    .section-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 14px;
-    }
-
-    .section-title {
-        font-size: 16px;
-        font-weight: 700;
-        color: var(--text-primary);
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .section-title ion-icon {
-        font-size: 20px;
-        color: var(--primary);
-    }
-
-    .view-all {
-        font-size: 12px;
-        color: var(--primary);
-        font-weight: 600;
-        text-decoration: none;
-    }
-
-    /* ===== STATS SECTION ===== */
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 8px;
-    }
-
-    .stat-card {
-        background: var(--bg-card);
-        border-radius: 14px;
-        padding: 14px 10px;
-        text-align: center;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-        border: 1px solid rgba(0, 83, 197, 0.05);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .stat-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background: var(--color);
-    }
-
-    .stat-icon {
-        width: 38px;
-        height: 38px;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 8px;
-        background: var(--bg-color);
-    }
-
-    .stat-icon ion-icon {
-        font-size: 18px;
-        color: var(--color);
-    }
-
-    .stat-value {
-        font-size: 18px;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin-bottom: 2px;
-    }
-
-    .stat-label {
-        font-size: 10px;
-        color: var(--text-secondary);
-        font-weight: 600;
-    }
-
-    .stat-card.present {
-        --color: var(--primary);
-        --bg-color: #dbeafe;
-    }
-
-    .stat-card.late {
-        --color: var(--danger);
-        --bg-color: #fee2e2;
-    }
-
-    .stat-card.permit {
-        --color: var(--info);
-        --bg-color: #cffafe;
-    }
-
-    .stat-card.sick {
-        --color: var(--warning);
-        --bg-color: #fef3c7;
-    }
-
-    .stat-card.leave {
-        --color: var(--purple);
-        --bg-color: #ede9fe;
-    }
-
-    /* ===== LEADERBOARD ===== */
-    .leaderboard-card {
-        background: var(--bg-card);
-        border-radius: 16px;
-        padding: 16px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-        border: 1px solid rgba(0, 83, 197, 0.05);
-    }
-
-    .leaderboard-item {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px;
-        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-        border-radius: 12px;
-        margin-bottom: 8px;
-        border-left: 3px solid var(--rank-color);
-    }
-
-    .leaderboard-item:last-child {
-        margin-bottom: 0;
-    }
-
-    .leaderboard-rank {
-        width: 32px;
-        height: 32px;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 700;
-        font-size: 14px;
-        flex-shrink: 0;
-        background: var(--rank-bg);
-        color: var(--rank-text);
-    }
-
-    .leaderboard-item:nth-child(1) {
-        --rank-color: #fbbf24;
-        --rank-bg: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-        --rank-text: white;
-    }
-
-    .leaderboard-item:nth-child(2) {
-        --rank-color: #94a3b8;
-        --rank-bg: linear-gradient(135deg, #94a3b8 0%, #64748b 100%);
-        --rank-text: white;
-    }
-
-    .leaderboard-item:nth-child(3) {
-        --rank-color: #fb923c;
-        --rank-bg: linear-gradient(135deg, #fb923c 0%, #f97316 100%);
-        --rank-text: white;
-    }
-
-    .leaderboard-item:nth-child(n+4) {
-        --rank-color: #e2e8f0;
-        --rank-bg: white;
-        --rank-text: #64748b;
-    }
-
-    .leaderboard-avatar {
-        width: 36px;
-        height: 36px;
-        border-radius: 10px;
-        border: 2px solid white;
-        object-fit: cover;
-    }
-
-    .leaderboard-info {
-        flex: 1;
-    }
-
-    .leaderboard-name {
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--text-primary);
-        margin-bottom: 2px;
-    }
-
-    .leaderboard-role {
-        font-size: 10px;
-        color: var(--text-secondary);
-    }
-
-    .leaderboard-time {
-        font-size: 11px;
-        font-weight: 600;
-        padding: 4px 10px;
-        border-radius: 8px;
-        background: linear-gradient(135deg, var(--success) 0%, #34d399 100%);
-        color: white;
-    }
-
-    /* ===== TAB NAVIGATION (BARU) ===== */
-    .tab-navigation {
-        display: flex;
-        background: white;
-        border-radius: 12px;
-        padding: 4px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-        border: 1px solid rgba(0, 83, 197, 0.05);
-        margin-bottom: 14px;
-    }
-
-    .tab-button {
-        flex: 1;
-        padding: 10px 12px;
-        border: none;
-        background: transparent;
-        color: var(--text-secondary);
-        font-size: 13px;
-        font-weight: 600;
-        border-radius: 10px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-    }
-
-    .tab-button ion-icon {
-        font-size: 18px;
-    }
-
-    .tab-button.active {
-        background: rgba(0, 83, 197, 0.08);
-        color: var(--primary);
-        box-shadow: none;
-    }
-
-    .tab-content {
-        display: none;
-    }
-
-    .tab-content.active {
-        display: block;
-    }
-
-    /* ===== RIWAYAT CARDS ===== */
-    .riwayat-card {
-        background: var(--bg-card);
-        border-radius: 16px;
-        padding: 16px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-        border: 1px solid rgba(0, 83, 197, 0.05);
-    }
-
-    .riwayat-item {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px;
-        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-        border-radius: 12px;
-        margin-bottom: 8px;
-        border-left: 3px solid var(--status-border);
-    }
-
-    .riwayat-item:last-child {
-        margin-bottom: 0;
-    }
-
-    .riwayat-item.late {
-        --status-border: var(--danger);
-    }
-
-    .riwayat-item.ontime {
-        --status-border: var(--success);
-    }
-
-    .riwayat-photo {
-        width: 40px;
-        height: 40px;
-        border-radius: 10px;
-        object-fit: cover;
-        border: 2px solid white;
-    }
-
-    .riwayat-info {
-        flex: 1;
-    }
-
-    .riwayat-name {
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--text-primary);
-        margin-bottom: 3px;
-    }
-
-    .riwayat-meta {
-        font-size: 10px;
-        color: var(--text-secondary);
-    }
-
-    .riwayat-badge {
-        font-size: 10px;
-        font-weight: 600;
-        padding: 4px 8px;
-        border-radius: 6px;
-        background: var(--badge-bg);
-        color: var(--badge-color);
-    }
-
-    .riwayat-item.late .riwayat-badge {
-        --badge-bg: #fee2e2;
-        --badge-color: #dc2626;
-    }
-
-    .riwayat-item.ontime .riwayat-badge {
-        --badge-bg: #dcfce7;
-        --badge-color: #16a34a;
-    }
-
-    /* Empty State */
-    .empty-state {
-        text-align: center;
-        padding: 30px 20px;
-        color: var(--text-secondary);
-    }
-
-    .empty-state ion-icon {
-        font-size: 48px;
-        color: #cbd5e1;
-        margin-bottom: 12px;
-    }
-
-    .empty-state p {
-        font-size: 13px;
-        margin: 0;
-    }
-
-    /* ===== BOTTOM SPACING ===== */
-    .bottom-spacer {
-        padding-bottom: 100px;
-    }
-
-    /* ===== RESPONSIVE ===== */
-    @media (max-width: 375px) {
-
-        .content-wrapper,
-        .section-wrapper,
-        .floating-presence {
-            padding-left: 16px;
-            padding-right: 16px;
-        }
-
-        .stats-grid {
-            gap: 8px;
-        }
-
-        .stat-card {
-            padding: 12px 8px;
-        }
-    }
+    .db-body > *:nth-child(1) { animation-delay: 0.05s; }
+    .db-body > *:nth-child(2) { animation-delay: 0.1s; }
+    .db-body > *:nth-child(3) { animation-delay: 0.15s; }
+    .db-body > *:nth-child(4) { animation-delay: 0.2s; }
+    .db-body > *:nth-child(5) { animation-delay: 0.25s; }
 </style>
 
-<!-- Hero Header -->
-<div class="hero-header">
-    <div class="hero-content content-wrapper">
-        <div class="hero-top">
-            <div class="hero-greeting">
-                <h4>{{ date('l, d M Y') }}</h4>
-                <h2>Hi, {{ explode(' ', Auth::guard('karyawan')->user()->nama_lengkap)[0] }}! 👋</h2>
+{{-- ===== HEADER ===== --}}
+<div class="db-header">
+    <div class="db-header-top">
+        <div>
+            <div class="db-date">{{ date('l, d M Y') }}</div>
+            <div class="db-greeting">Hi, {{ explode(' ', Auth::guard('karyawan')->user()->nama_lengkap)[0] }}! 👋</div>
+        </div>
+        <div class="db-header-right">
+            <a href="#" class="btn-icon" onclick="openLogoutModal(event)" title="Logout">
+                <ion-icon name="log-out-outline"></ion-icon>
+            </a>
+            @php
+                $avatarPath = !empty(Auth::guard('karyawan')->user()->foto)
+                    ? Storage::url('uploads/karyawan/' . Auth::guard('karyawan')->user()->foto)
+                    : asset('assets/img/sample/avatar/avatar1.jpg');
+            @endphp
+            <img src="{{ url($avatarPath) }}" alt="avatar" class="db-avatar">
+        </div>
+    </div>
+
+    <div class="info-chips">
+        <div class="info-chip">
+            <div class="info-chip-icon">
+                <ion-icon name="briefcase"></ion-icon>
             </div>
-            <div class="hero-actions">
-                <!-- Tombol Logout -->
-                <a href="#" class="btn-logout" onclick="openLogoutModal(event)">
-                    <ion-icon name="log-out-outline"></ion-icon>
-                </a>
-                <!-- Avatar -->
-                <div class="hero-avatar">
-                    @if (!empty(Auth::guard('karyawan')->user()->foto))
-                    @php
-                    $path = Storage::url('uploads/karyawan/' . Auth::guard('karyawan')->user()->foto);
-                    @endphp
-                    <img src="{{ url($path) }}" alt="avatar">
-                    @else
-                    <img src="{{ asset('assets/img/sample/avatar/avatar1.jpg') }}" alt="avatar">
-                    @endif
-                </div>
+            <div class="info-chip-body">
+                <span class="info-chip-label">Jabatan</span>
+                <span class="info-chip-value">{{ Auth::guard('karyawan')->user()->jabatan }}</span>
             </div>
         </div>
-
-        <div class="hero-stats">
-            <div class="stat-badge">
-                <div class="stat-badge-icon">
-                    <ion-icon name="briefcase"></ion-icon>
-                </div>
-                <div class="stat-badge-info">
-                    <span>Jabatan</span>
-                    <strong>{{ Auth::guard('karyawan')->user()->jabatan }}</strong>
-                </div>
+        <div class="info-chip">
+            <div class="info-chip-icon">
+                <ion-icon name="location"></ion-icon>
             </div>
-            <div class="stat-badge">
-                <div class="stat-badge-icon">
-                    <ion-icon name="location"></ion-icon>
-                </div>
-                <div class="stat-badge-info">
-                    <span>Cabang</span>
-                    <strong>{{ Auth::guard('karyawan')->user()->cabang->nama_cabang ?? 'N/A' }}</strong>
-                </div>
+            <div class="info-chip-body">
+                <span class="info-chip-label">Cabang</span>
+                <span class="info-chip-value">{{ Auth::guard('karyawan')->user()->cabang->nama_cabang ?? 'N/A' }}</span>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Logout Modal -->
-<div class="logout-modal" id="logoutModal">
-    <div class="logout-modal-content">
-        <div class="logout-modal-icon">
+{{-- ===== LOGOUT MODAL ===== --}}
+<div class="modal-overlay" id="logoutModal">
+    <div class="modal-sheet">
+        <div class="modal-handle"></div>
+        <div class="modal-icon-ring">
             <ion-icon name="log-out-outline"></ion-icon>
         </div>
-        <h3 class="logout-modal-title">Konfirmasi Logout</h3>
-        <p class="logout-modal-text">Apakah Anda yakin ingin keluar dari aplikasi? Anda perlu login kembali untuk mengakses dashboard.</p>
-        <div class="logout-modal-buttons">
-            <button type="button" class="btn-modal btn-modal-cancel" onclick="closeLogoutModal()">
-                Batal
-            </button>
-            <form method="POST" action="{{ route('proseslogout') }}" style="flex: 1; margin: 0;">
+        <h3 class="modal-title">Keluar Aplikasi?</h3>
+        <p class="modal-desc">Anda akan keluar dari sesi ini dan perlu login kembali untuk mengakses dashboard.</p>
+        <div class="modal-actions">
+            <button type="button" class="btn-cancel" onclick="closeLogoutModal()">Batal</button>
+            <form method="POST" action="{{ route('proseslogout') }}" style="margin:0;">
                 @csrf
-                <button type="submit" class="btn-modal btn-modal-confirm" style="width: 100%;">
-                    Ya, Keluar
-                </button>
+                <button type="submit" class="btn-confirm">Ya, Keluar</button>
             </form>
         </div>
     </div>
 </div>
 
-<!-- Floating Presence Card -->
-<div class="floating-presence">
-    @if($presensihariini->isEmpty())
-    <div class="presence-card">
-        <div class="presence-grid">
-            <div class="presence-item check-in">
-                <div class="presence-icon">
-                    <ion-icon name="log-in"></ion-icon>
-                </div>
-                <div class="presence-label">Check In</div>
-                <div class="presence-time">--:--</div>
-                <span class="presence-status pending">
-                    <ion-icon name="time"></ion-icon> Belum Absen
-                </span>
-            </div>
-            <div class="presence-item check-out">
-                <div class="presence-icon">
-                    <ion-icon name="log-out"></ion-icon>
-                </div>
-                <div class="presence-label">Check Out</div>
-                <div class="presence-time">--:--</div>
-                <span class="presence-status pending">
-                    <ion-icon name="time"></ion-icon> Belum Absen
-                </span>
-            </div>
-        </div>
-    </div>
-    @else
-    <div class="presence-slider" style="display: flex; flex-direction: column; gap: 10px;">
-        @foreach($presensihariini as $presensi)
-        <div class="presence-card">
-            @if($presensi->shift_ke != null)
-            <div style="text-align: center; margin-bottom: 12px; font-size: 13px; font-weight: 700; color: var(--primary); background: rgba(0, 83, 197, 0.05); padding: 4px; border-radius: 8px;">
-                Shift {{ $presensi->shift_ke }} - {{ $presensi->nama_shift }}
-            </div>
-            @endif
-            <div class="presence-grid">
-                <div class="presence-item check-in">
-                    <div class="presence-icon">
-                        @if ($presensi->foto_in)
-                        @php
-                        $foto_path = 'uploads/absensi/' . $presensi->foto_in;
-                        $foto_exists = Storage::disk('public')->exists($foto_path);
-                        @endphp
-                        @if($foto_exists)
-                        <img src="{{ Storage::url($foto_path) }}" alt="Check In">
-                        @else
-                        <img src="{{ asset('assets/img/sample/avatar/noprofile.svg') }}" alt="No Photo">
-                        @endif
-                        @else
-                        <img src="{{ asset('assets/img/sample/avatar/noprofile.svg') }}" alt="No Photo">
-                        @endif
+{{-- ===== MAIN BODY ===== --}}
+<div class="db-body">
+
+    {{-- ATTENDANCE SECTION --}}
+    <div>
+        @if($presensihariini->isEmpty())
+        <div class="attend-card">
+            <div class="attend-grid">
+                <div class="attend-item">
+                    <div class="attend-item-head">
+                        <div class="attend-dot in"></div>
+                        <span class="attend-type">Check In</span>
                     </div>
-                    <div class="presence-label">Check In</div>
-                    <div class="presence-time">{{ $presensi->jam_in }}</div>
-                    <span class="presence-status success">
-                        <ion-icon name="checkmark-circle"></ion-icon> Tercatat
-                    </span>
-                </div>
-
-                <div class="presence-item check-out">
-                    <div class="presence-icon">
-                        @if ($presensi->jam_out != null)
-                        @if ($presensi->foto_out)
-                        @php
-                        $foto_path = 'uploads/absensi/' . $presensi->foto_out;
-                        $foto_exists = Storage::disk('public')->exists($foto_path);
-                        @endphp
-                        @if($foto_exists)
-                        <img src="{{ Storage::url($foto_path) }}" alt="Check Out">
-                        @else
-                        <img src="{{ asset('assets/img/sample/avatar/noprofile.png') }}" alt="No Photo">
-                        @endif
-                        @else
-                        <img src="{{ asset('assets/img/sample/avatar/noprofile.png') }}" alt="No Photo">
-                        @endif
-                        @else
-                        <ion-icon name="log-out"></ion-icon>
-                        @endif
+                    <div class="attend-photo-placeholder in">
+                        <ion-icon name="log-in-outline"></ion-icon>
                     </div>
-                    <div class="presence-label">Check Out</div>
-                    <div class="presence-time">{{ $presensi->jam_out != null ? $presensi->jam_out : '--:--' }}</div>
-                    @if ($presensi->jam_out != null)
-                    <span class="presence-status success">
-                        <ion-icon name="checkmark-circle"></ion-icon> Tercatat
+                    <div class="attend-time empty">--:--</div>
+                    <span class="attend-badge pending">
+                        <ion-icon name="time-outline"></ion-icon> Belum Absen
                     </span>
-                    @else
-                    <span class="presence-status pending">
-                        <ion-icon name="time"></ion-icon> Belum Absen
+                </div>
+                <div class="attend-item">
+                    <div class="attend-item-head">
+                        <div class="attend-dot out"></div>
+                        <span class="attend-type">Check Out</span>
+                    </div>
+                    <div class="attend-photo-placeholder out">
+                        <ion-icon name="log-out-outline"></ion-icon>
+                    </div>
+                    <div class="attend-time empty">--:--</div>
+                    <span class="attend-badge pending">
+                        <ion-icon name="time-outline"></ion-icon> Belum Absen
                     </span>
-                    @endif
                 </div>
             </div>
         </div>
-        @endforeach
-    </div>
-    @endif
-
-    <div style="padding: 0 20px; margin-top: 15px; margin-bottom: -15px;">
-        <a href="{{ route('presensi.qrScan') }}" style="display: flex; align-items: center; justify-content: center; gap: 8px; background: white; border: 1.5px dashed #0053C5; color: #0053C5; padding: 12px; border-radius: 12px; text-decoration: none; font-weight: 600; font-size: 14px; transition: all 0.2s;">
-            <ion-icon name="qr-code-outline" style="font-size: 20px;"></ion-icon>
-            Absen via QR Code
-        </a>
-    </div>
-</div>
-
-<!-- Stats Section -->
-<div class="section-wrapper">
-    <div class="section-header">
-        <h3 class="section-title">
-            <ion-icon name="bar-chart"></ion-icon>
-            Rekap {{ $namabulan[$bulanini] }}
-        </h3>
-        <a href="/presensi/histori" class="view-all">Lihat Semua →</a>
-    </div>
-
-    <div class="stats-grid">
-        <div class="stat-card present">
-            <div class="stat-icon">
-                <ion-icon name="checkmark-circle"></ion-icon>
-            </div>
-            <div class="stat-value">{{ $rekappresensi->jmlhadir }}</div>
-            <div class="stat-label">Hadir</div>
-        </div>
-
-        <div class="stat-card late">
-            <div class="stat-icon">
-                <ion-icon name="alarm"></ion-icon>
-            </div>
-            <div class="stat-value">{{ $rekappresensi->jmlterlambat }}</div>
-            <div class="stat-label">Telat</div>
-        </div>
-
-        <div class="stat-card permit">
-            <div class="stat-icon">
-                <ion-icon name="document-text"></ion-icon>
-            </div>
-            <div class="stat-value">{{ $rekapizin != null ? $rekapizin->jmlizin : 0 }}</div>
-            <div class="stat-label">Izin</div>
-        </div>
-
-        <div class="stat-card sick">
-            <div class="stat-icon">
-                <ion-icon name="medkit"></ion-icon>
-            </div>
-            <div class="stat-value">{{ $rekapizin != null ? $rekapizin->jmlsakit : 0 }}</div>
-            <div class="stat-label">Sakit</div>
-        </div>
-
-        <div class="stat-card leave">
-            <div class="stat-icon">
-                <ion-icon name="calendar-number"></ion-icon>
-            </div>
-            <div class="stat-value">{{ $rekapizin != null ? $rekapizin->jmlcuti : 0 }}</div>
-            <div class="stat-label">Cuti</div>
-        </div>
-    </div>
-</div>
-
-<!-- Leaderboard -->
-<div class="section-wrapper">
-    <div class="section-header">
-        <h3 class="section-title">
-            <ion-icon name="trophy"></ion-icon>
-            Top 5 Hari Ini
-        </h3>
-    </div>
-
-    <div class="leaderboard-card">
-        @if($leaderboard->count() > 0)
-        @foreach ($leaderboard->take(5) as $index => $d)
-        <div class="leaderboard-item">
-            <div class="leaderboard-rank">{{ $index + 1 }}</div>
-            @php
-            $avatar_path = !empty($d->foto) ? 'uploads/karyawan/' . $d->foto : null;
-            $avatar_exists = $avatar_path && Storage::disk('public')->exists($avatar_path);
-            @endphp
-            @if($avatar_exists)
-            <img src="{{ Storage::url($avatar_path) }}" alt="avatar" class="leaderboard-avatar">
-            @else
-            <img src="{{ asset('assets/img/sample/avatar/noprofile.png') }}" alt="avatar" class="leaderboard-avatar">
-            @endif
-            <div class="leaderboard-info">
-                <div class="leaderboard-name">{{ $d->nama_lengkap }}</div>
-                <div class="leaderboard-role">{{ $d->jabatan }}</div>
-            </div>
-            <div class="leaderboard-time">{{ $d->jam_in }}</div>
-        </div>
-        @endforeach
         @else
-        <div class="empty-state">
-            <ion-icon name="people-outline"></ion-icon>
-            <p>Belum ada yang presensi hari ini</p>
-        </div>
-        @endif
-    </div>
-</div>
-
-<!-- TAB: Riwayat Tim & Riwayat Saya -->
-<div class="section-wrapper bottom-spacer">
-    <div class="section-header">
-        <h3 class="section-title">
-            <ion-icon name="time"></ion-icon>
-            Riwayat Presensi
-        </h3>
-    </div>
-
-    <!-- Tab Navigation -->
-    <div class="tab-navigation">
-        <button class="tab-button active" onclick="switchTab('tim')">
-            <ion-icon name="people"></ion-icon>
-            <span>Tim Hari Ini</span>
-        </button>
-        <button class="tab-button" onclick="switchTab('saya')">
-            <ion-icon name="person"></ion-icon>
-            <span>Riwayat Saya</span>
-        </button>
-    </div>
-
-    <!-- Tab Content: Riwayat Tim (Hari Ini) -->
-    <div class="tab-content active" id="tab-tim">
-        <div class="riwayat-card">
-            @if($riwayattim->count() > 0)
-            @foreach ($riwayattim as $d)
-            @php
-            $foto_path = 'uploads/absensi/' . $d->foto_in;
-            $foto_exists = Storage::disk('public')->exists($foto_path);
-            $isLate = $d->jam_in > $d->jam_masuk;
-            @endphp
-            <div class="riwayat-item {{ $isLate ? 'late' : 'ontime' }}">
-                @if($foto_exists)
-                <img src="{{ Storage::url($foto_path) }}" alt="foto" class="riwayat-photo">
-                @else
-                <img src="{{ asset('assets/img/sample/avatar/noprofile.png') }}" alt="foto" class="riwayat-photo">
-                @endif
-                <div class="riwayat-info">
-                    <div class="riwayat-name">{{ $d->nama_lengkap }}</div>
-                    <div class="riwayat-meta">
-                        {{ $d->jabatan }} • {{ $d->jam_in }}
-                    </div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+            @foreach($presensihariini as $presensi)
+            <div class="attend-card">
+                @if($presensi->shift_ke != null)
+                <div class="shift-tag">
+                    Shift {{ $presensi->shift_ke }} · {{ $presensi->nama_shift }}
                 </div>
-                <div class="riwayat-badge">
-                    {{ $isLate ? 'Terlambat' : 'Tepat Waktu' }}
+                @endif
+                <div class="attend-grid">
+                    <div class="attend-item">
+                        <div class="attend-item-head">
+                            <div class="attend-dot in"></div>
+                            <span class="attend-type">Check In</span>
+                        </div>
+                        @if ($presensi->foto_in)
+                            @php
+                                $fp = 'uploads/absensi/' . $presensi->foto_in;
+                                $fe = Storage::disk('public')->exists($fp);
+                            @endphp
+                            @if($fe)
+                                <img src="{{ Storage::url($fp) }}" alt="Check In" class="attend-photo">
+                            @else
+                                <img src="{{ asset('assets/img/sample/avatar/noprofile.svg') }}" alt="No Photo" class="attend-photo">
+                            @endif
+                        @else
+                            <img src="{{ asset('assets/img/sample/avatar/noprofile.svg') }}" alt="No Photo" class="attend-photo">
+                        @endif
+                        <div class="attend-time">{{ $presensi->jam_in }}</div>
+                        <span class="attend-badge success">
+                            <ion-icon name="checkmark-circle-outline"></ion-icon> Tercatat
+                        </span>
+                    </div>
+                    <div class="attend-item">
+                        <div class="attend-item-head">
+                            <div class="attend-dot out"></div>
+                            <span class="attend-type">Check Out</span>
+                        </div>
+                        @if ($presensi->jam_out != null)
+                            @if ($presensi->foto_out)
+                                @php
+                                    $fp2 = 'uploads/absensi/' . $presensi->foto_out;
+                                    $fe2 = Storage::disk('public')->exists($fp2);
+                                @endphp
+                                @if($fe2)
+                                    <img src="{{ Storage::url($fp2) }}" alt="Check Out" class="attend-photo">
+                                @else
+                                    <img src="{{ asset('assets/img/sample/avatar/noprofile.png') }}" alt="No Photo" class="attend-photo">
+                                @endif
+                            @else
+                                <img src="{{ asset('assets/img/sample/avatar/noprofile.png') }}" alt="No Photo" class="attend-photo">
+                            @endif
+                            <div class="attend-time">{{ $presensi->jam_out }}</div>
+                            <span class="attend-badge success">
+                                <ion-icon name="checkmark-circle-outline"></ion-icon> Tercatat
+                            </span>
+                        @else
+                            <div class="attend-photo-placeholder out">
+                                <ion-icon name="log-out-outline"></ion-icon>
+                            </div>
+                            <div class="attend-time empty">--:--</div>
+                            <span class="attend-badge pending">
+                                <ion-icon name="time-outline"></ion-icon> Belum Absen
+                            </span>
+                        @endif
+                    </div>
                 </div>
             </div>
             @endforeach
+        </div>
+        @endif
+
+        {{-- QR Code Button --}}
+        <a href="{{ route('presensi.qrScan') }}" class="qr-btn" style="margin-top:10px; display:flex;">
+            <ion-icon name="qr-code-outline"></ion-icon>
+            Absen via QR Code
+        </a>
+    </div>
+
+    {{-- STATS SECTION --}}
+    <div>
+        <div class="sec-head">
+            <span class="sec-title">
+                <ion-icon name="bar-chart-outline"></ion-icon>
+                Rekap {{ $namabulan[$bulanini] }}
+            </span>
+            <a href="/presensi/histori" class="sec-link">Lihat Semua →</a>
+        </div>
+        <div class="stats-row">
+            <div class="stat-item hadir">
+                <div class="stat-icon-wrap">
+                    <ion-icon name="checkmark-circle-outline"></ion-icon>
+                </div>
+                <div class="stat-num">{{ $rekappresensi->jmlhadir }}</div>
+                <div class="stat-lbl">Hadir</div>
+            </div>
+            <div class="stat-item telat">
+                <div class="stat-icon-wrap">
+                    <ion-icon name="alarm-outline"></ion-icon>
+                </div>
+                <div class="stat-num">{{ $rekappresensi->jmlterlambat }}</div>
+                <div class="stat-lbl">Telat</div>
+            </div>
+            <div class="stat-item izin">
+                <div class="stat-icon-wrap">
+                    <ion-icon name="document-text-outline"></ion-icon>
+                </div>
+                <div class="stat-num">{{ $rekapizin != null ? $rekapizin->jmlizin : 0 }}</div>
+                <div class="stat-lbl">Izin</div>
+            </div>
+            <div class="stat-item sakit">
+                <div class="stat-icon-wrap">
+                    <ion-icon name="medkit-outline"></ion-icon>
+                </div>
+                <div class="stat-num">{{ $rekapizin != null ? $rekapizin->jmlsakit : 0 }}</div>
+                <div class="stat-lbl">Sakit</div>
+            </div>
+            <div class="stat-item cuti">
+                <div class="stat-icon-wrap">
+                    <ion-icon name="calendar-number-outline"></ion-icon>
+                </div>
+                <div class="stat-num">{{ $rekapizin != null ? $rekapizin->jmlcuti : 0 }}</div>
+                <div class="stat-lbl">Cuti</div>
+            </div>
+        </div>
+    </div>
+
+    {{-- LEADERBOARD --}}
+    <div>
+        <div class="sec-head">
+            <span class="sec-title">
+                <ion-icon name="trophy-outline"></ion-icon>
+                Top 5 Hari Ini
+            </span>
+        </div>
+        <div class="card">
+            @if($leaderboard->count() > 0)
+            <div class="lb-list">
+                @foreach($leaderboard->take(5) as $index => $d)
+                @php
+                    $av = !empty($d->foto) ? 'uploads/karyawan/' . $d->foto : null;
+                    $avExists = $av && Storage::disk('public')->exists($av);
+                @endphp
+                <div class="lb-item">
+                    <div class="lb-rank">{{ $index + 1 }}</div>
+                    <img src="{{ $avExists ? Storage::url($av) : asset('assets/img/sample/avatar/noprofile.png') }}"
+                         alt="avatar" class="lb-avatar">
+                    <div class="lb-info">
+                        <div class="lb-name">{{ $d->nama_lengkap }}</div>
+                        <div class="lb-role">{{ $d->jabatan }}</div>
+                    </div>
+                    <div class="lb-time">{{ $d->jam_in }}</div>
+                </div>
+                @endforeach
+            </div>
             @else
-            <div class="empty-state">
+            <div class="empty-box">
+                <ion-icon name="people-outline"></ion-icon>
+                <p>Belum ada yang presensi hari ini</p>
+            </div>
+            @endif
+        </div>
+    </div>
+
+    {{-- HISTORY TAB --}}
+    <div>
+        <div class="sec-head">
+            <span class="sec-title">
+                <ion-icon name="time-outline"></ion-icon>
+                Riwayat Presensi
+            </span>
+        </div>
+
+        <div class="tab-nav">
+            <button class="tab-btn active" id="btn-tim" onclick="switchTab('tim')">
+                <ion-icon name="people-outline"></ion-icon>
+                Tim Hari Ini
+            </button>
+            <button class="tab-btn" id="btn-saya" onclick="switchTab('saya')">
+                <ion-icon name="person-outline"></ion-icon>
+                Riwayat Saya
+            </button>
+        </div>
+
+        {{-- Tab: Tim --}}
+        <div class="card tab-pane active" id="tab-tim">
+            @if($riwayattim->count() > 0)
+            <div class="hist-list">
+                @foreach($riwayattim as $d)
+                @php
+                    $fp = 'uploads/absensi/' . $d->foto_in;
+                    $fe = Storage::disk('public')->exists($fp);
+                    $isLate = $d->jam_in > $d->jam_masuk;
+                @endphp
+                <div class="hist-item">
+                    <img src="{{ $fe ? Storage::url($fp) : asset('assets/img/sample/avatar/noprofile.png') }}"
+                         alt="foto" class="hist-photo">
+                    <div class="hist-info">
+                        <div class="hist-name">{{ $d->nama_lengkap }}</div>
+                        <div class="hist-meta">{{ $d->jabatan }} · {{ $d->jam_in }}</div>
+                    </div>
+                    <span class="hist-badge {{ $isLate ? 'late' : 'ontime' }}">
+                        {{ $isLate ? 'Telat' : 'Tepat' }}
+                    </span>
+                </div>
+                @endforeach
+            </div>
+            @else
+            <div class="empty-box">
                 <ion-icon name="people-outline"></ion-icon>
                 <p>Belum ada tim yang presensi hari ini</p>
             </div>
             @endif
         </div>
-    </div>
 
-    <!-- Tab Content: Riwayat Saya (Bulan Ini) -->
-    <div class="tab-content" id="tab-saya">
-        <div class="riwayat-card">
+        {{-- Tab: Saya --}}
+        <div class="card tab-pane" id="tab-saya">
             @if($historibulanini->count() > 0)
-            @foreach ($historibulanini->take(10) as $d)
-            @php
-            $foto_path = 'uploads/absensi/' . $d->foto_in;
-            $foto_exists = Storage::disk('public')->exists($foto_path);
-            $isLate = $d->jam_in > $d->jam_masuk;
-            @endphp
-            <div class="riwayat-item {{ $isLate ? 'late' : 'ontime' }}">
-                @if($foto_exists)
-                <img src="{{ Storage::url($foto_path) }}" alt="foto" class="riwayat-photo">
-                @else
-                <img src="{{ asset('assets/img/sample/avatar/noprofile.png') }}" alt="foto" class="riwayat-photo">
-                @endif
-                <div class="riwayat-info">
-                    <div class="riwayat-name">{{ date('d M Y', strtotime($d->tgl_presensi)) }}</div>
-                    <div class="riwayat-meta">
-                        Masuk: {{ $d->jam_in }}
-                        @if ($d->jam_out)
-                        • Pulang: {{ $d->jam_out }}
-                        @endif
+            <div class="hist-list">
+                @foreach($historibulanini->take(10) as $d)
+                @php
+                    $fp = 'uploads/absensi/' . $d->foto_in;
+                    $fe = Storage::disk('public')->exists($fp);
+                    $isLate = $d->jam_in > $d->jam_masuk;
+                @endphp
+                <div class="hist-item">
+                    <img src="{{ $fe ? Storage::url($fp) : asset('assets/img/sample/avatar/noprofile.png') }}"
+                         alt="foto" class="hist-photo">
+                    <div class="hist-info">
+                        <div class="hist-name">{{ date('d M Y', strtotime($d->tgl_presensi)) }}</div>
+                        <div class="hist-meta">
+                            Masuk: {{ $d->jam_in }}{{ $d->jam_out ? ' · Pulang: ' . $d->jam_out : '' }}
+                        </div>
                     </div>
+                    <span class="hist-badge {{ $isLate ? 'late' : 'ontime' }}">
+                        {{ $isLate ? 'Telat' : 'Tepat' }}
+                    </span>
                 </div>
-                <div class="riwayat-badge">
-                    {{ $isLate ? 'Terlambat' : 'Tepat Waktu' }}
-                </div>
+                @endforeach
             </div>
-            @endforeach
             @else
-            <div class="empty-state">
+            <div class="empty-box">
                 <ion-icon name="calendar-outline"></ion-icon>
-                <p>Belum ada riwayat presensi bulan ini</p>
+                <p>Belum ada riwayat bulan ini</p>
             </div>
             @endif
         </div>
     </div>
+
+    <div class="bottom-spacer"></div>
 </div>
 
 @endsection
 
 @push('myscript')
 <script>
-    // Tab Switching Function
-    function switchTab(tabName) {
-        // Remove active class from all buttons
-        document.querySelectorAll('.tab-button').forEach(btn => {
-            btn.classList.remove('active');
-        });
-
-        // Remove active class from all content
-        document.querySelectorAll('.tab-content').forEach(content => {
-            content.classList.remove('active');
-        });
-
-        // Add active class to clicked button
-        event.currentTarget.classList.add('active');
-
-        // Show selected tab content
-        document.getElementById('tab-' + tabName).classList.add('active');
+    function switchTab(tab) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+        document.getElementById('btn-' + tab).classList.add('active');
+        document.getElementById('tab-' + tab).classList.add('active');
     }
 
-    // Logout Modal Functions
-    function openLogoutModal(event) {
-        event.preventDefault();
+    function openLogoutModal(e) {
+        e.preventDefault();
         document.getElementById('logoutModal').classList.add('active');
-
-        // Haptic feedback
-        if ('vibrate' in navigator) {
-            navigator.vibrate(10);
-        }
+        if ('vibrate' in navigator) navigator.vibrate(10);
     }
 
     function closeLogoutModal() {
         document.getElementById('logoutModal').classList.remove('active');
     }
 
-    // Close modal when clicking outside
-    document.addEventListener('click', function(event) {
+    document.addEventListener('click', function(e) {
         const modal = document.getElementById('logoutModal');
-        if (event.target === modal) {
-            closeLogoutModal();
-        }
+        if (e.target === modal) closeLogoutModal();
     });
 
-    // Close modal with ESC key
-    document.addEventListener('keydown', function(event) {
-        if (event.key === 'Escape') {
-            closeLogoutModal();
-        }
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeLogoutModal();
     });
 
-    // Error handling untuk gambar yang gagal load
     document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('img').forEach(img => {
             img.addEventListener('error', function() {

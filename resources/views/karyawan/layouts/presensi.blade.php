@@ -16,407 +16,234 @@
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
 
     <style>
-        /* ===== RESPONSIVE GLASSMORPHISM DOCK STYLE ===== */
-        :root {
-            --primary: #0053C5;
-            --primary-light: #2E7CE6;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            padding-bottom: 90px;
-            background: #f5f7fa;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #F8FAFC;
+            padding-bottom: 80px;
         }
 
-        /* Dock Container - Full Width Responsive */
+        @supports (padding: max(0px)) {
+            body {
+                padding-bottom: max(80px, calc(env(safe-area-inset-bottom) + 80px));
+            }
+        }
+
+        /* ══════════════════════════════════════════
+           BOTTOM NAVIGATION — MOBILE FIRST REDESIGN
+           ══════════════════════════════════════════ */
+
+        /* ── Container ── */
         .dock-container {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
             z-index: 999;
-            padding: 0;
-            animation: dockFloat 0.5s ease;
+            animation: navRise 0.4s cubic-bezier(0.34, 1.2, 0.64, 1) both;
         }
 
-        /* Glass Dock - Full Width */
+        @supports (padding: max(0px)) {
+            .dock-container {
+                padding-bottom: env(safe-area-inset-bottom, 0px);
+            }
+        }
+
+        @keyframes navRise {
+            from { transform: translateY(100%); opacity: 0; }
+            to   { transform: translateY(0);    opacity: 1; }
+        }
+
+        /* ── Bar ── */
         .glass-dock {
-            position: relative;
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(30px) saturate(180%);
-            -webkit-backdrop-filter: blur(30px) saturate(180%);
-            border-top: 1px solid rgba(0, 0, 0, 0.1);
-            border-radius: 24px 24px 0 0;
-            padding: 12px 16px;
-            box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.08);
             display: flex;
-            justify-content: space-around;
             align-items: center;
-            gap: 8px;
-            width: 100%;
-            max-width: 100%;
+            justify-content: space-around;
+            background: rgba(255, 255, 255, 0.97);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border-top: 1px solid rgba(0, 0, 0, 0.07);
+            padding: 8px 12px 12px;
+            gap: 4px;
+            box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.06);
         }
 
-        /* Glassmorphism Border Effect */
-        .glass-dock::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 24px 24px 0 0;
-            padding: 1px 1px 0 1px;
-            background: linear-gradient(135deg,
-                    rgba(255, 255, 255, 0.9) 0%,
-                    rgba(255, 255, 255, 0.3) 50%,
-                    rgba(255, 255, 255, 0.9) 100%);
-            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            pointer-events: none;
-        }
-
-        /* Subtle gradient overlay */
-        .glass-dock::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 100%;
-            background: linear-gradient(to top, rgba(0, 83, 197, 0.03) 0%, transparent 100%);
-            border-radius: 24px 24px 0 0;
-            pointer-events: none;
-        }
-
-        /* Dock Items */
+        /* ── Regular Nav Item ── */
         .dock-item {
-            position: relative;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-width: 56px;
-            height: 56px;
-            background: transparent;
-            border-radius: 18px;
-            text-decoration: none;
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            gap: 4px;
             flex: 1;
-            max-width: 80px;
-            z-index: 1;
+            min-width: 0;
+            padding: 4px 4px 2px;
+            border-radius: 12px;
+            text-decoration: none;
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.15s ease;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .dock-item ion-icon {
-            font-size: 26px;
-            color: #64748b;
-            transition: all 0.3s ease;
+        .dock-item:active {
+            transform: scale(0.91);
         }
 
-        /* Label yang muncul saat hover/active */
-        .dock-item span {
-            position: absolute;
-            bottom: -28px;
-            font-size: 10px;
-            font-weight: 600;
-            color: #64748b;
-            opacity: 0;
-            transform: translateY(-8px);
-            transition: all 0.3s ease;
-            white-space: nowrap;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 6px 12px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            backdrop-filter: blur(10px);
-            pointer-events: none;
-        }
-
-        /* Hover effect for desktop */
-        @media (hover: hover) {
-            .dock-item:hover {
-                transform: translateY(-8px) scale(1.1);
-            }
-
-            .dock-item:hover span {
-                opacity: 1;
-                transform: translateY(0);
-            }
-
-            .dock-fab:hover {
-                transform: translateY(-12px) scale(1.1);
-                box-shadow: 0 12px 32px rgba(0, 83, 197, 0.5);
-            }
-        }
-
-        /* Visible label on mobile */
-        @media (max-width: 768px) {
-            .dock-item span {
-                position: static;
-                opacity: 1;
-                transform: none;
-                background: transparent;
-                box-shadow: none;
-                padding: 0;
-                margin-top: 4px;
-                font-size: 10px;
-            }
-            .dock-item {
-                justify-content: flex-end;
-                padding-bottom: 4px;
-                height: 60px;
-            }
-        }
-
-        /* Active state */
-        .dock-item.active {
-            background: linear-gradient(135deg, rgba(0, 83, 197, 0.15) 0%, rgba(46, 124, 230, 0.15) 100%);
-        }
-
-        .dock-item.active ion-icon {
-            color: var(--primary);
-            transform: scale(1.1);
-        }
-
-        /* Touch feedback for mobile */
-        .dock-item:active:not(.dock-fab) {
-            transform: scale(0.95);
-        }
-
-        /* Floating Action Button */
-        .dock-fab {
-            min-width: 64px;
-            width: 64px;
-            height: 64px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-            border-radius: 22px;
+        /* Icon pill container */
+        .dock-item .nav-icon-wrap {
+            width: 40px;
+            height: 30px;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 8px 24px rgba(0, 83, 197, 0.4),
-                inset 0 1px 1px rgba(255, 255, 255, 0.3);
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            flex: 0 0 auto;
-            position: relative;
-            overflow: hidden;
+            border-radius: 10px;
+            transition: background 0.22s ease;
         }
 
-        .dock-fab ion-icon {
-            font-size: 32px;
-            color: white;
-            position: relative;
-            z-index: 2;
+        .dock-item ion-icon {
+            font-size: 22px;
+            color: #94A3B8;
+            transition: color 0.22s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: block;
         }
 
-        /* Ripple effect on FAB */
-        .dock-fab::before {
+        .dock-item span {
+            font-size: 10px;
+            font-weight: 600;
+            color: #94A3B8;
+            letter-spacing: 0.1px;
+            transition: color 0.22s ease;
+            white-space: nowrap;
+            display: block;
+            line-height: 1;
+        }
+
+        /* ── ACTIVE STATE ── */
+        .dock-item.active .nav-icon-wrap {
+            background: #EFF6FF;
+        }
+
+        .dock-item.active ion-icon {
+            color: #2563EB;
+            transform: scale(1.1) translateY(-1px);
+        }
+
+        .dock-item.active span {
+            color: #2563EB;
+        }
+
+        /* Active dot indicator */
+        .dock-item.active::after {
             content: '';
             position: absolute;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 22px;
-            opacity: 0;
-            transform: scale(0);
-            transition: all 0.5s ease;
+            bottom: 0px;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: #2563EB;
         }
 
-        .dock-fab:active {
-            transform: scale(0.92);
-            box-shadow: 0 4px 16px rgba(0, 83, 197, 0.4);
-        }
-
-        .dock-fab:active::before {
-            opacity: 1;
-            transform: scale(1);
-        }
-
-        /* Badge notification */
+        /* ── Badge ── */
         .dock-badge {
             position: absolute;
-            top: 6px;
-            right: 6px;
-            min-width: 18px;
-            height: 18px;
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-            color: white;
-            border-radius: 10px;
-            font-size: 10px;
+            top: 2px;
+            right: calc(50% - 24px);
+            min-width: 16px;
+            height: 16px;
+            background: #EF4444;
+            color: #fff;
+            border-radius: 999px;
+            font-size: 9px;
             font-weight: 700;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 0 5px;
-            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.5);
-            border: 2px solid white;
-            z-index: 3;
+            padding: 0 4px;
+            border: 1.5px solid #fff;
+            box-shadow: 0 1px 4px rgba(239,68,68,0.4);
+            z-index: 2;
+            font-family: 'Inter', sans-serif;
         }
 
-        /* Animation */
-        @keyframes dockFloat {
-            0% {
-                transform: translateY(100px);
-                opacity: 0;
-            }
-
-            100% {
-                transform: translateY(0);
-                opacity: 1;
-            }
+        /* ── FAB (Camera / Presensi) ── */
+        .dock-fab {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            width: 56px;
+            height: 56px;
+            border-radius: 18px;
+            background: linear-gradient(145deg, #2563EB 0%, #1D4ED8 100%);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.40),
+                        0 2px 6px  rgba(37, 99, 235, 0.20),
+                        inset 0 1px 1px rgba(255, 255, 255, 0.25);
+            text-decoration: none;
+            cursor: pointer;
+            position: relative;
+            overflow: visible;
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        box-shadow 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+            margin-top: -16px;
         }
 
-        /* ===== RESPONSIVE BREAKPOINTS ===== */
-
-        /* Small Mobile (320px - 374px) */
-        @media (max-width: 374px) {
-            .dock-container {
-                padding: 0;
-            }
-
-            .glass-dock {
-                padding: 10px 12px;
-                border-radius: 24px 24px 0 0;
-                gap: 6px;
-            }
-
-            .dock-item {
-                min-width: 48px;
-                height: 48px;
-            }
-
-            .dock-item ion-icon {
-                font-size: 22px;
-            }
-
-            .dock-fab {
-                min-width: 56px;
-                width: 56px;
-                height: 56px;
-            }
-
-            .dock-fab ion-icon {
-                font-size: 28px;
-            }
+        .dock-fab ion-icon {
+            font-size: 26px;
+            color: #fff;
+            display: block;
+            position: relative;
+            z-index: 2;
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        /* Mobile (375px - 767px) */
-        @media (min-width: 375px) and (max-width: 767px) {
-            .dock-container {
-                padding: 0;
-            }
-
-            .glass-dock {
-                gap: 8px;
-            }
+        /* Shine overlay */
+        .dock-fab-inner {
+            position: absolute;
+            inset: 0;
+            border-radius: 18px;
+            background: linear-gradient(135deg,
+                rgba(255,255,255,0.22) 0%,
+                rgba(255,255,255,0)   55%);
+            overflow: hidden;
         }
 
-        /* Tablet (768px - 1023px) */
-        @media (min-width: 768px) and (max-width: 1023px) {
-            body {
-                padding-bottom: 100px;
-            }
-
-            .dock-container {
-                padding: 0;
-            }
-
-            .glass-dock {
-                padding: 16px 24px;
-                border-radius: 32px 32px 0 0;
-                max-width: 600px;
-                margin: 0 auto;
-            }
-
-            .dock-item {
-                min-width: 64px;
-                height: 64px;
-            }
-
-            .dock-item ion-icon {
-                font-size: 28px;
-            }
-
-            .dock-fab {
-                width: 72px;
-                height: 72px;
-            }
-
-            .dock-fab ion-icon {
-                font-size: 36px;
-            }
+        /* Pulse ring */
+        .dock-fab-ring {
+            position: absolute;
+            inset: -5px;
+            border-radius: 23px;
+            border: 2px solid rgba(37, 99, 235, 0.28);
+            animation: fabPulse 2.6s ease-in-out infinite;
+            pointer-events: none;
         }
 
-        /* Desktop (1024px+) */
-        @media (min-width: 1024px) {
-            body {
-                padding-bottom: 110px;
-            }
-
-            .dock-container {
-                padding: 0;
-            }
-
-            .glass-dock {
-                padding: 18px 32px;
-                border-radius: 36px 36px 0 0;
-                max-width: 700px;
-                margin: 0 auto;
-                gap: 12px;
-            }
-
-            .dock-item {
-                min-width: 72px;
-                height: 72px;
-            }
-
-            .dock-item ion-icon {
-                font-size: 30px;
-            }
-
-            .dock-fab {
-                width: 80px;
-                height: 80px;
-                border-radius: 24px;
-            }
-
-            .dock-fab ion-icon {
-                font-size: 40px;
-            }
-
-            /* Show labels on desktop by default */
-            .dock-item span {
-                position: relative;
-                bottom: auto;
-                opacity: 1;
-                transform: translateY(0);
-                margin-top: 6px;
-                background: transparent;
-                box-shadow: none;
-                font-size: 11px;
-                padding: 0;
-            }
+        @keyframes fabPulse {
+            0%, 100% { opacity: 0.7; transform: scale(1); }
+            50%       { opacity: 0;   transform: scale(1.22); }
         }
 
-        /* Large Desktop (1440px+) */
-        @media (min-width: 1440px) {
-            .glass-dock {
-                max-width: 800px;
-            }
+        .dock-fab:active {
+            transform: scale(0.89);
+            box-shadow: 0 3px 10px rgba(37, 99, 235, 0.30);
         }
 
-        /* Support for notched devices (iPhone X, etc) */
-        @supports (padding: max(0px)) {
-            body {
-                padding-bottom: max(90px, env(safe-area-inset-bottom));
-            }
+        .dock-fab:active ion-icon {
+            transform: scale(0.9);
+        }
 
-            .dock-container {
-                padding-bottom: max(0px, env(safe-area-inset-bottom));
-            }
+        /* ── Small screens (≤360px) ── */
+        @media (max-width: 360px) {
+            .glass-dock { padding: 8px 8px 10px; gap: 2px; }
+            .dock-item .nav-icon-wrap { width: 34px; height: 26px; }
+            .dock-item ion-icon { font-size: 20px; }
+            .dock-item span { font-size: 9px; }
+            .dock-fab { width: 50px; height: 50px; border-radius: 16px; margin-top: -14px; }
+            .dock-fab ion-icon { font-size: 23px; }
         }
     </style>
 
@@ -433,82 +260,76 @@
     <!-- * App Capsule -->
 
 
-    <!-- Responsive Glassmorphism Dock Navigation -->
+    <!-- Bottom Navigation -->
     <div class="dock-container">
         <nav class="glass-dock">
-            <a href="{{ route('dashboard') }}" class="dock-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                <ion-icon name="{{ request()->routeIs('dashboard') ? 'home' : 'home-outline' }}"></ion-icon>
+
+            {{-- Home --}}
+            <a href="{{ route('dashboard') }}"
+               class="dock-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                <div class="nav-icon-wrap">
+                    <ion-icon name="{{ request()->routeIs('dashboard') ? 'home' : 'home-outline' }}"></ion-icon>
+                </div>
                 <span>Home</span>
             </a>
 
-            <a href="{{ route('face.enrollment') }}" class="dock-item {{ request()->routeIs('face.enrollment') ? 'active' : '' }}">
-                <ion-icon name="{{ request()->routeIs('face.enrollment') ? 'scan' : 'scan-outline' }}"></ion-icon>
+            {{-- FaceID --}}
+            <a href="{{ route('face.enrollment') }}"
+               class="dock-item {{ request()->routeIs('face.enrollment') ? 'active' : '' }}">
+                <div class="nav-icon-wrap">
+                    <ion-icon name="{{ request()->routeIs('face.enrollment') ? 'scan' : 'scan-outline' }}"></ion-icon>
+                </div>
                 <span>FaceID</span>
             </a>
 
-            <a href="{{ route('presensi.create') }}" class="dock-fab">
+            {{-- FAB — Presensi --}}
+            <a href="{{ route('presensi.create') }}" class="dock-fab" aria-label="Presensi">
+                <div class="dock-fab-ring"></div>
                 <ion-icon name="camera"></ion-icon>
             </a>
 
-            <a href="{{ route('izin.index') }}" class="dock-item {{ request()->routeIs('izin.*') ? 'active' : '' }}">
+            {{-- Izin --}}
+            <a href="{{ route('izin.index') }}"
+               class="dock-item {{ request()->routeIs('izin.*') ? 'active' : '' }}">
                 @if(isset($pendingIzin) && $pendingIzin > 0)
-                <span class="dock-badge">{{ $pendingIzin }}</span>
+                    <span class="dock-badge">{{ $pendingIzin }}</span>
                 @endif
-                <ion-icon name="{{ request()->routeIs('izin.*') ? 'calendar' : 'calendar-outline' }}"></ion-icon>
+                <div class="nav-icon-wrap">
+                    <ion-icon name="{{ request()->routeIs('izin.*') ? 'calendar' : 'calendar-outline' }}"></ion-icon>
+                </div>
                 <span>Izin</span>
             </a>
 
-            <a href="{{ route('profile.edit') }}" class="dock-item {{ request()->routeIs('profile.*') ? 'active' : '' }}">
-                <ion-icon name="{{ request()->routeIs('profile.*') ? 'person' : 'person-outline' }}"></ion-icon>
+            {{-- Profile --}}
+            <a href="{{ route('profile.edit') }}"
+               class="dock-item {{ request()->routeIs('profile.*') ? 'active' : '' }}">
+                <div class="nav-icon-wrap">
+                    <ion-icon name="{{ request()->routeIs('profile.*') ? 'person' : 'person-outline' }}"></ion-icon>
+                </div>
                 <span>Profile</span>
             </a>
+
         </nav>
     </div>
-    <!-- jQuery (harus sebelum plugins lain) -->
+
+    <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Ionicons -->
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
-    <!-- App JS -->
     <script src="{{ asset('assets/js/plugins.js') }}"></script>
     <script src="{{ asset('assets/js/base.js') }}"></script>
-    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- Scrip bottom Nav -->
     <script>
-        // Haptic feedback untuk mobile
-        document.addEventListener('DOMContentLoaded', function() {
-            const navItems = document.querySelectorAll('.dock-item, .dock-fab');
-
-            navItems.forEach(item => {
-                item.addEventListener('touchstart', function() {
-                    // Haptic feedback jika browser support
-                    if ('vibrate' in navigator) {
-                        navigator.vibrate(10);
-                    }
-                });
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.dock-item, .dock-fab').forEach(function (el) {
+                el.addEventListener('touchstart', function () {
+                    if ('vibrate' in navigator) navigator.vibrate(8);
+                }, { passive: true });
             });
-
-            // Smooth active indicator
-            const activeItem = document.querySelector('.dock-item.active');
-            if (activeItem) {
-                activeItem.style.transition = 'all 0.3s ease';
-            }
-        });
-
-        // Prevent default touch behavior untuk FAB
-        document.querySelector('.dock-fab')?.addEventListener('touchstart', function(e) {
-            e.currentTarget.style.transform = 'scale(0.92)';
-        });
-
-        document.querySelector('.dock-fab')?.addEventListener('touchend', function(e) {
-            e.currentTarget.style.transform = '';
         });
     </script>
     @stack('myscript')
-    <!-- Service Worker Registration for PWA -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {

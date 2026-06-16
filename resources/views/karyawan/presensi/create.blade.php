@@ -3,1076 +3,834 @@
 @section('content')
 
 <style>
-    /* ===== MODERN PRESENSI PAGE ===== */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
     :root {
-        --primary: #0053C5;
-        --primary-dark: #003d94;
-        --primary-light: #2E7CE6;
-        --success: #10b981;
-        --danger: #ef4444;
-        --warning: #f59e0b;
-        --bg-main: #f8fafc;
-        --bg-card: #ffffff;
-        --text-primary: #0f172a;
-        --text-secondary: #64748b;
+        --primary:      #2563EB;
+        --primary-soft: #EFF6FF;
+        --success:      #10B981;
+        --danger:       #EF4444;
+        --warning:      #F59E0B;
+        --text-900:     #111827;
+        --text-600:     #4B5563;
+        --border:       rgba(255,255,255,0.18);
+        --glass-bg:     rgba(0,0,0,0.45);
+        --glass-blur:   blur(14px) saturate(160%);
     }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-        background: var(--bg-main);
-    }
-
-    /* ===== PAGE HEADER ===== */
-    .page-header {
-        background: white;
-        padding: 24px 20px 80px 20px;
-        position: relative;
+        font-family: 'Inter', -apple-system, sans-serif;
+        background: #000;
         overflow: hidden;
-        margin: 0;
-        border-bottom: 1px solid rgba(0, 83, 197, 0.08);
+        height: 100vh;
     }
 
-    .header-content {
-        position: relative;
-        z-index: 2;
+    /* ══════════════════════════════════════
+       FULLSCREEN WEBCAM BACKGROUND
+       ══════════════════════════════════════ */
+    .webcam-capture,
+    .webcam-capture video {
+        position: fixed !important;
+        top: 0; left: 0;
+        width: 100vw !important;
+        height: 100vh !important;
+        object-fit: cover !important;
+        border-radius: 0;
+        z-index: 0;
+    }
+
+    /* Dark vignette overlay for readability */
+    .cam-vignette {
+        position: fixed;
+        inset: 0;
+        z-index: 1;
+        background:
+            linear-gradient(to bottom,
+                rgba(0,0,0,0.55) 0%,
+                transparent 30%,
+                transparent 55%,
+                rgba(0,0,0,0.70) 100%);
+        pointer-events: none;
+    }
+
+    /* ══════════════════════════════════════
+       TOP BAR
+       ══════════════════════════════════════ */
+    .top-bar {
+        position: fixed;
+        top: 0; left: 0; right: 0;
+        z-index: 20;
+        padding: 16px 16px 12px;
         display: flex;
-        align-items: center;
-        gap: 16px;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
     }
 
+    /* Back button */
     .btn-back {
         width: 40px;
         height: 40px;
-        background: #f1f5f9;
-        border: 1px solid #e2e8f0;
+        background: var(--glass-bg);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        border: 1px solid var(--border);
         border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
         text-decoration: none;
-        transition: all 0.3s ease;
+        flex-shrink: 0;
+        transition: background 0.2s;
+        -webkit-tap-highlight-color: transparent;
     }
 
-    .btn-back ion-icon {
-        font-size: 24px;
-        color: var(--text-secondary);
+    .btn-back:active { background: rgba(0,0,0,0.65); }
+    .btn-back ion-icon { font-size: 22px; color: white; }
+
+    /* Title card (top right) */
+    .title-card {
+        background: var(--glass-bg);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 10px 14px;
+        text-align: right;
+        flex: 1;
+        min-width: 0;
     }
 
-    .btn-back:active, .btn-back:hover {
-        background: #e2e8f0;
-        color: var(--primary);
-    }
-
-    .btn-back:hover ion-icon {
-        color: var(--primary);
-    }
-
-    .header-title h1 {
-        font-size: 22px;
+    .title-type {
+        font-size: 14px;
         font-weight: 700;
-        color: var(--text-primary);
-        margin: 0 0 4px 0;
+        color: white;
+        line-height: 1.2;
+        margin-bottom: 2px;
     }
 
-    .header-title p {
-        font-size: 12px;
-        font-weight: 600;
-        color: var(--primary);
-        margin: 0;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+    .title-date {
+        font-size: 10px;
+        font-weight: 500;
+        color: rgba(255,255,255,0.75);
+        margin-bottom: 5px;
     }
 
-    /* ===== INFO CARD ===== */
-    .presensi-section {
-        padding: 0 20px;
-        margin-top: -65px;
-        margin-bottom: 20px;
+    .shift-info {
+        font-size: 10px;
+        line-height: 1.5;
+        color: rgba(255,255,255,0.8);
+        font-weight: 500;
+    }
+
+    .absen-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 50px;
+        font-size: 10px;
+        font-weight: 700;
+        margin-top: 3px;
+    }
+
+    .absen-badge.done { background: rgba(16,185,129,0.25); color: #6EE7B7; }
+    .absen-badge.pending { background: rgba(239,68,68,0.25); color: #FCA5A5; }
+
+    /* ══════════════════════════════════════
+       SHIFT SELECTOR
+       ══════════════════════════════════════ */
+    .shift-selector {
+        position: fixed;
+        z-index: 20;
+        left: 16px; right: 16px;
+    }
+
+    /* Positioned below top-bar — dynamic top via JS or fixed estimate */
+    .shift-selector { top: 128px; }
+
+    .shift-select-wrap {
         position: relative;
-        z-index: 10;
     }
 
-    .info-card {
-        background: var(--bg-card);
-        border-radius: 20px;
-        padding: 20px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-        border: 1px solid rgba(0, 83, 197, 0.05);
-        margin-bottom: 16px;
-    }
-
-    .info-card-title {
-        font-size: 14px;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin-bottom: 12px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .info-card-title ion-icon {
-        font-size: 20px;
-        color: var(--primary);
-    }
-
-    .info-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-    }
-
-    .info-item {
-        padding: 12px;
-        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    .shift-select-wrap select {
+        width: 100%;
+        appearance: none;
+        -webkit-appearance: none;
+        padding: 11px 40px 11px 14px;
+        background: var(--glass-bg);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        border: 1px solid var(--border);
         border-radius: 12px;
-    }
-
-    .info-label {
-        font-size: 11px;
-        color: var(--text-secondary);
+        color: white;
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
         font-weight: 600;
-        margin-bottom: 4px;
+        outline: none;
     }
 
-    .info-value {
-        font-size: 14px;
-        font-weight: 700;
-        color: var(--text-primary);
+    .shift-select-wrap select option {
+        background: #1E293B;
+        color: white;
     }
 
-    /* ===== WEBCAM SECTION ===== */
-    .webcam-card {
-        background: var(--bg-card);
-        border-radius: 20px;
-        padding: 16px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-        border: 1px solid rgba(0, 83, 197, 0.05);
-        margin-bottom: 16px;
+    .shift-select-wrap ion-icon {
+        position: absolute;
+        right: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: rgba(255,255,255,0.7);
+        font-size: 16px;
+        pointer-events: none;
     }
 
-    .webcam-title {
-        font-size: 14px;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin-bottom: 12px;
+    /* ══════════════════════════════════════
+       AUTO-SCAN STATUS PILL
+       ══════════════════════════════════════ */
+    #auto-scan-status {
+        position: fixed;
+        top: 76px;
+        left: 16px;
+        z-index: 20;
+        background: var(--glass-bg);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        border: 1px solid var(--border);
+        border-radius: 50px;
+        padding: 7px 12px 7px 10px;
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 7px;
+        transition: background 0.3s, border-color 0.3s;
     }
 
-    .webcam-title ion-icon {
-        font-size: 20px;
-        color: var(--primary);
+    #auto-scan-status .scan-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--success);
+        flex-shrink: 0;
+        animation: pulse-dot 1.5s ease-in-out infinite;
     }
 
-    .webcam-capture,
-    .webcam-capture video {
-        position: fixed !important;
-        top: 0;
-        left: 0;
-        width: 100vw !important;
-        height: 100vh !important;
-        object-fit: cover !important;
-        border-radius: 0;
+    @keyframes pulse-dot {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50%       { opacity: 0.4; transform: scale(0.7); }
+    }
+
+    #auto-scan-status .scan-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--success);
+        line-height: 1;
+    }
+
+    #auto-scan-status .scan-sub {
+        font-size: 9px;
+        color: rgba(255,255,255,0.6);
+        line-height: 1;
+        margin-top: 2px;
+    }
+
+    /* ══════════════════════════════════════
+       FACE GUIDE OVAL
+       ══════════════════════════════════════ */
+    .face-guide {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -54%);
+        width: 200px;
+        height: 265px;
+        border: 2px solid rgba(255,255,255,0.6);
+        border-radius: 50%;
+        z-index: 5;
+        pointer-events: none;
+        box-shadow: 0 0 0 9999px rgba(0,0,0,0.22);
+    }
+
+    /* Corner accent */
+    .face-guide::before {
+        content: '';
+        position: absolute;
+        top: -2px; left: -2px;
+        width: 28px; height: 28px;
+        border-top: 3px solid var(--primary);
+        border-left: 3px solid var(--primary);
+        border-radius: 50% 0 0 0;
+    }
+
+    .face-guide::after {
+        content: '';
+        position: absolute;
+        bottom: -2px; right: -2px;
+        width: 28px; height: 28px;
+        border-bottom: 3px solid var(--primary);
+        border-right: 3px solid var(--primary);
+        border-radius: 0 0 50% 0;
+    }
+
+    /* ══════════════════════════════════════
+       BOTTOM PANEL
+       ══════════════════════════════════════ */
+    .bottom-panel {
+        position: fixed;
+        bottom: 80px; /* above dock nav */
+        left: 0; right: 0;
+        z-index: 20;
+        padding: 0 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    /* Map strip */
+    .map-strip {
+        background: var(--glass-bg);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        border: 1px solid var(--border);
+        border-radius: 16px;
         overflow: hidden;
-        box-shadow: none;
-        z-index: 0;
-    }
-
-    /* ===== MAP SECTION ===== */
-    .map-card {
-        background: var(--bg-card);
-        border-radius: 20px;
-        padding: 16px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-        border: 1px solid rgba(0, 83, 197, 0.05);
-        margin-bottom: 16px;
-    }
-
-    .map-title {
-        font-size: 14px;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin-bottom: 12px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .map-title ion-icon {
-        font-size: 20px;
-        color: var(--primary);
+        height: 110px;
+        position: relative;
     }
 
     #map {
-        height: 250px;
-        border-radius: 12px;
-        overflow: hidden;
-    }
-
-    .location-info {
-        margin-top: 12px;
-        padding: 12px;
-        background: linear-gradient(135deg, rgba(0, 83, 197, 0.05) 0%, rgba(46, 124, 230, 0.05) 100%);
-        border-radius: 10px;
-        border: 1px solid rgba(0, 83, 197, 0.2);
-    }
-
-    .location-info p {
-        margin: 0;
-        font-size: 12px;
-        color: var(--text-secondary);
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .location-info ion-icon {
-        font-size: 16px;
-        color: var(--primary);
-    }
-
-    .location-info strong {
-        color: var(--primary);
-        font-weight: 600;
-    }
-
-    /* ===== BUTTON ABSEN ===== */
-    .button-section {
-        padding: 0 20px 20px;
-    }
-
-    .btn-presensi {
         width: 100%;
-        padding: 16px 20px;
-        border-radius: 16px;
-        font-size: 16px;
+        height: 100%;
+    }
+
+    .map-radius-tag {
+        position: absolute;
+        bottom: 8px;
+        right: 8px;
+        z-index: 500;
+        background: rgba(0,0,0,0.60);
+        backdrop-filter: blur(4px);
+        border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 8px;
+        padding: 3px 8px;
+        font-size: 10px;
+        font-weight: 600;
+        color: white;
+    }
+
+    /* Manual button row (fallback) */
+    .manual-btn-row {
+        display: none; /* hidden by default, shown via JS if needed */
+        gap: 10px;
+    }
+
+    .btn-manual {
+        flex: 1;
+        padding: 14px;
+        border-radius: 14px;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
         font-weight: 700;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 10px;
+        gap: 8px;
         cursor: pointer;
-        transition: all 0.3s ease;
-        margin-bottom: 12px;
+        border: none;
+        transition: opacity 0.2s, transform 0.15s;
+        -webkit-tap-highlight-color: transparent;
     }
 
-    .btn-presensi ion-icon {
-        font-size: 24px;
-    }
-
-    .btn-presensi:active {
-        transform: scale(0.98);
-    }
-
-    .btn-presensi:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-    }
+    .btn-manual:active { opacity: 0.85; transform: scale(0.97); }
+    .btn-manual:disabled { opacity: 0.5; cursor: not-allowed; }
 
     .btn-masuk {
         background: white;
         color: var(--success);
-        border: 1px solid var(--success);
-        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.05);
+        border: 1.5px solid var(--success);
     }
 
-    .btn-masuk:active {
-        background: var(--success);
-        color: white;
-    }
+    .btn-masuk:active { background: var(--success); color: white; }
 
     .btn-pulang {
         background: white;
         color: var(--danger);
-        border: 1px solid var(--danger);
-        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.05);
+        border: 1.5px solid var(--danger);
     }
 
-    .btn-pulang:active {
-        background: var(--danger);
-        color: white;
-    }
+    .btn-pulang:active { background: var(--danger); color: white; }
 
-    /* ===== BUTTON FACE VERIFICATION (BARU) ===== */
-    .btn-masuk-face {
-        background: white;
-        color: #0053C5;
-        border: 1px solid #0053C5;
-        box-shadow: 0 2px 8px rgba(0, 83, 197, 0.05);
-    }
+    .btn-manual ion-icon { font-size: 18px; }
 
-    .btn-masuk-face:active {
-        background: #0053C5;
-        color: white;
-    }
-
-    .btn-pulang-face {
-        background: white;
-        color: #8b5cf6;
-        border: 1px solid #8b5cf6;
-        box-shadow: 0 2px 8px rgba(139, 92, 246, 0.05);
-    }
-
-    .btn-pulang-face:active {
-        background: #8b5cf6;
-        color: white;
-    }
-
-    /* ===== STATUS BADGE ===== */
-    .status-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 6px 12px;
-        border-radius: 8px;
-        font-size: 12px;
-        font-weight: 600;
-    }
-
-    .status-badge.success {
-        background: rgba(16, 185, 129, 0.1);
-        color: var(--success);
-    }
-
-    .status-badge.danger {
-        background: rgba(239, 68, 68, 0.1);
-        color: var(--danger);
-    }
-
-    /* ===== LOADING STATE ===== */
+    /* ══════════════════════════════════════
+       LOADING OVERLAY
+       ══════════════════════════════════════ */
     .loading-overlay {
         position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.7);
+        inset: 0;
+        background: rgba(0,0,0,0.60);
         display: none;
         align-items: center;
         justify-content: center;
         z-index: 9999;
+        backdrop-filter: blur(4px);
     }
 
-    .loading-overlay.show {
-        display: flex;
-    }
+    .loading-overlay.show { display: flex; }
 
-    .loading-content {
+    .loading-card {
         background: white;
-        padding: 30px;
         border-radius: 20px;
+        padding: 28px 32px;
         text-align: center;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.15);
     }
 
-    .loading-spinner {
-        width: 50px;
-        height: 50px;
-        border: 4px solid #f3f3f3;
+    .loading-ring {
+        width: 48px;
+        height: 48px;
+        border: 4px solid #EFF6FF;
         border-top: 4px solid var(--primary);
         border-radius: 50%;
-        animation: spin 1s linear infinite;
-        margin: 0 auto 15px;
+        animation: spin 0.8s linear infinite;
+        margin: 0 auto 14px;
     }
 
     @keyframes spin {
-        0% {
-            transform: rotate(0deg);
-        }
+        to { transform: rotate(360deg); }
+    }
 
-        100% {
-            transform: rotate(360deg);
+    .loading-text {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-900);
+    }
+
+    .loading-sub {
+        font-size: 12px;
+        color: #6B7280;
+        margin-top: 4px;
+    }
+
+    /* ══════════════════════════════════════
+       SAFE AREA
+       ══════════════════════════════════════ */
+    @supports (padding: max(0px)) {
+        .bottom-panel {
+            bottom: max(80px, calc(env(safe-area-inset-bottom) + 80px));
+        }
+        .top-bar {
+            padding-top: max(16px, env(safe-area-inset-top));
         }
     }
 
-    /* ===== RESPONSIVE ===== */
-    @media (max-width: 375px) {
-
-        .presensi-section,
-        .button-section {
-            padding-left: 16px;
-            padding-right: 16px;
-        }
-
-        .info-grid {
-            grid-template-columns: 1fr;
-        }
+    /* ══════════════════════════════════════
+       SMALL SCREEN TWEAKS
+       ══════════════════════════════════════ */
+    @media (max-width: 360px) {
+        .title-card { padding: 8px 10px; }
+        .title-type { font-size: 13px; }
+        .map-strip { height: 90px; }
     }
 </style>
 
 <!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
-<!-- Full-screen Background Camera -->
+<!-- ── WEBCAM FULLSCREEN BACKGROUND ── -->
 <div class="webcam-capture"></div>
 
-<!-- Floating Back Button -->
-<a href="{{ route('dashboard') }}" class="btn-back-floating" style="position: fixed; top: 20px; left: 20px; width: 40px; height: 40px; background: rgba(0,0,0,0.5); backdrop-filter: blur(5px); border-radius: 12px; display: flex; align-items: center; justify-content: center; z-index: 20; border: 1px solid rgba(255,255,255,0.3); color: white; text-decoration: none;">
-    <ion-icon name="chevron-back-outline" style="font-size: 24px;"></ion-icon>
-</a>
+<!-- Vignette -->
+<div class="cam-vignette"></div>
 
-<!-- Floating Schedule Text -->
-<div class="schedule-floating-text" style="position: fixed; top: 20px; right: 20px; z-index: 20; color: white; text-shadow: 0px 1px 3px rgba(0,0,0,0.8); background: rgba(0,0,0,0.5); backdrop-filter: blur(5px); padding: 10px; border-radius: 12px; text-align: right; border: 1px solid rgba(255,255,255,0.2);">
-    <h1 style="font-size: 14px; font-weight: 700; margin: 0 0 2px 0; color: white;">{{ $cek > 0 ? 'Absen Pulang' : 'Absen Masuk' }}</h1>
-    <p style="font-size: 10px; font-weight: 500; margin: 0 0 4px 0; opacity: 0.9;">{{ $namahari }}, {{ \Carbon\Carbon::parse($hariini)->isoFormat('D MMMM Y') }}</p>
-    
-    <div style="font-size: 10px; line-height: 1.4; font-weight: 500;">
-        @if(isset($is_multi_shift) && $is_multi_shift)
-            Shift: {{ $current_shift->nama_shift }}<br>
-            ({{ date('H:i', strtotime($current_shift->jam_masuk)) }} - {{ date('H:i', strtotime($current_shift->jam_pulang)) }})<br>
-        @else
-            Shift: {{ $jamkerja->nama_jam_kerja }}<br>
-            ({{ date('H:i', strtotime($jamkerja->jam_masuk)) }} - {{ date('H:i', strtotime($jamkerja->jam_pulang)) }})<br>
-        @endif
+<!-- Face guide oval -->
+<div class="face-guide"></div>
+
+<!-- ── TOP BAR ── -->
+<div class="top-bar">
+    <a href="{{ route('dashboard') }}" class="btn-back">
+        <ion-icon name="chevron-back-outline"></ion-icon>
+    </a>
+
+    <div class="title-card">
+        <div class="title-type">{{ $cek > 0 ? '🌆 Absen Pulang' : '🌅 Absen Masuk' }}</div>
+        <div class="title-date">{{ $namahari }}, {{ \Carbon\Carbon::parse($hariini)->isoFormat('D MMMM Y') }}</div>
+        <div class="shift-info">
+            @if(isset($is_multi_shift) && $is_multi_shift)
+                Shift {{ $current_shift->nama_shift }}
+                ({{ date('H:i', strtotime($current_shift->jam_masuk)) }}–{{ date('H:i', strtotime($current_shift->jam_pulang)) }})
+            @else
+                {{ $jamkerja->nama_jam_kerja }}
+                ({{ date('H:i', strtotime($jamkerja->jam_masuk)) }}–{{ date('H:i', strtotime($jamkerja->jam_pulang)) }})
+            @endif
+        </div>
         @if($cek > 0)
-            <span style="color: #4ade80; font-weight: bold;">Sudah Absen</span>
+            <span class="absen-badge done">✓ Sudah Absen</span>
         @else
-            <span style="color: #f87171; font-weight: bold;">Belum Absen</span>
+            <span class="absen-badge pending">● Belum Absen</span>
         @endif
     </div>
 </div>
 
-<!-- Shift Selection Form (if multi-shift) -->
+<!-- ── AUTO-SCAN STATUS ── -->
+<div id="auto-scan-status">
+    <div class="scan-dot"></div>
+    <div>
+        <div class="scan-label">Auto-Scan Aktif</div>
+        <div class="scan-sub">Arahkan & tahan posisi wajah…</div>
+    </div>
+</div>
+
+<!-- ── SHIFT SELECTOR (multi-shift only) ── -->
 @if(isset($is_multi_shift) && $is_multi_shift)
-<div style="position: fixed; top: 130px; left: 20px; right: 20px; z-index: 20;">
-    <form action="{{ route('presensi.create') }}" method="GET" id="shift-form" style="position: relative;">
-        <select name="shift_ke" id="shift_ke" onchange="document.getElementById('shift-form').submit()" style="width: 100%; appearance: none; -webkit-appearance: none; height: auto; min-height: 48px; padding: 12px 40px 12px 16px; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); color: white; border: 1px solid rgba(255,255,255,0.4); border-radius: 12px; font-size: 13px; font-weight: 600; outline: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-            @foreach($shifts_available as $s)
-                <option style="color: #0f172a; font-weight: 500;" value="{{ $s->shift_ke }}" {{ $shift_ke == $s->shift_ke ? 'selected' : '' }}>
-                    Shift {{ $s->shift_ke }} - {{ $s->nama_shift }} ({{ date('H:i', strtotime($s->jam_masuk)) }} s/d {{ date('H:i', strtotime($s->jam_pulang)) }})
-                </option>
-            @endforeach
-        </select>
-        <ion-icon name="chevron-down-outline" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: white; font-size: 18px; pointer-events: none;"></ion-icon>
+<div class="shift-selector">
+    <form action="{{ route('presensi.create') }}" method="GET" id="shift-form">
+        <div class="shift-select-wrap">
+            <select name="shift_ke" id="shift_ke" onchange="document.getElementById('shift-form').submit()">
+                @foreach($shifts_available as $s)
+                    <option value="{{ $s->shift_ke }}" {{ $shift_ke == $s->shift_ke ? 'selected' : '' }}>
+                        Shift {{ $s->shift_ke }} – {{ $s->nama_shift }} ({{ date('H:i', strtotime($s->jam_masuk)) }}–{{ date('H:i', strtotime($s->jam_pulang)) }})
+                    </option>
+                @endforeach
+            </select>
+            <ion-icon name="chevron-down-outline"></ion-icon>
+        </div>
     </form>
 </div>
 @endif
 
-<!-- Floating Map -->
-<div class="map-floating" style="position: fixed; bottom: 90px; left: 0; right: 0; width: 100vw; height: 120px; border-radius: 0; overflow: hidden; border-top: 2px solid rgba(255,255,255,0.5); border-bottom: 2px solid rgba(255,255,255,0.5); box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 20;">
-    <div id="map" style="width: 100%; height: 100%;"></div>
-    <!-- Radius Kantor Info inside Map -->
-    <div style="position: absolute; bottom: 8px; right: 8px; z-index: 1000; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); padding: 4px 8px; border-radius: 8px; font-size: 10px; color: white; border: 1px solid rgba(255,255,255,0.2);">
-        Radius: {{ $lok_kantor->radius_cabang }}m
-    </div>
-</div>
-
-<!-- Button Section (Hidden inputs & Auto-scan indicator) -->
-<div class="button-section">
-    <input type="hidden" id="lokasi">
-
-    @if(isset($is_multi_shift) && $is_multi_shift)
-    <input type="hidden" id="shift_ke_val" value="{{ $shift_ke }}">
-    <input type="hidden" id="shift_nama_val" value="{{ $current_shift->nama_shift }}">
+<!-- ── HIDDEN INPUTS ── -->
+<input type="hidden" id="lokasi">
+@if(isset($is_multi_shift) && $is_multi_shift)
+    <input type="hidden" id="shift_ke_val"        value="{{ $shift_ke }}">
+    <input type="hidden" id="shift_nama_val"      value="{{ $current_shift->nama_shift }}">
     <input type="hidden" id="shift_jam_masuk_val" value="{{ $current_shift->jam_masuk }}">
     <input type="hidden" id="shift_jam_pulang_val" value="{{ $current_shift->jam_pulang }}">
-    @else
-    <input type="hidden" id="shift_ke_val" value="">
-    <input type="hidden" id="shift_nama_val" value="">
+@else
+    <input type="hidden" id="shift_ke_val"        value="">
+    <input type="hidden" id="shift_nama_val"      value="">
     <input type="hidden" id="shift_jam_masuk_val" value="">
     <input type="hidden" id="shift_jam_pulang_val" value="">
-    @endif
+@endif
 
-    <!-- Auto-Scan Status Indicator -->
-    <div id="auto-scan-status" style="position: fixed; top: 70px; left: 20px; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 6px 10px; color: white; display: flex; align-items: center; gap: 8px; z-index: 20;">
-        <div class="spinner-border spinner-border-sm" role="status" style="width: 1rem; height: 1rem; border-width: 0.15em; color: #10b981;"></div>
-        <div style="display: flex; flex-direction: column; text-align: left;">
-            <span style="color: #10b981; font-size: 11px; font-weight: 600; line-height: 1;">Auto-Scan Aktif</span>
-            <small style="color: #cbd5e1; font-size: 9px; line-height: 1; margin-top: 2px;">Arahkan & Tahan Posisi...</small>
-        </div>
+<!-- ── BOTTOM PANEL ── -->
+<div class="bottom-panel">
+
+    <!-- Map Strip -->
+    <div class="map-strip">
+        <div id="map"></div>
+        <div class="map-radius-tag">Radius: {{ $lok_kantor->radius_cabang }}m</div>
+    </div>
+
+    <!-- Manual button row (fallback — shown via JS when face not enrolled) -->
+    <div class="manual-btn-row" id="manual-btn-row">
+        <button class="btn-manual btn-masuk" id="takeabsen" {{ $cek > 0 ? 'disabled' : '' }}>
+            <ion-icon name="log-in-outline"></ion-icon>
+            Absen Masuk
+        </button>
+        <button class="btn-manual btn-pulang" id="takeabsen-out" {{ $cek == 0 ? 'disabled' : '' }}>
+            <ion-icon name="log-out-outline"></ion-icon>
+            Absen Pulang
+        </button>
     </div>
 </div>
 
-<!-- Loading Overlay -->
+<!-- ── LOADING OVERLAY ── -->
 <div class="loading-overlay" id="loading-overlay">
-    <div class="loading-content">
-        <div class="loading-spinner"></div>
-        <p style="margin: 0; color: var(--text-primary); font-weight: 600;">Memproses presensi...</p>
+    <div class="loading-card">
+        <div class="loading-ring"></div>
+        <div class="loading-text">Memproses Presensi…</div>
+        <div class="loading-sub">Harap tunggu sebentar</div>
     </div>
 </div>
 
-<!-- Audio Notifications -->
-<audio id="notifikasi_in" src="{{ asset('assets/sound/notifikasi_in.mp3') }}"></audio>
+<!-- ── AUDIO ── -->
+<audio id="notifikasi_in"  src="{{ asset('assets/sound/notifikasi_in.mp3') }}"></audio>
 <audio id="notifikasi_out" src="{{ asset('assets/sound/notifikasi_out.mp3') }}"></audio>
-<audio id="radius_sound" src="{{ asset('assets/sound/radius_sound.mp3') }}"></audio>
+<audio id="radius_sound"   src="{{ asset('assets/sound/radius_sound.mp3') }}"></audio>
 
 @endsection
 
 @push('myscript')
-<!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<!-- Webcam JS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/webcamjs/1.0.26/webcam.min.js"></script>
-<!-- Face-API.js -->
 <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
 
 <script>
-    console.log('Script started');
-
-    var notifikasi_in = document.getElementById('notifikasi_in');
+    var notifikasi_in  = document.getElementById('notifikasi_in');
     var notifikasi_out = document.getElementById('notifikasi_out');
-    var radius_sound = document.getElementById('radius_sound');
-    var map;
-    var marker;
-    var circle;
+    var radius_sound   = document.getElementById('radius_sound');
+    var map, marker, circle;
     var webcamReady = false;
-
-    // Face Recognition Variables
     var modelsLoaded = false;
-    var faceDescriptor = null;
+    var cachedReferenceDescriptor = null;
+    var autoScanInterval = null;
+    var isProcessing = false;
 
-    // Check if Webcam library loaded
+    /* ── Webcam init ── */
     if (typeof Webcam === 'undefined') {
-        console.error('Webcam.js not loaded!');
-        Swal.fire({
-            icon: 'error',
-            title: 'Library Error',
-            text: 'Webcam library tidak ter-load. Refresh halaman.',
-            confirmButtonColor: '#0053C5'
-        });
+        Swal.fire({ icon:'error', title:'Library Error', text:'Webcam library tidak ter-load. Refresh halaman.', confirmButtonColor:'#2563EB' });
     } else {
-        console.log('Webcam.js loaded successfully');
-
-        // Initialize Webcam
-        try {
-            Webcam.set({
-                width: 640,
-                height: 480,
-                image_format: 'jpeg',
-                jpeg_quality: 90,
-                flip_horiz: true,
-                constraints: {
-                    video: true,
-                    facingMode: "user"
-                }
-            });
-
-            Webcam.attach('.webcam-capture');
-
-            // Wait for camera ready
-            Webcam.on('live', function() {
-                console.log('Camera is live');
-                webcamReady = true;
-            });
-
-            Webcam.on('error', function(err) {
-                console.error('Webcam error:', err);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Kamera Error',
-                    html: 'Tidak dapat mengakses kamera.<br>Pastikan:<br>- Izinkan akses kamera<br>- Gunakan HTTPS<br>- Browser mendukung camera API',
-                    confirmButtonColor: '#0053C5'
-                });
-            });
-        } catch (e) {
-            console.error('Webcam initialization error:', e);
-        }
+        Webcam.set({
+            width: 640, height: 480,
+            image_format: 'jpeg', jpeg_quality: 90,
+            flip_horiz: true,
+            constraints: { video: true, facingMode: 'user' }
+        });
+        Webcam.attach('.webcam-capture');
+        Webcam.on('live', function() { webcamReady = true; });
+        Webcam.on('error', function(err) {
+            Swal.fire({ icon:'error', title:'Kamera Error', html:'Tidak dapat mengakses kamera.<br>Pastikan izin kamera diaktifkan.', confirmButtonColor:'#2563EB' });
+        });
     }
 
-    // Check if Leaflet loaded
-    if (typeof L === 'undefined') {
-        console.error('Leaflet.js not loaded!');
-        Swal.fire({
-            icon: 'error',
-            title: 'Maps Error',
-            text: 'Maps library tidak ter-load. Refresh halaman.',
-            confirmButtonColor: '#0053C5'
-        });
-    } else {
-        console.log('Leaflet.js loaded successfully');
-    }
-
-    // Get User Location
-    var lokasi = document.getElementById('lokasi');
-
+    /* ── Geolocation ── */
     if (!navigator.geolocation) {
-        console.error('Geolocation not supported');
-        Swal.fire({
-            icon: 'error',
-            title: 'GPS Tidak Didukung',
-            text: 'Browser Anda tidak mendukung GPS. Gunakan browser yang lebih modern.',
-            confirmButtonColor: '#0053C5'
-        });
+        Swal.fire({ icon:'error', title:'GPS Tidak Didukung', text:'Browser Anda tidak mendukung GPS.', confirmButtonColor:'#2563EB' });
     } else {
-        console.log('Requesting geolocation...');
-
-        navigator.geolocation.getCurrentPosition(
-            successCallback,
-            errorCallback, {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 0
-            }
-        );
+        navigator.geolocation.getCurrentPosition(successCallback, errorCallback, {
+            enableHighAccuracy: true, timeout: 10000, maximumAge: 0
+        });
     }
 
     function successCallback(position) {
-        console.log('Geolocation success:', position);
+        var lat = position.coords.latitude;
+        var lng = position.coords.longitude;
+        document.getElementById('lokasi').value = lat + ',' + lng;
 
-        var latitude = position.coords.latitude;
-        var longitude = position.coords.longitude;
-
-        lokasi.value = latitude + "," + longitude;
-        console.log('Location set:', lokasi.value);
-
-        // Initialize Map
         try {
             if (!map) {
-                map = L.map('map').setView([latitude, longitude], 17);
+                map = L.map('map', { zoomControl: false, attributionControl: false })
+                       .setView([lat, lng], 17);
 
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    maxZoom: 19,
-                    attribution: '© OpenStreetMap'
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+
+                var lok     = "{{ $lok_kantor->lokasi_cabang }}".split(',');
+                var lat_off = parseFloat(lok[0]);
+                var lng_off = parseFloat(lok[1]);
+                var radius  = {{ $lok_kantor->radius_cabang }};
+
+                circle = L.circle([lat_off, lng_off], {
+                    color: '#2563EB', fillColor: '#2563EB', fillOpacity: 0.12,
+                    radius: radius, weight: 2, dashArray: '5,5'
                 }).addTo(map);
 
-                // Office Location
-                var lok_kantor = "{{ $lok_kantor->lokasi_cabang }}";
-                var lok = lok_kantor.split(",");
-                var lat_kantor = parseFloat(lok[0]);
-                var long_kantor = parseFloat(lok[1]);
-                var radius = {{ $lok_kantor->radius_cabang }};
-
-                console.log('Office location:', lat_kantor, long_kantor, 'Radius:', radius);
-
-                // Office Circle
-                circle = L.circle([lat_kantor, long_kantor], {
-                    color: '#0053C5',
-                    fillColor: '#0053C5',
-                    fillOpacity: 0.15,
-                    radius: radius,
-                    weight: 2,
-                    dashArray: '5, 5'
-                }).addTo(map);
-
-                // Office Marker
-                var officeIcon = L.divIcon({
-                    className: 'custom-div-icon',
-                    html: '<div style="background: linear-gradient(135deg, #0053C5 0%, #003d94 100%); width: 40px; height: 40px; border-radius: 50%; border: 4px solid white; box-shadow: 0 3px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;"><ion-icon name="business" style="color: white; font-size: 22px;"></ion-icon></div>',
-                    iconSize: [40, 40],
-                    iconAnchor: [20, 20]
+                var offIcon = L.divIcon({
+                    className: '',
+                    html: '<div style="background:#2563EB;width:34px;height:34px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;"><ion-icon name="business" style="color:white;font-size:17px;"></ion-icon></div>',
+                    iconSize: [34,34], iconAnchor: [17,17]
                 });
-
-                var officeMarker = L.marker([lat_kantor, long_kantor], {
-                    icon: officeIcon
-                }).addTo(map);
-                officeMarker.bindPopup('<strong style="color: #0053C5;">Kantor</strong><br><small>Radius: ' + radius + 'm</small>');
+                L.marker([lat_off, lng_off], { icon: offIcon }).addTo(map)
+                 .bindPopup('<strong style="color:#2563EB;">Kantor</strong><br><small>Radius: ' + radius + 'm</small>');
             }
+
+            var userIcon = L.divIcon({
+                className: '',
+                html: '<div style="background:#10B981;width:34px;height:34px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;"><ion-icon name="person" style="color:white;font-size:17px;"></ion-icon></div>',
+                iconSize: [34,34], iconAnchor: [17,17]
+            });
 
             if (marker) {
-                marker.setLatLng([latitude, longitude]);
-                map.setView([latitude, longitude]);
+                marker.setLatLng([lat, lng]);
+                map.setView([lat, lng]);
             } else {
-                // User Marker
-                var userIcon = L.divIcon({
-                    className: 'custom-div-icon',
-                    html: '<div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); width: 40px; height: 40px; border-radius: 50%; border: 4px solid white; box-shadow: 0 3px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;"><ion-icon name="person" style="color: white; font-size: 22px;"></ion-icon></div>',
-                    iconSize: [40, 40],
-                    iconAnchor: [20, 20]
-                });
-
-                marker = L.marker([latitude, longitude], {
-                    icon: userIcon
-                }).addTo(map);
-                marker.bindPopup('<strong style="color: #10b981;">Lokasi Anda</strong>').openPopup();
+                marker = L.marker([lat, lng], { icon: userIcon }).addTo(map)
+                          .bindPopup('<strong style="color:#10B981;">Lokasi Anda</strong>').openPopup();
             }
-
-            // Calculate distance
-            var lok_kantor_str = "{{ $lok_kantor->lokasi_cabang }}";
-            var lok_arr = lok_kantor_str.split(",");
-            var lat_kntr = parseFloat(lok_arr[0]);
-            var long_kntr = parseFloat(lok_arr[1]);
-            var rad = {{ $lok_kantor->radius_cabang }};
-            
-            var distance = calculateDistance(latitude, longitude, lat_kntr, long_kntr);
-            console.log('Jarak dari kantor:', distance, 'meter');
-
-            if (distance > rad) {
-                console.warn('Diluar radius!', distance, '>', rad);
-            }
-
-            console.log('Map updated successfully');
-        } catch (e) {
-            console.error('Map initialization error:', e);
-            Swal.fire({
-                icon: 'error',
-                title: 'Maps Error',
-                text: 'Gagal menginisialisasi peta: ' + e.message,
-                confirmButtonColor: '#0053C5'
-            });
+        } catch(e) {
+            console.error('Map error:', e);
         }
     }
 
     function errorCallback(error) {
-        console.error('Geolocation error:', error);
-
-        var errorMsg = '';
-        switch (error.code) {
-            case error.PERMISSION_DENIED:
-                errorMsg = 'Izin lokasi ditolak. Aktifkan GPS di pengaturan browser.';
-                break;
-            case error.POSITION_UNAVAILABLE:
-                errorMsg = 'Informasi lokasi tidak tersedia.';
-                break;
-            case error.TIMEOUT:
-                errorMsg = 'Request lokasi timeout. Coba lagi.';
-                break;
-            default:
-                errorMsg = 'Error mendapatkan lokasi: ' + error.message;
+        var msg = '';
+        switch(error.code) {
+            case error.PERMISSION_DENIED:     msg = 'Izin lokasi ditolak. Aktifkan GPS di pengaturan browser.'; break;
+            case error.POSITION_UNAVAILABLE:  msg = 'Informasi lokasi tidak tersedia.'; break;
+            case error.TIMEOUT:               msg = 'Request lokasi timeout. Coba lagi.'; break;
+            default:                          msg = 'Gagal mendapatkan lokasi.';
         }
-
-        Swal.fire({
-            icon: 'error',
-            title: 'Lokasi Tidak Terdeteksi',
-            html: errorMsg + '<br><br><small>Pastikan GPS aktif dan browser memiliki izin lokasi.</small>',
-            confirmButtonColor: '#0053C5'
-        });
+        Swal.fire({ icon:'error', title:'Lokasi Tidak Terdeteksi', text: msg, confirmButtonColor:'#2563EB' });
     }
 
-    // Calculate distance
-    function calculateDistance(lat1, lon1, lat2, lon2) {
-        const R = 6371e3;
-        const φ1 = lat1 * Math.PI / 180;
-        const φ2 = lat2 * Math.PI / 180;
-        const Δφ = (lat2 - lat1) * Math.PI / 180;
-        const Δλ = (lon2 - lon1) * Math.PI / 180;
-
-        const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-            Math.cos(φ1) * Math.cos(φ2) *
-            Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-        return Math.round(R * c);
-    }
-
-    // ===== METODE LAMA: Take Attendance (Tanpa Face Verification) =====
-    $("#takeabsen").click(function(e) {
-        e.preventDefault();
-
-        console.log('Take attendance clicked (No Face Verification)');
-
-        // Validate location
-        var lokasi_val = $("#lokasi").val();
-        if (!lokasi_val) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Lokasi Belum Terdeteksi',
-                text: 'Mohon tunggu hingga lokasi Anda terdeteksi',
-                confirmButtonColor: '#0053C5'
-            });
-            return;
-        }
-
-        // Validate webcam
-        if (!webcamReady) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Kamera Belum Siap',
-                text: 'Mohon tunggu hingga kamera aktif',
-                confirmButtonColor: '#0053C5'
-            });
-            return;
-        }
-
-        // Show loading
-        $("#loading-overlay").addClass('show');
-
-        // Capture photo
-        Webcam.snap(function(uri) {
-            console.log('Photo captured');
-            var image = uri;
-
-            $.ajax({
-                type: 'POST',
-                url: '/presensi/store',
-                data: {
-                    _token: "{{ csrf_token() }}",
-                    image: image,
-                    lokasi: lokasi_val
-                },
-                cache: false,
-                success: function(respond) {
-                    $("#loading-overlay").removeClass('show');
-                    console.log('Response:', respond);
-
-                    var status = respond.split("|");
-
-                    if (status[0] == "success") {
-                        if (status[2] == "in") {
-                            notifikasi_in.play();
-                        } else {
-                            notifikasi_out.play();
-                        }
-
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Berhasil!',
-                            text: status[1],
-                            confirmButtonColor: '#0053C5',
-                            timer: 3000
-                        }).then(() => {
-                            window.location.href = '/dashboard';
-                        });
-                    } else {
-                        if (status[2] == "radius") {
-                            radius_sound.play();
-                        }
-
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Gagal!',
-                            text: status[1],
-                            confirmButtonColor: '#0053C5'
-                        });
-                    }
-                },
-                error: function(xhr, status, error) {
-                    $("#loading-overlay").removeClass('show');
-                    console.error('AJAX Error:', error);
-
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Terjadi Kesalahan',
-                        text: 'Gagal mengirim data presensi. Silakan coba lagi.',
-                        confirmButtonColor: '#0053C5'
-                    });
-                }
-            });
-        });
-    });
-
-    // ===== FACE-API.js Functions =====
-
-    // Load Face-API models
+    /* ── Face models ── */
     async function loadFaceModels() {
         if (modelsLoaded) return true;
-
         try {
-            console.log('Loading face-api models...');
-
             const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model';
-
             await Promise.all([
                 faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
                 faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
                 faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
             ]);
-
             modelsLoaded = true;
-            console.log('Face-API models loaded successfully');
             return true;
-        } catch (error) {
-            console.error('Error loading face models:', error);
+        } catch(e) {
+            console.error('Model load error:', e);
             return false;
         }
     }
 
-    let cachedReferenceDescriptor = null;
-    // Get reference face descriptor from server
     async function getReferenceFaceDescriptor() {
         if (cachedReferenceDescriptor) return cachedReferenceDescriptor;
-
-        try {
-            const response = await fetch('/face/descriptor', {
-                method: 'GET',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                }
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                cachedReferenceDescriptor = new Float32Array(result.descriptor);
-                return cachedReferenceDescriptor;
-            } else {
-                throw new Error(result.message);
-            }
-        } catch (error) {
-            console.error('Error getting reference descriptor:', error);
-            throw error;
+        const res  = await fetch('/face/descriptor', { headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } });
+        const data = await res.json();
+        if (data.success) {
+            cachedReferenceDescriptor = new Float32Array(data.descriptor);
+            return cachedReferenceDescriptor;
         }
+        throw new Error(data.message);
     }
 
-    // Verify face from webcam SILENTLY for auto-scan
+    /* ── Silent face verify ── */
     async function verifyFaceSilent() {
         try {
             const video = document.querySelector('.webcam-capture video');
             if (!video) return { matched: false };
 
-            // Ekstrak descriptor langsung
-            const descriptorDetection = await faceapi
+            const detection = await faceapi
                 .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
                 .withFaceLandmarks()
                 .withFaceDescriptor();
 
-            if (descriptorDetection && descriptorDetection.detection.score >= 0.5) {
-                const referenceDescriptor = await getReferenceFaceDescriptor();
-                const distance = faceapi.euclideanDistance(descriptorDetection.descriptor, referenceDescriptor);
-                
-                const threshold = 0.6;
-                if (distance <= threshold) {
-                    console.log('Face matched automatically! Distance:', distance);
-                    return { matched: true, descriptor: Array.from(descriptorDetection.descriptor) };
-                } else {
-                    $("#auto-scan-status").html(`
-                        <ion-icon name="close-circle-outline" style="font-size: 18px; color: #ef4444;"></ion-icon>
-                        <div style="display: flex; flex-direction: column; text-align: left;">
-                            <span style="color: #ef4444; font-size: 11px; font-weight: 600; line-height: 1;">Wajah Tidak Cocok</span>
-                            <small style="color: #cbd5e1; font-size: 9px; line-height: 1; margin-top: 2px;">Silakan coba lagi</small>
-                        </div>
-                    `);
-                }
-            }
+            if (detection && detection.detection.score >= 0.5) {
+                const ref  = await getReferenceFaceDescriptor();
+                const dist = faceapi.euclideanDistance(detection.descriptor, ref);
+                if (dist <= 0.6) return { matched: true, descriptor: Array.from(detection.descriptor) };
 
+                setAutoScanUI('mismatch');
+            }
             return { matched: false };
-        } catch (error) {
-            console.error('Silent face verification error:', error);
+        } catch(e) {
             return { matched: false };
         }
     }
 
-    // Auto Verification Loop
-    var autoScanInterval = null;
-    var isProcessing = false;
+    /* ── Auto-scan UI helpers ── */
+    function setAutoScanUI(state) {
+        var el = document.getElementById('auto-scan-status');
+        if (state === 'scanning') {
+            el.innerHTML = `
+                <div class="scan-dot" style="background:#10B981;"></div>
+                <div>
+                    <div class="scan-label" style="color:#10B981;">Auto-Scan Aktif</div>
+                    <div class="scan-sub">Arahkan & tahan posisi wajah…</div>
+                </div>`;
+            el.style.borderColor = 'rgba(255,255,255,0.18)';
+        } else if (state === 'matched') {
+            el.innerHTML = `
+                <div class="scan-dot" style="background:#10B981; animation:none;"></div>
+                <div>
+                    <div class="scan-label" style="color:#6EE7B7;">✓ Wajah Cocok!</div>
+                    <div class="scan-sub">Menyimpan presensi…</div>
+                </div>`;
+            el.style.borderColor = '#10B981';
+            el.style.background  = 'rgba(16,185,129,0.25)';
+        } else if (state === 'mismatch') {
+            el.innerHTML = `
+                <div class="scan-dot" style="background:#EF4444; animation:none;"></div>
+                <div>
+                    <div class="scan-label" style="color:#FCA5A5;">Wajah Tidak Cocok</div>
+                    <div class="scan-sub">Silakan coba lagi…</div>
+                </div>`;
+            el.style.borderColor = '#EF4444';
+        }
+    }
 
+    /* ── Auto verification loop ── */
     function startAutoVerification() {
         if (autoScanInterval) clearInterval(autoScanInterval);
-        
-        console.log('Starting Auto-Scan Loop...');
-        
+        setAutoScanUI('scanning');
+
         autoScanInterval = setInterval(async function() {
-            if (isProcessing) return; // Jangan scan jika sedang proses AJAX
-            if (!webcamReady) return; // Jangan scan jika kamera belum live
-            if (!modelsLoaded) return; // Jangan scan jika AI belum siap
-            
-            var lokasi_val = $("#lokasi").val();
-            if (!lokasi_val) return; // Jangan scan jika lokasi belum terdeteksi
+            if (isProcessing || !webcamReady || !modelsLoaded) return;
+            var lokasi_val = document.getElementById('lokasi').value;
+            if (!lokasi_val) return;
 
-            // Mulai scan silent
             var result = await verifyFaceSilent();
-            
-            if (result.matched) {
-                // Wajah cocok! Hentikan loop sementara.
-                isProcessing = true;
-                clearInterval(autoScanInterval);
-                
-                // Ubah status UI
-                $("#auto-scan-status").html(`
-                    <ion-icon name="checkmark-circle" style="font-size: 18px; color: #10b981;"></ion-icon>
-                    <div style="display: flex; flex-direction: column; text-align: left;">
-                        <span style="color: #10b981; font-size: 11px; font-weight: 600; line-height: 1;">Wajah Cocok!</span>
-                        <small style="color: #cbd5e1; font-size: 9px; line-height: 1; margin-top: 2px;">Menyimpan...</small>
-                    </div>
-                `);
-                
-                $("#auto-scan-status").css({
-                    'background': 'rgba(16, 185, 129, 0.2)',
-                    'border-color': '#10b981'
-                });
+            if (!result.matched) return;
 
-                $("#loading-overlay").addClass('show');
+            isProcessing = true;
+            clearInterval(autoScanInterval);
+            setAutoScanUI('matched');
+            document.getElementById('loading-overlay').classList.add('show');
 
-                // Lakukan presensi AJAX
-                Webcam.snap(function(uri) {
-                    var image = uri;
-                    var shift_ke_val = $("#shift_ke_val").val();
-                    var shift_nama_val = $("#shift_nama_val").val();
-                    var shift_jam_masuk_val = $("#shift_jam_masuk_val").val();
-                    var shift_jam_pulang_val = $("#shift_jam_pulang_val").val();
-
-                    $.ajax({
-                        type: 'POST',
-                        url: '/presensi/store',
-                        data: {
-                            _token: "{{ csrf_token() }}",
-                            image: image,
-                            lokasi: lokasi_val,
-                            verified: true,
-                            face_descriptor: JSON.stringify(result.descriptor),
-                            shift_ke: shift_ke_val,
-                            shift_nama: shift_nama_val,
-                            shift_jam_masuk: shift_jam_masuk_val,
-                            shift_jam_pulang: shift_jam_pulang_val
-                        },
-                        cache: false,
-                        success: function(respond) {
-                            $("#loading-overlay").removeClass('show');
-                            var status = respond.split("|");
-
-                            if (status[0] == "success") {
-                                if (status[2] == "in") {
-                                    notifikasi_in.play();
-                                } else {
-                                    notifikasi_out.play();
-                                }
-
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Berhasil!',
-                                    html: '<strong>' + status[1] + '</strong><br><small>✅ Terverifikasi Otomatis</small>',
-                                    confirmButtonColor: '#0053C5',
-                                    timer: 3000,
-                                    showConfirmButton: false
-                                }).then(() => {
-                                    window.location.href = '/dashboard';
-                                });
-                            } else {
-                                if (status[2] == "radius") {
-                                    radius_sound.play();
-                                }
-
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Gagal!',
-                                    text: status[1],
-                                    confirmButtonColor: '#0053C5'
-                                }).then(() => {
-                                    // Reset UI dan jalankan loop auto-scan lagi
-                                    resetAutoScanUI();
-                                    isProcessing = false;
-                                    startAutoVerification();
-                                });
-                            }
-                        },
-                        error: function(xhr, status, error) {
-                            $("#loading-overlay").removeClass('show');
+            Webcam.snap(function(uri) {
+                $.ajax({
+                    type: 'POST', url: '/presensi/store',
+                    data: {
+                        _token:           '{{ csrf_token() }}',
+                        image:            uri,
+                        lokasi:           lokasi_val,
+                        verified:         true,
+                        face_descriptor:  JSON.stringify(result.descriptor),
+                        shift_ke:         $('#shift_ke_val').val(),
+                        shift_nama:       $('#shift_nama_val').val(),
+                        shift_jam_masuk:  $('#shift_jam_masuk_val').val(),
+                        shift_jam_pulang: $('#shift_jam_pulang_val').val()
+                    },
+                    cache: false,
+                    success: function(respond) {
+                        document.getElementById('loading-overlay').classList.remove('show');
+                        var status = respond.split('|');
+                        if (status[0] === 'success') {
+                            (status[2] === 'in' ? notifikasi_in : notifikasi_out).play();
                             Swal.fire({
-                                icon: 'error',
-                                title: 'Terjadi Kesalahan',
-                                text: 'Gagal mengirim data presensi. Silakan coba lagi.',
-                                confirmButtonColor: '#0053C5'
-                            }).then(() => {
-                                resetAutoScanUI();
-                                isProcessing = false;
-                                startAutoVerification();
-                            });
+                                icon: 'success', title: 'Berhasil!',
+                                html: '<strong>' + status[1] + '</strong><br><small>✅ Terverifikasi Otomatis</small>',
+                                confirmButtonColor: '#2563EB', timer: 3000, showConfirmButton: false
+                            }).then(() => window.location.href = '/dashboard');
+                        } else {
+                            if (status[2] === 'radius') radius_sound.play();
+                            Swal.fire({ icon:'error', title:'Gagal!', text: status[1], confirmButtonColor:'#2563EB' })
+                               .then(() => { isProcessing = false; setAutoScanUI('scanning'); startAutoVerification(); });
                         }
-                    });
+                    },
+                    error: function() {
+                        document.getElementById('loading-overlay').classList.remove('show');
+                        Swal.fire({ icon:'error', title:'Kesalahan', text:'Gagal mengirim data. Coba lagi.', confirmButtonColor:'#2563EB' })
+                           .then(() => { isProcessing = false; setAutoScanUI('scanning'); startAutoVerification(); });
+                    }
                 });
-            }
-        }, 1500); // Scan tiap 1.5 detik
+            });
+        }, 1500);
     }
 
-    function resetAutoScanUI() {
-        $("#auto-scan-status").html(`
-            <div class="spinner-border spinner-border-sm" role="status" style="width: 1rem; height: 1rem; border-width: 0.15em; color: #10b981;"></div>
-            <div style="display: flex; flex-direction: column; text-align: left;">
-                <span style="color: #10b981; font-size: 11px; font-weight: 600; line-height: 1;">Auto-Scan Aktif</span>
-                <small style="color: #cbd5e1; font-size: 9px; line-height: 1; margin-top: 2px;">Arahkan wajah & Tahan</small>
-            </div>
-        `);
-        $("#auto-scan-status").css({
-            'background': 'rgba(0, 0, 0, 0.6)',
-            'border-color': 'rgba(255,255,255,0.2)',
-            'color': 'white'
+    /* ── Manual fallback button ── */
+    $('#takeabsen').click(function(e) {
+        e.preventDefault();
+        var lokasi_val = $('#lokasi').val();
+        if (!lokasi_val) return Swal.fire({ icon:'error', title:'Lokasi Belum Terdeteksi', text:'Mohon tunggu hingga lokasi terdeteksi', confirmButtonColor:'#2563EB' });
+        if (!webcamReady) return Swal.fire({ icon:'error', title:'Kamera Belum Siap', text:'Mohon tunggu hingga kamera aktif', confirmButtonColor:'#2563EB' });
+
+        document.getElementById('loading-overlay').classList.add('show');
+        Webcam.snap(function(uri) {
+            $.ajax({
+                type: 'POST', url: '/presensi/store',
+                data: { _token: '{{ csrf_token() }}', image: uri, lokasi: lokasi_val },
+                cache: false,
+                success: function(respond) {
+                    document.getElementById('loading-overlay').classList.remove('show');
+                    var status = respond.split('|');
+                    if (status[0] === 'success') {
+                        (status[2] === 'in' ? notifikasi_in : notifikasi_out).play();
+                        Swal.fire({ icon:'success', title:'Berhasil!', text: status[1], confirmButtonColor:'#2563EB', timer:3000 })
+                           .then(() => window.location.href = '/dashboard');
+                    } else {
+                        if (status[2] === 'radius') radius_sound.play();
+                        Swal.fire({ icon:'error', title:'Gagal!', text: status[1], confirmButtonColor:'#2563EB' });
+                    }
+                },
+                error: function() {
+                    document.getElementById('loading-overlay').classList.remove('show');
+                    Swal.fire({ icon:'error', title:'Kesalahan', text:'Gagal mengirim data presensi.', confirmButtonColor:'#2563EB' });
+                }
+            });
         });
-    }
+    });
 
-    // Preload face-api models saat halaman dimuat dan jalankan auto-scan
+    /* ── Init on ready ── */
     $(document).ready(async function() {
-        console.log('Page ready - Preloading face-api models...');
         await loadFaceModels();
-        // Mulai auto verification setelah model di-load
         startAutoVerification();
     });
 </script>

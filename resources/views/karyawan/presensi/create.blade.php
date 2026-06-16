@@ -898,20 +898,38 @@
     }
 
     /* ── Auto verification loop ── */
+    function stopAutoVerification() {
+        if (autoScanInterval) {
+            clearInterval(autoScanInterval);
+            autoScanInterval = null;
+        }
+        isProcessing = true; // kunci agar tidak ada tick baru
+    }
+
     function startAutoVerification() {
-        if (autoScanInterval) clearInterval(autoScanInterval);
+        stopAutoVerification();
+        isProcessing = false; // buka kunci setelah reset bersih
         setAutoScanUI('scanning');
 
         autoScanInterval = setInterval(async function() {
+            // Guard: langsung tolak jika sedang diproses
             if (isProcessing || !webcamReady || !modelsLoaded) return;
             var lokasi_val = document.getElementById('lokasi').value;
             if (!lokasi_val) return;
 
-            var result = await verifyFaceSilent();
-            if (!result.matched) return;
-
+            // ── KUNCI SEGERA sebelum async ── cegah race condition
             isProcessing = true;
-            clearInterval(autoScanInterval);
+
+            var result = await verifyFaceSilent();
+
+            if (!result.matched) {
+                // Wajah tidak cocok, buka kunci agar tick berikutnya bisa coba
+                isProcessing = false;
+                return;
+            }
+
+            // Wajah cocok: hentikan loop sepenuhnya
+            stopAutoVerification();
             setAutoScanUI('matched');
             document.getElementById('loading-overlay').classList.add('show');
 
@@ -932,18 +950,31 @@
                     cache: false,
                     success: function(respond) {
                         document.getElementById('loading-overlay').classList.remove('show');
-                        showNotification(respond, function() {
-                            isProcessing = false;
-                            setAutoScanUI('scanning');
-                            startAutoVerification();
-                        });
+                        var parts  = respond.split('|');
+                        var status = parts[0];
+
+                        if (status === 'success') {
+                            // Sukses: tampilkan notifikasi, jangan restart scan
+                            showNotification(respond, null);
+                        } else {
+                            // Error: baru restart scan setelah notifikasi ditutup
+                            showNotification(respond, function() {
+                                isProcessing = false;
+                                startAutoVerification();
+                            });
+                        }
                     },
                     error: function() {
                         document.getElementById('loading-overlay').classList.remove('show');
-                        isProcessing = false;
-                        setAutoScanUI('scanning');
-                        Swal.fire({ icon:'error', title:'⚡ Koneksi Bermasalah', html:'<b>Gagal mengirim data ke server.</b><br><small style="color:#6B7280;">Periksa koneksi internet Anda dan coba lagi.</small>', confirmButtonColor:'#EF4444' })
-                           .then(function() { startAutoVerification(); });
+                        Swal.fire({
+                            icon: 'error',
+                            title: '⚡ Koneksi Bermasalah',
+                            html: '<b>Gagal mengirim data ke server.</b><br><small style="color:#6B7280;">Periksa koneksi internet Anda dan coba lagi.</small>',
+                            confirmButtonColor: '#EF4444'
+                        }).then(function() {
+                            isProcessing = false;
+                            startAutoVerification();
+                        });
                     }
                 });
             });

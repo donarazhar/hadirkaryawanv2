@@ -605,12 +605,23 @@ class PresensiKaryawanController extends Controller
     public function storeQr(Request $request)
     {
         try {
-            $nik = Auth::guard('karyawan')->user()->nik;
-            $karyawan = DB::table('karyawan')->where('nik', $nik)->first();
             $qr_code = $request->qr_code;
-            
-            if ($qr_code !== $karyawan->kode_cabang) {
-                return response()->json(['success' => false, 'message' => 'QR Code tidak valid atau bukan untuk cabang Anda!']);
+            $nik = Auth::guard('karyawan')->user()->nik;
+
+            // Dapatkan cabang karyawan saat ini
+            $karyawan = \App\Models\Karyawan::with('cabang')->where('nik', $nik)->first();
+
+            // Validasi apakah QR yang di-scan cocok dengan token cabang karyawan
+            if (!$karyawan->cabang || $qr_code !== $karyawan->cabang->qr_token) {
+                Log::warning('QR Code mismatch', [
+                    'nik' => $nik,
+                    'scanned_qr' => $qr_code,
+                    'expected_token' => $karyawan->cabang ? $karyawan->cabang->qr_token : 'null'
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'QR Code tidak valid atau bukan dari cabang Anda'
+                ], 400);
             }
 
             $tgl_presensi = date("Y-m-d");

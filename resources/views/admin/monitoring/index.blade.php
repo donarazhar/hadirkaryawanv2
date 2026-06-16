@@ -463,7 +463,7 @@
                 <div class="mon-header-sub">Pantau kehadiran karyawan secara real-time</div>
             </div>
         </div>
-        <div class="live-badge">
+        <div id="auto-refresh-badge" class="live-badge">
             <span class="live-dot"></span>
             Live
         </div>
@@ -586,18 +586,18 @@ $(document).ready(function () {
 
     $('#btn-search').click(function (e) {
         e.preventDefault();
+        countdown = AUTO_REFRESH_SEC;
         loadpresensi();
     });
 
-    // Allow pressing Enter on date input
     $('#tanggal').on('keypress', function(e) {
-        if (e.which === 13) loadpresensi();
+        if (e.which === 13) { countdown = AUTO_REFRESH_SEC; loadpresensi(); }
     });
+
+    $('#tanggal').on('change', function () { countdown = AUTO_REFRESH_SEC; });
 
     function loadpresensi() {
         var tanggal = $('#tanggal').val();
-
-        // Show loading
         $('#loadpresensi').html('<tr><td colspan="5"><div class="tbl-loading"><div class="spinner"></div><p>Memuat data presensi...</p></div></td></tr>');
         $('#tblCount').text('Memuat...');
         $('#statTotal, #statHadir, #statTelat, #statIzin').text('-');
@@ -609,13 +609,10 @@ $(document).ready(function () {
             cache: false,
             success: function (respond) {
                 $('#loadpresensi').html(respond);
-
-                // Update counter
-                var rows = $('#loadpresensi tr[data-row]').length;
+                var rows  = $('#loadpresensi tr[data-row]').length;
                 var hadir = $('#loadpresensi tr[data-status="hadir"]').length;
                 var telat = $('#loadpresensi tr[data-status="telat"]').length;
                 var izin  = $('#loadpresensi tr[data-status="izin"]').length;
-
                 $('#tblCount').text(rows + ' data');
                 $('#statTotal').text(rows);
                 $('#statHadir').text(hadir);
@@ -628,23 +625,49 @@ $(document).ready(function () {
             }
         });
     }
+
+    // ── AUTO-REFRESH 60 detik (hanya jika melihat hari ini) ──
+    var AUTO_REFRESH_SEC = 60;
+    var countdown = AUTO_REFRESH_SEC;
+
+    function todayStr() { return new Date().toISOString().split('T')[0]; }
+
+    function updateBadge() {
+        var isToday = ($('#tanggal').val() === todayStr());
+        if (isToday) {
+            $('#auto-refresh-badge').html(
+                '<span class="live-dot"></span> Live &middot; Refresh <b>' + countdown + 's</b>'
+            );
+        } else {
+            $('#auto-refresh-badge').html(
+                '<span class="live-dot" style="background:#9CA3AF;animation:none;"></span> Paused'
+            );
+        }
+    }
+
+    setInterval(function () {
+        var isToday = ($('#tanggal').val() === todayStr());
+        if (!isToday) { updateBadge(); return; }
+        countdown--;
+        updateBadge();
+        if (countdown <= 0) {
+            loadpresensi();
+            countdown = AUTO_REFRESH_SEC;
+        }
+    }, 1000);
+
+    updateBadge();
 });
 
 function tampilkanpeta(id) {
     $('#loadmap').html('<div class="tbl-loading"><div class="spinner"></div><p>Memuat peta...</p></div>');
     $('#modalMap').modal('show');
-
     $.ajax({
-        type: 'POST',
-        url: '/panel/monitoring/showmap',
+        type: 'POST', url: '/panel/monitoring/showmap',
         data: { _token: "{{ csrf_token() }}", id: id },
         cache: false,
-        success: function (respond) {
-            $('#loadmap').html(respond);
-        },
-        error: function () {
-            $('#loadmap').html('<div class="tbl-empty p-4"><i class="mdi mdi-map-marker-off"></i><p>Gagal memuat peta.</p></div>');
-        }
+        success: function (respond) { $('#loadmap').html(respond); },
+        error:   function () { $('#loadmap').html('<div class="tbl-empty p-4"><i class="mdi mdi-map-marker-off"></i><p>Gagal memuat peta.</p></div>'); }
     });
 }
 </script>

@@ -263,7 +263,7 @@
             
             // Generate QR Code secara instan di sisi klien
             var qrCodeElement = document.getElementById("qrcode");
-            var qrText = "{{ $cabang->kode_cabang }}";
+            var qrText = "{{ $cabang->qr_token }}";
             
             new QRCode(qrCodeElement, {
                 text: qrText,

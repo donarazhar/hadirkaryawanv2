@@ -210,10 +210,11 @@ class DashboardAdminController extends Controller
                 'cabang.nama_cabang'
             )
             ->join('karyawan', 'presensi.nik', '=', 'karyawan.nik')
+            ->join('jam_kerja', 'presensi.kode_jam_kerja', '=', 'jam_kerja.kode_jam_kerja')
             ->leftJoin('cabang', 'karyawan.kode_cabang', '=', 'cabang.kode_cabang')
             ->where('tgl_presensi', $hariini)
             ->where('status', 'h')
-            ->whereRaw('TIME(jam_in) > (SELECT jam_masuk FROM jam_kerja LIMIT 1)')
+            ->whereRaw('CAST(jam_in AS TIME) > jam_kerja.jam_masuk')
             ->orderBy('jam_in', 'desc')
             ->limit(5)
             ->get();

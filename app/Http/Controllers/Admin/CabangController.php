@@ -72,7 +72,8 @@ class CabangController extends Controller
                 'kode_cabang' => $request->kode_cabang,
                 'nama_cabang' => $request->nama_cabang,
                 'lokasi_cabang' => $request->lokasi_cabang,
-                'radius_cabang' => $request->radius_cabang
+                'radius_cabang' => $request->radius_cabang,
+                'qr_token' => \Illuminate\Support\Str::random(32)
             ]);
 
             return redirect()->route('panel.cabang.index')
@@ -163,6 +164,12 @@ class CabangController extends Controller
     public function cetakQr($kode_cabang)
     {
         $cabang = Cabang::findOrFail($kode_cabang);
+        
+        // Ensure qr_token exists
+        if (!$cabang->qr_token) {
+            $cabang->update(['qr_token' => \Illuminate\Support\Str::random(32)]);
+        }
+
         return view('admin.cabang.qr', compact('cabang'));
     }
 }

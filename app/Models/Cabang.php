@@ -19,7 +19,8 @@ class Cabang extends Model
         'kode_cabang',
         'nama_cabang',
         'lokasi_cabang',
-        'radius_cabang'
+        'radius_cabang',
+        'qr_token'
     ];
 
     // Relationships

@@ -181,23 +181,53 @@ class IzinKaryawanController extends Controller
                 Log::info('Document uploaded', ['filename' => $doc_sid]);
             }
 
+            // ── VALIDASI SISA CUTI ──────────────────────────────────────
+            if ($request->status === 'c') {
+                $karyawanData = DB::table('karyawan')->where('nik', $nik)->first();
+                $sisaCuti     = $karyawanData->sisa_cuti ?? 0;
+
+                // Hitung jumlah hari yang diajukan
+                $dari   = \Carbon\Carbon::parse($request->tgl_izin_dari);
+                $sampai = \Carbon\Carbon::parse($request->tgl_izin_sampai);
+                $jmlHari = $dari->diffInDays($sampai) + 1;
+
+                if ($sisaCuti <= 0) {
+                    Log::warning('Sisa cuti habis', ['nik' => $nik, 'sisa_cuti' => $sisaCuti]);
+                    return redirect()->back()
+                        ->withInput()
+                        ->with('error', 'Sisa cuti Anda sudah habis (0 hari). Tidak dapat mengajukan cuti.');
+                }
+
+                if ($jmlHari > $sisaCuti) {
+                    Log::warning('Jumlah hari cuti melebihi sisa', [
+                        'nik'       => $nik,
+                        'sisa_cuti' => $sisaCuti,
+                        'jml_hari'  => $jmlHari
+                    ]);
+                    return redirect()->back()
+                        ->withInput()
+                        ->with('error', "Jumlah hari cuti ({$jmlHari} hari) melebihi sisa cuti Anda ({$sisaCuti} hari).");
+                }
+            }
+            // ────────────────────────────────────────────────────────────
+
             // Izin (i) dan Sakit (s) langsung disetujui otomatis, Cuti (c) perlu persetujuan
             $statusApproved = in_array($request->status, ['i', 's']) ? 1 : 0;
 
             // Simpan data
             $data = [
-                'kode_izin' => $kode_izin,
-                'nik' => $nik,
-                'tgl_izin_dari' => $request->tgl_izin_dari,
-                'tgl_izin_sampai' => $request->tgl_izin_sampai,
-                'status' => $request->status,
-                'keterangan' => $request->keterangan,
-                'doc_sid' => $doc_sid,
-                'kode_cuti' => $request->kode_cuti ?? null,
-                'status_approved' => $statusApproved, // 1 = auto-approved (izin/sakit), 0 = pending (cuti)
-                'status_approved_atasan' => in_array($request->status, ['i', 's']) ? 1 : 0, // sama, auto-approved untuk izin/sakit
-                'created_at' => now(),
-                'updated_at' => now()
+                'kode_izin'              => $kode_izin,
+                'nik'                    => $nik,
+                'tgl_izin_dari'          => $request->tgl_izin_dari,
+                'tgl_izin_sampai'        => $request->tgl_izin_sampai,
+                'status'                 => $request->status,
+                'keterangan'             => $request->keterangan,
+                'doc_sid'                => $doc_sid,
+                'kode_cuti'              => $request->kode_cuti ?? null,
+                'status_approved'        => $statusApproved,
+                'status_approved_atasan' => in_array($request->status, ['i', 's']) ? 1 : 0,
+                'created_at'             => now(),
+                'updated_at'             => now()
             ];
 
             $simpan = DB::table('pengajuan_izin')->insert($data);

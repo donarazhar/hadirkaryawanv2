@@ -58,7 +58,7 @@
                                 <i class="mdi mdi-face-recognition fs-3"></i>
                             </div>
                         @else
-                            <img src="{{ $foto_in ?: asset('assets/img/nophoto.jpg') }}" class="foto-presensi me-2" alt="Foto Masuk">
+                            <img src="{{ $foto_in ?: asset('assets/img/sample/avatar/noprofile.png') }}" class="foto-presensi me-2" alt="Foto Masuk">
                         @endif
                         <div>
                             <span class="d-block fw-bold {{ $status_telat ? 'text-danger' : 'text-success' }}">
@@ -85,7 +85,7 @@
                                 <i class="mdi mdi-face-recognition fs-3"></i>
                             </div>
                         @else
-                            <img src="{{ $foto_out ?: asset('assets/img/nophoto.jpg') }}" class="foto-presensi me-2" alt="Foto Pulang">
+                            <img src="{{ $foto_out ?: asset('assets/img/sample/avatar/noprofile.png') }}" class="foto-presensi me-2" alt="Foto Pulang">
                         @endif
                         <div>
                             <span class="d-block fw-bold text-primary">

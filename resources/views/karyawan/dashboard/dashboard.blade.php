@@ -1,4 +1,4 @@
-﻿@extends('karyawan.layouts.presensi')
+@extends('karyawan.layouts.presensi')
 @section('content')
 
 <style>
@@ -894,7 +894,7 @@
                         @if ($presensi->foto_in)
                             @php
                                 $fp = 'uploads/absensi/' . $presensi->foto_in;
-                                $fe = Storage::disk('public')->exists($fp);
+                                $fe = !empty($presensi->foto_in) && Storage::disk('public')->exists($fp);
                             @endphp
                             @if($fe)
                                 <img src="{{ Storage::url($fp) }}" alt="Check In" class="attend-photo">
@@ -918,7 +918,7 @@
                             @if ($presensi->foto_out)
                                 @php
                                     $fp2 = 'uploads/absensi/' . $presensi->foto_out;
-                                    $fe2 = Storage::disk('public')->exists($fp2);
+                                    $fe2 = !empty($presensi->foto_out) && Storage::disk('public')->exists($fp2);
                                 @endphp
                                 @if($fe2)
                                     <img src="{{ Storage::url($fp2) }}" alt="Check Out" class="attend-photo">
@@ -1067,7 +1067,7 @@
                 @foreach($riwayattim as $d)
                 @php
                     $fp = 'uploads/absensi/' . $d->foto_in;
-                    $fe = Storage::disk('public')->exists($fp);
+                    $fe = !empty($d->foto_in) && Storage::disk('public')->exists($fp);
                     $isLate = $d->jam_in > $d->jam_masuk;
                 @endphp
                 <div class="hist-item">
@@ -1098,7 +1098,7 @@
                 @foreach($historibulanini->take(10) as $d)
                 @php
                     $fp = 'uploads/absensi/' . $d->foto_in;
-                    $fe = Storage::disk('public')->exists($fp);
+                    $fe = !empty($d->foto_in) && Storage::disk('public')->exists($fp);
                     $isLate = $d->jam_in > $d->jam_masuk;
                 @endphp
                 <div class="hist-item">

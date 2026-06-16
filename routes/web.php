@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\KaryawanAdminController;
 use App\Http\Controllers\Admin\KonfigurasiJkDeptController;
 use App\Http\Controllers\Admin\LaporanController;
 use App\Http\Controllers\Admin\MonitoringController;
+use App\Http\Controllers\Admin\HariLiburController;
 use App\Http\Controllers\Admin\PresensiFaceAdminController;
 use App\Http\Controllers\Admin\RekapController;
 use App\Http\Controllers\Admin\UserController;
@@ -40,11 +41,18 @@ Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name
 Route::middleware('guest:karyawan')->group(function () {
     Route::get('/login', [AuthController::class, 'login'])->name('login');
     Route::post('/proseslogin', [AuthController::class, 'proseslogin'])->name('proseslogin')->middleware('throttle:5,1');
+    
+    // Forgot Password
+    Route::get('/forgot-password', [App\Http\Controllers\ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+    Route::post('/forgot-password', [App\Http\Controllers\ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email')->middleware('throttle:3,1');
+    Route::get('/reset-password/{token}', [App\Http\Controllers\ForgotPasswordController::class, 'showResetForm'])->name('password.reset');
+    Route::post('/reset-password', [App\Http\Controllers\ForgotPasswordController::class, 'resetPassword'])->name('password.update');
 });
 
 Route::middleware('auth:karyawan')->group(function () {
     Route::post('/proseslogout', [AuthController::class, 'proseslogout'])->name('proseslogout');
     Route::get('/dashboard', [DashboardKaryawanController::class, 'index'])->name('dashboard');
+    Route::get('/kalender', [DashboardKaryawanController::class, 'kalender'])->name('karyawan.kalender');
 
     // Presensi
     Route::controller(PresensiKaryawanController::class)->prefix('presensi')->name('presensi.')->group(function () {
@@ -132,6 +140,7 @@ Route::prefix('panel')->name('panel.')->group(function () {
             Route::resource('karyawan', KaryawanAdminController::class);
             Route::resource('konfigurasi-jk-dept', KonfigurasiJkDeptController::class);
             Route::resource('cuti', CutiController::class)->except(['create', 'show', 'edit']);
+            Route::resource('harilibur', HariLiburController::class)->except(['create', 'show', 'edit']);
         });
 
         // Superadmin only
@@ -145,6 +154,7 @@ Route::prefix('panel')->name('panel.')->group(function () {
             Route::get('/', 'index')->name('index');
             Route::post('/getpresensi', 'getpresensi')->name('getpresensi');
             Route::post('/showmap', 'showmap')->name('showmap');
+            Route::post('/koreksi', 'koreksi')->name('koreksi');
         });
 
         // Laporan

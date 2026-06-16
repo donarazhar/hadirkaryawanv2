@@ -447,7 +447,10 @@ class PresensiKaryawanController extends Controller
                     'jamkerja_pulang' => $jamkerja_pulang
                 ]);
 
-                if ($jam_pulang < $jamkerja_pulang) {
+                // Cek Libur Nasional
+                $isLibur = \App\Models\HariLibur::where('tanggal', $tgl_presensi)->exists();
+
+                if (!$isLibur && $jam_pulang < $jamkerja_pulang) {
                     DB::rollBack();
                     $waktu_pulang = date('H:i', strtotime($jam_pulang_ref));
                     Log::warning('Check-out too early', [
@@ -519,8 +522,11 @@ class PresensiKaryawanController extends Controller
                 $awal_masuk = Carbon::createFromFormat('H:i:s', $awal_masuk_ref, 'Asia/Jakarta');
                 $akhir_masuk = Carbon::createFromFormat('H:i:s', $akhir_masuk_ref, 'Asia/Jakarta');
 
+                // Cek Libur Nasional
+                $isLibur = \App\Models\HariLibur::where('tanggal', $tgl_presensi)->exists();
+
                 // Validasi: Belum waktunya presensi (terlalu cepat)
-                if ($jam_sekarang->lt($awal_masuk)) {
+                if (!$isLibur && $jam_sekarang->lt($awal_masuk)) {
                     DB::rollBack();
                     $waktu_mulai = Carbon::parse($awal_masuk_ref)->format('H:i');
                     Log::warning('Check-in too early', [
@@ -532,7 +538,7 @@ class PresensiKaryawanController extends Controller
                 }
 
                 // Validasi: Waktu presensi sudah habis (terlalu telat)
-                if ($jam_sekarang->gt($akhir_masuk)) {
+                if (!$isLibur && $jam_sekarang->gt($akhir_masuk)) {
                     DB::rollBack();
                     $waktu_akhir = Carbon::parse($akhir_masuk_ref)->format('H:i');
                     Log::warning('Check-in too late', [

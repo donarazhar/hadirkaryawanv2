@@ -480,6 +480,9 @@
             <button type="button" class="btn-search" id="btn-search">
                 <i class="mdi mdi-magnify"></i> Tampilkan Data
             </button>
+            <button type="button" class="btn-search" style="background:var(--amber); color:#fff;" data-bs-toggle="modal" data-bs-target="#modalKoreksi">
+                <i class="mdi mdi-pencil-outline"></i> Koreksi Manual
+            </button>
         </div>
     </div>
 
@@ -576,6 +579,62 @@
         </div>
     </div>
 </div>
+
+{{-- ── MODAL KOREKSI MANUAL ── --}}
+<div class="modal fade" id="modalKoreksi" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form action="{{ route('panel.monitoring.koreksi') }}" method="POST">
+                @csrf
+                <div class="modal-header-custom">
+                    <div class="modal-header-title">
+                        <i class="mdi mdi-pencil-outline"></i> Koreksi Presensi Manual
+                    </div>
+                    <button type="button" class="btn-modal-close" data-bs-dismiss="modal">
+                        <i class="mdi mdi-close"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Karyawan</label>
+                        <select name="nik" class="form-select" required>
+                            <option value="">Pilih Karyawan</option>
+                            @foreach(\App\Models\Karyawan::orderBy('nama_lengkap')->get() as $k)
+                                <option value="{{ $k->nik }}">{{ $k->nama_lengkap }} ({{ $k->nik }})</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Tanggal</label>
+                        <input type="date" name="tanggal" class="form-control" value="{{ date('Y-m-d') }}" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label class="form-label fw-bold">Jam Masuk</label>
+                            <input type="time" name="jam_in" class="form-control">
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label class="form-label fw-bold">Jam Pulang</label>
+                            <input type="time" name="jam_out" class="form-control">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Status</label>
+                        <select name="status" class="form-select" required>
+                            <option value="h">Hadir (h)</option>
+                            <option value="i">Izin (i)</option>
+                            <option value="s">Sakit (s)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan Koreksi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -658,6 +717,15 @@ $(document).ready(function () {
 
     updateBadge();
 });
+
+function editPresensi(nik, jam_in, jam_out, status) {
+    var form = document.querySelector('#modalKoreksi form');
+    form.querySelector('select[name="nik"]').value = nik;
+    form.querySelector('input[name="jam_in"]').value = jam_in;
+    form.querySelector('input[name="jam_out"]').value = jam_out;
+    form.querySelector('select[name="status"]').value = status;
+    $('#modalKoreksi').modal('show');
+}
 
 function tampilkanpeta(id) {
     $('#loadmap').html('<div class="tbl-loading"><div class="spinner"></div><p>Memuat peta...</p></div>');

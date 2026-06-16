@@ -601,7 +601,7 @@
             <div class="sb-section-label">Master Data</div>
             <div class="sb-group">
                 @php
-                    $masterOpen = Request::is('panel/cabang*') || Request::is('panel/departemen*');
+                    $masterOpen = Request::is('panel/cabang*') || Request::is('panel/departemen*') || Request::is('panel/harilibur*');
                 @endphp
                 <div class="sb-group-trigger {{ $masterOpen ? 'open' : '' }}"
                      onclick="toggleGroup('grpMaster', this)"
@@ -618,6 +618,10 @@
                     <a href="{{ route('panel.departemen.index') }}"
                        class="sb-sub-item {{ Request::is('panel/departemen*') ? 'active' : '' }}">
                         <i class="mdi mdi-file-tree"></i> Data Departemen
+                    </a>
+                    <a href="{{ route('panel.harilibur.index') }}"
+                       class="sb-sub-item {{ Request::is('panel/harilibur*') ? 'active' : '' }}">
+                        <i class="mdi mdi-calendar-star"></i> Jadwal Libur
                     </a>
                 </div>
             </div>

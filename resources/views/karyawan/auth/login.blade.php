@@ -478,6 +478,10 @@
                     <svg x-show="showPassword" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3l14 14M10 4c-1.3 0-2.5.3-3.6.8M1 10s.5-.9 1.5-2M19 10s-3 6-9 6c-1.3 0-2.5-.3-3.6-.8"/></svg>
                 </button>
             </div>
+            
+            <div style="text-align: right; margin-bottom: 14px;">
+                <a href="{{ route('password.request') }}" style="font-size: 13px; color: var(--primary); text-decoration: none; font-weight: 600;">Lupa Password?</a>
+            </div>
 
             {{-- Submit --}}
             <button

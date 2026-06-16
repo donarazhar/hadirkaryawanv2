@@ -275,13 +275,13 @@
                 <span>Home</span>
             </a>
 
-            {{-- FaceID --}}
-            <a href="{{ route('face.enrollment') }}"
-               class="dock-item {{ request()->routeIs('face.enrollment') ? 'active' : '' }}">
+            {{-- Kalender --}}
+            <a href="{{ route('karyawan.kalender') }}"
+               class="dock-item {{ request()->routeIs('karyawan.kalender') ? 'active' : '' }}">
                 <div class="nav-icon-wrap">
-                    <ion-icon name="{{ request()->routeIs('face.enrollment') ? 'scan' : 'scan-outline' }}"></ion-icon>
+                    <ion-icon name="{{ request()->routeIs('karyawan.kalender') ? 'calendar-number' : 'calendar-number-outline' }}"></ion-icon>
                 </div>
-                <span>FaceID</span>
+                <span>Kalender</span>
             </a>
 
             {{-- FAB — Presensi --}}

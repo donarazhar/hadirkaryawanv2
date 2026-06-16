@@ -127,4 +127,35 @@ class DashboardKaryawanController extends Controller
             'tahunini'
         ));
     }
+
+    public function kalender(Request $request)
+    {
+        $bulanini = $request->bulan ?: date("m") * 1;
+        $tahunini = $request->tahun ?: date("Y");
+        $nik = Auth::guard('karyawan')->user()->nik;
+
+        $historibulanini = DB::table('presensi')
+            ->select('tgl_presensi', 'status')
+            ->where('nik', $nik)
+            ->whereRaw('MONTH(tgl_presensi) = ?', [$bulanini])
+            ->whereRaw('YEAR(tgl_presensi) = ?', [$tahunini])
+            ->get();
+
+        // Convert to array mapped by date
+        $kalender_data = [];
+        foreach ($historibulanini as $d) {
+            $kalender_data[$d->tgl_presensi] = $d->status;
+        }
+
+        // Cari libur nasional
+        $harilibur = DB::table('hari_libur')
+            ->whereRaw('MONTH(tanggal) = ?', [$bulanini])
+            ->whereRaw('YEAR(tanggal) = ?', [$tahunini])
+            ->pluck('keterangan', 'tanggal')
+            ->toArray();
+
+        $namabulan = ["", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+
+        return view('karyawan.kalender.index', compact('kalender_data', 'bulanini', 'tahunini', 'namabulan', 'harilibur'));
+    }
 }

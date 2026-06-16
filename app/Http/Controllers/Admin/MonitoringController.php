@@ -84,4 +84,74 @@ class MonitoringController extends Controller
     {
         // Implementation
     }
+
+    /**
+     * Koreksi Presensi Manual
+     */
+    public function koreksi(Request $request)
+    {
+        $request->validate([
+            'nik' => 'required',
+            'tanggal' => 'required|date',
+            'status' => 'required|in:h,i,s,a',
+        ]);
+
+        try {
+            $presensi = DB::table('presensi')
+                ->where('nik', $request->nik)
+                ->where('tgl_presensi', $request->tanggal)
+                ->first();
+
+            $karyawan = DB::table('karyawan')->where('nik', $request->nik)->first();
+            $jamKerja = null;
+
+            if (!$presensi) {
+                // Buat presensi baru (misal karena lupa absen)
+                // Cari jam kerja karyawan hari ini
+                $nama_hari = \Carbon\Carbon::parse($request->tanggal)->translatedFormat('l');
+                $jamKerja = DB::table('konfigurasi_jam_kerja')
+                    ->join('jam_kerja', 'konfigurasi_jam_kerja.kode_jam_kerja', '=', 'jam_kerja.kode_jam_kerja')
+                    ->where('nik', $request->nik)
+                    ->where('hari', $nama_hari)
+                    ->first();
+
+                if (!$jamKerja) {
+                    $jamKerja = DB::table('konfigurasi_jam_kerja_dept')
+                        ->join('jam_kerja', 'konfigurasi_jam_kerja_dept.kode_jam_kerja', '=', 'jam_kerja.kode_jam_kerja')
+                        ->where('kode_dept', $karyawan->kode_dept)
+                        ->where('kode_cabang', $karyawan->kode_cabang)
+                        ->where('hari', $nama_hari)
+                        ->first();
+                }
+
+                $kode_jam_kerja = $jamKerja ? $jamKerja->kode_jam_kerja : null;
+
+                DB::table('presensi')->insert([
+                    'nik' => $request->nik,
+                    'tgl_presensi' => $request->tanggal,
+                    'jam_in' => $request->jam_in ?: null,
+                    'jam_out' => $request->jam_out ?: null,
+                    'status' => $request->status,
+                    'kode_jam_kerja' => $kode_jam_kerja,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            } else {
+                // Update presensi yang ada
+                DB::table('presensi')
+                    ->where('id', $presensi->id)
+                    ->update([
+                        'jam_in' => $request->jam_in ? $request->tanggal . ' ' . $request->jam_in : $presensi->jam_in,
+                        'jam_out' => $request->jam_out ? $request->tanggal . ' ' . $request->jam_out : $presensi->jam_out,
+                        'status' => $request->status,
+                        'updated_at' => now(),
+                    ]);
+            }
+
+            return redirect()->back()->with('success', 'Data presensi manual berhasil disimpan.');
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Koreksi Presensi Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat menyimpan data presensi manual.');
+        }
+    }
 }

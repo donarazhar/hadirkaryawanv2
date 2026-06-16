@@ -1,4 +1,4 @@
-﻿@extends('karyawan.layouts.presensi')
+@extends('karyawan.layouts.presensi')
 
 @section('content')
 
@@ -618,6 +618,20 @@
                     <ion-icon name="camera-outline"></ion-icon>
                     Pilih
                 </label>
+            </div>
+        </div>
+
+        {{-- FaceID --}}
+        <div class="form-card" style="margin-bottom: 12px; cursor: pointer;" onclick="window.location.href='{{ route('face.enrollment') }}'">
+            <div class="card-head">
+                <div class="card-head-icon" style="background: var(--info-soft);"><ion-icon name="scan-outline" style="color: var(--info);"></ion-icon></div>
+                <div class="card-title" style="flex: 1;">FaceID / Verifikasi Wajah</div>
+                <ion-icon name="chevron-forward-outline" style="color: var(--text-400); font-size: 18px;"></ion-icon>
+            </div>
+            <div class="form-body" style="padding: 10px 16px;">
+                <div class="form-hint" style="color: var(--text-600); font-size: 12px;">
+                    Daftar atau perbarui data wajah Anda untuk keperluan absensi.
+                </div>
             </div>
         </div>
 

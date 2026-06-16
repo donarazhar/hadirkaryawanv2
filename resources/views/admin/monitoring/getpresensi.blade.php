@@ -105,10 +105,13 @@
             <!-- Aksi / Lokasi -->
             <td>
                 @if ($d->jam_in || $d->jam_out)
-                    <button class="btn btn-sm btn-outline-primary" onclick="tampilkanpeta('{{ $d->id }}')">
-                        <i class="mdi mdi-map-marker"></i> Lihat Peta
+                    <button class="btn btn-sm btn-outline-primary mb-1" onclick="tampilkanpeta('{{ $d->id }}')">
+                        <i class="mdi mdi-map-marker"></i> Peta
                     </button>
                 @endif
+                <button class="btn btn-sm btn-outline-warning mb-1" onclick="editPresensi('{{ $d->nik }}', '{{ $d->jam_in ? date('H:i', strtotime($d->jam_in)) : '' }}', '{{ $d->jam_out ? date('H:i', strtotime($d->jam_out)) : '' }}', '{{ $d->status }}')">
+                    <i class="mdi mdi-pencil"></i> Edit
+                </button>
                 @if ($d->status == 'i')
                     <span class="badge status-izin ms-1">Izin: {{ $d->keterangan }}</span>
                 @elseif($d->status == 's')

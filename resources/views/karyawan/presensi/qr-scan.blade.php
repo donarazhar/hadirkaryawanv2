@@ -1,242 +1,563 @@
 @extends('karyawan.layouts.presensi')
 
-@section('header')
-<div class="appHeader bg-primary text-light">
-    <div class="left">
-        <a href="{{ route('dashboard') }}" class="headerButton goBack">
-            <ion-icon name="chevron-back-outline"></ion-icon>
-        </a>
-    </div>
-    <div class="pageTitle">Scan QR Code</div>
-    <div class="right"></div>
-</div>
-@endsection
-
 @section('content')
-<!-- Leaflet CSS -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
-<div class="section full mt-2">
-    <div class="section-title">Arahkan Kamera ke QR Code Cabang</div>
-    <div class="wide-block pt-2 pb-2">
-        <div id="reader" width="100%"></div>
-        <input type="hidden" id="lokasi">
-    </div>
-    <div class="row mt-2">
-        <div class="col-12 text-center">
-            <p class="text-muted" id="status-text">Menunggu lokasi...</p>
-        </div>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+    :root {
+        --primary:      #2563EB;
+        --primary-soft: #EFF6FF;
+        --primary-mid:  #BFDBFE;
+        --success:      #10B981;
+        --success-soft: #ECFDF5;
+        --danger:       #EF4444;
+        --warning:      #F59E0B;
+        --text-900:     #111827;
+        --text-600:     #4B5563;
+        --text-400:     #9CA3AF;
+        --border:       #F1F5F9;
+        --border-med:   #E2E8F0;
+        --surface:      #FFFFFF;
+        --bg:           #F8FAFC;
+        --radius-sm:    10px;
+        --radius-md:    14px;
+        --radius-lg:    18px;
+        --shadow-sm:    0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+        font-family: 'Inter', -apple-system, sans-serif;
+        background: var(--bg);
+        color: var(--text-900);
+        -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── STICKY HEADER ── */
+    .pg-header {
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        position: sticky;
+        top: 0;
+        z-index: 50;
+    }
+
+    .btn-back {
+        width: 36px; height: 36px;
+        background: var(--bg);
+        border: 1px solid var(--border-med);
+        border-radius: var(--radius-sm);
+        display: flex; align-items: center; justify-content: center;
+        text-decoration: none;
+        flex-shrink: 0;
+        transition: background 0.2s;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-back:active { background: var(--border-med); }
+    .btn-back ion-icon { font-size: 20px; color: var(--text-600); }
+
+    .pg-title {
+        font-size: 17px;
+        font-weight: 700;
+        color: var(--text-900);
+        line-height: 1.2;
+    }
+
+    .pg-sub {
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--primary);
+        display: block;
+        margin-top: 1px;
+    }
+
+    /* ── PAGE BODY ── */
+    .pg-body {
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        padding-bottom: 100px;
+    }
+
+    /* ── INSTRUCTION CARD ── */
+    .instruction-card {
+        background: var(--primary-soft);
+        border: 1px solid var(--primary-mid);
+        border-radius: var(--radius-lg);
+        padding: 13px 16px;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .instruction-card ion-icon {
+        font-size: 20px;
+        color: var(--primary);
+        flex-shrink: 0;
+        margin-top: 1px;
+    }
+
+    .instruction-card .instr-text {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--primary);
+        line-height: 1.55;
+    }
+
+    .instruction-card .instr-text strong {
+        font-weight: 700;
+        display: block;
+        margin-bottom: 2px;
+    }
+
+    /* ── QR READER CARD ── */
+    .qr-card {
+        background: var(--surface);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+    }
+
+    .qr-card-head {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 13px 16px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .qr-card-icon {
+        width: 28px; height: 28px;
+        border-radius: 8px;
+        background: var(--primary-soft);
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .qr-card-icon ion-icon { font-size: 14px; color: var(--primary); }
+
+    .qr-card-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--text-900);
+        flex: 1;
+    }
+
+    /* Status pill */
+    #status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 10px;
+        border-radius: 50px;
+        font-size: 10px;
+        font-weight: 700;
+        background: #FEF3C7;
+        color: #D97706;
+        border: 1px solid #FDE68A;
+        transition: all 0.3s;
+    }
+
+    #status-pill.ready {
+        background: var(--success-soft);
+        color: var(--success);
+        border-color: #A7F3D0;
+    }
+
+    #status-dot {
+        width: 6px; height: 6px;
+        border-radius: 50%;
+        background: currentColor;
+        animation: pulse-dot 1.4s ease-in-out infinite;
+    }
+
+    @keyframes pulse-dot {
+        0%, 100% { opacity: 1; }
+        50%       { opacity: 0.3; }
+    }
+
+    /* QR Reader container */
+    .qr-reader-wrap {
+        padding: 16px;
+        position: relative;
+    }
+
+    /* html5-qrcode override */
+    #reader {
+        width: 100% !important;
+        border: none !important;
+        border-radius: var(--radius-md) !important;
+        overflow: hidden !important;
+    }
+
+    #reader video {
+        border-radius: var(--radius-md) !important;
+        object-fit: cover !important;
+    }
+
+    /* Styled QR frame overlay */
+    .qr-frame-overlay {
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        width: 180px; height: 180px;
+        pointer-events: none;
+        z-index: 10;
+    }
+
+    .qr-frame-overlay .corner {
+        position: absolute;
+        width: 24px; height: 24px;
+        border-color: var(--primary);
+        border-style: solid;
+    }
+
+    .qr-frame-overlay .corner.tl { top: 0; left: 0; border-width: 3px 0 0 3px; border-radius: 4px 0 0 0; }
+    .qr-frame-overlay .corner.tr { top: 0; right: 0; border-width: 3px 3px 0 0; border-radius: 0 4px 0 0; }
+    .qr-frame-overlay .corner.bl { bottom: 0; left: 0; border-width: 0 0 3px 3px; border-radius: 0 0 0 4px; }
+    .qr-frame-overlay .corner.br { bottom: 0; right: 0; border-width: 0 3px 3px 0; border-radius: 0 0 4px 0; }
+
+    /* Scan line animation */
+    .scan-line {
+        position: absolute;
+        left: 0; right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--primary), transparent);
+        animation: scan-move 2s ease-in-out infinite;
+        top: 0;
+    }
+
+    @keyframes scan-move {
+        0%   { top: 0; }
+        50%  { top: calc(100% - 2px); }
+        100% { top: 0; }
+    }
+
+    /* ── MAP CARD ── */
+    .map-card {
+        background: var(--surface);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+    }
+
+    .map-card-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 13px 16px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .map-head-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .map-head-icon {
+        width: 28px; height: 28px;
+        border-radius: 8px;
+        background: var(--primary-soft);
+        display: flex; align-items: center; justify-content: center;
+    }
+
+    .map-head-icon ion-icon { font-size: 14px; color: var(--primary); }
+
+    .map-head-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--text-900);
+    }
+
+    .radius-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        background: var(--primary-soft);
+        border: 1px solid var(--primary-mid);
+        border-radius: 50px;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--primary);
+    }
+
+    .radius-tag ion-icon { font-size: 12px; }
+
+    #map {
+        width: 100%;
+        height: 180px;
+    }
+
+    /* ── Animations ── */
+    @keyframes fadeSlide {
+        from { opacity: 0; transform: translateY(8px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .pg-body > * {
+        animation: fadeSlide 0.28s ease both;
+    }
+    .pg-body > *:nth-child(1) { animation-delay: 0.04s; }
+    .pg-body > *:nth-child(2) { animation-delay: 0.08s; }
+    .pg-body > *:nth-child(3) { animation-delay: 0.12s; }
+
+    @supports (padding: max(0px)) {
+        .pg-body { padding-bottom: max(100px, calc(env(safe-area-inset-bottom) + 100px)); }
+        .pg-header { padding-top: max(16px, env(safe-area-inset-top)); }
+    }
+</style>
+
+{{-- Leaflet CSS --}}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+{{-- ── STICKY HEADER ── --}}
+<div class="pg-header">
+    <a href="{{ route('dashboard') }}" class="btn-back">
+        <ion-icon name="chevron-back-outline"></ion-icon>
+    </a>
+    <div>
+        <div class="pg-title">Scan QR Code</div>
+        <span class="pg-sub">Absen menggunakan QR Code cabang</span>
     </div>
 </div>
 
-<!-- Map Section -->
-<div class="section mt-2 mb-2">
-    <div class="card" style="border-radius: 20px; border: 1px solid rgba(0, 83, 197, 0.05); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);">
-        <div class="card-body">
-            <div class="map-title" style="font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-                <ion-icon name="location-outline" style="font-size: 20px; color: #0053C5;"></ion-icon>
-                Lokasi Anda
+{{-- ── PAGE BODY ── --}}
+<div class="pg-body">
+
+    {{-- Instruction Banner --}}
+    <div class="instruction-card">
+        <ion-icon name="qr-code-outline"></ion-icon>
+        <div class="instr-text">
+            <strong>Cara Penggunaan</strong>
+            Arahkan kamera ke QR Code yang tersedia di kantor cabang Anda. Pastikan GPS sudah aktif sebelum melakukan scan.
+        </div>
+    </div>
+
+    {{-- QR Scanner Card --}}
+    <div class="qr-card">
+        <div class="qr-card-head">
+            <div class="qr-card-icon">
+                <ion-icon name="scan-outline"></ion-icon>
             </div>
-            <div id="map" style="height: 250px; border-radius: 12px; overflow: hidden; z-index: 1;"></div>
-            <div class="location-info" style="margin-top: 12px; padding: 12px; background: linear-gradient(135deg, rgba(0, 83, 197, 0.05) 0%, rgba(46, 124, 230, 0.05) 100%); border-radius: 10px; border: 1px solid rgba(0, 83, 197, 0.2);">
-                <p style="margin: 0; font-size: 12px; color: #64748b; display: flex; align-items: center; gap: 6px;">
-                    <ion-icon name="business-outline" style="font-size: 16px; color: #0053C5;"></ion-icon>
-                    <strong style="color: #0053C5; font-weight: 600;">Radius Kantor:</strong> {{ $lok_kantor->radius_cabang ?? '0' }} meter
-                </p>
+            <div class="qr-card-title">Kamera Scanner</div>
+            <div id="status-pill">
+                <div id="status-dot"></div>
+                <span id="status-label">Menunggu GPS…</span>
+            </div>
+        </div>
+
+        <div class="qr-reader-wrap">
+            <div id="reader"></div>
+            {{-- QR corner frame --}}
+            <div class="qr-frame-overlay">
+                <div class="scan-line"></div>
+                <div class="corner tl"></div>
+                <div class="corner tr"></div>
+                <div class="corner bl"></div>
+                <div class="corner br"></div>
             </div>
         </div>
     </div>
+
+    {{-- Map Card --}}
+    <div class="map-card">
+        <div class="map-card-head">
+            <div class="map-head-left">
+                <div class="map-head-icon">
+                    <ion-icon name="location-outline"></ion-icon>
+                </div>
+                <div class="map-head-title">Lokasi Anda</div>
+            </div>
+            <div class="radius-tag">
+                <ion-icon name="business-outline"></ion-icon>
+                Radius: {{ $lok_kantor->radius_cabang ?? '0' }}m
+            </div>
+        </div>
+        <div id="map"></div>
+    </div>
+
 </div>
 
-<audio id="notifikasi_in" src="{{ asset('assets/sound/notifikasi_in.mp3') }}" preload="auto"></audio>
+{{-- Hidden inputs & audio --}}
+<input type="hidden" id="lokasi">
+<audio id="notifikasi_in"  src="{{ asset('assets/sound/notifikasi_in.mp3') }}"  preload="auto"></audio>
 <audio id="notifikasi_out" src="{{ asset('assets/sound/notifikasi_out.mp3') }}" preload="auto"></audio>
+
 @endsection
 
 @push('myscript')
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-<!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>
-    var notifikasi_in = document.getElementById('notifikasi_in');
-    var notifikasi_out = document.getElementById('notifikasi_out');
 
-    // Dapatkan Lokasi Dulu
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(successCallback, errorCallback, {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 0
-        });
+<script>
+    var notifikasi_in  = document.getElementById('notifikasi_in');
+    var notifikasi_out = document.getElementById('notifikasi_out');
+    var isScanning = false;
+
+    /* ── Status pill helpers ── */
+    function setStatus(text, ready) {
+        document.getElementById('status-label').textContent = text;
+        var pill = document.getElementById('status-pill');
+        if (ready) {
+            pill.classList.add('ready');
+        } else {
+            pill.classList.remove('ready');
+        }
+    }
+
+    /* ── Geolocation ── */
+    if (!navigator.geolocation) {
+        Swal.fire({ icon:'error', title:'GPS Tidak Didukung', text:'Browser Anda tidak mendukung geolocation.', confirmButtonColor:'#2563EB' });
     } else {
-        Swal.fire({
-            icon: 'error',
-            title: 'Oops...',
-            text: 'Geolocation tidak didukung oleh browser Anda.',
+        navigator.geolocation.getCurrentPosition(successCallback, errorCallback, {
+            enableHighAccuracy: true, timeout: 10000, maximumAge: 0
         });
     }
 
     function successCallback(position) {
-        $("#lokasi").val(position.coords.latitude + "," + position.coords.longitude);
-        $("#status-text").text("Lokasi ditemukan. Silakan scan QR Code.");
-        
-        // Initialize Map
+        var lat = position.coords.latitude;
+        var lng = position.coords.longitude;
+
+        document.getElementById('lokasi').value = lat + ',' + lng;
+        setStatus('Siap Scan', true);
+
+        /* ── Leaflet Map ── */
         try {
-            var latitude = position.coords.latitude;
-            var longitude = position.coords.longitude;
-            
             if (!window.leafletMap) {
-                window.leafletMap = L.map('map').setView([latitude, longitude], 17);
+                window.leafletMap = L.map('map', {
+                    zoomControl: false,
+                    attributionControl: false
+                }).setView([lat, lng], 17);
 
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    maxZoom: 19,
-                    attribution: '© OpenStreetMap'
-                }).addTo(window.leafletMap);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 })
+                 .addTo(window.leafletMap);
 
-                // User Marker
+                /* User marker */
                 var userIcon = L.divIcon({
-                    className: 'custom-div-icon',
-                    html: '<div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); width: 40px; height: 40px; border-radius: 50%; border: 4px solid white; box-shadow: 0 3px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;"><ion-icon name="person" style="color: white; font-size: 22px;"></ion-icon></div>',
-                    iconSize: [40, 40],
-                    iconAnchor: [20, 20]
+                    className: '',
+                    html: '<div style="background:#10B981;width:34px;height:34px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center;"><ion-icon name="person" style="color:white;font-size:17px;"></ion-icon></div>',
+                    iconSize: [34, 34], iconAnchor: [17, 17]
                 });
 
-                window.leafletMarker = L.marker([latitude, longitude], { icon: userIcon }).addTo(window.leafletMap);
-                window.leafletMarker.bindPopup('<strong style="color: #10b981;">Lokasi Anda</strong>').openPopup();
+                window.leafletMarker = L.marker([lat, lng], { icon: userIcon })
+                    .addTo(window.leafletMap)
+                    .bindPopup('<strong style="color:#10B981;">Lokasi Anda</strong>');
 
-                // Office Location
+                /* Office marker */
                 var lok_kantor = "{{ $lok_kantor->lokasi_cabang ?? '' }}";
-                if(lok_kantor) {
-                    var lok = lok_kantor.split(",");
-                    if(lok.length >= 2) {
-                        var lat_kantor = parseFloat(lok[0]);
-                        var long_kantor = parseFloat(lok[1]);
-                        var radius = {{ $lok_kantor->radius_cabang ?? 0 }};
-                        
-                        var circle = L.circle([lat_kantor, long_kantor], {
-                            color: '#0053C5',
-                            fillColor: '#0053C5',
-                            fillOpacity: 0.15,
-                            radius: radius,
-                            weight: 2,
-                            dashArray: '5, 5'
-                        }).addTo(window.leafletMap);
+                if (lok_kantor) {
+                    var lok    = lok_kantor.split(',');
+                    var latK   = parseFloat(lok[0]);
+                    var lngK   = parseFloat(lok[1]);
+                    var radius = {{ $lok_kantor->radius_cabang ?? 0 }};
 
-                        var officeIcon = L.divIcon({
-                            className: 'custom-div-icon',
-                            html: '<div style="background: linear-gradient(135deg, #0053C5 0%, #003d94 100%); width: 40px; height: 40px; border-radius: 50%; border: 4px solid white; box-shadow: 0 3px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;"><ion-icon name="business" style="color: white; font-size: 22px;"></ion-icon></div>',
-                            iconSize: [40, 40],
-                            iconAnchor: [20, 20]
-                        });
+                    L.circle([latK, lngK], {
+                        color: '#2563EB', fillColor: '#2563EB', fillOpacity: 0.10,
+                        radius: radius, weight: 2, dashArray: '5,5'
+                    }).addTo(window.leafletMap);
 
-                        var officeMarker = L.marker([lat_kantor, long_kantor], { icon: officeIcon }).addTo(window.leafletMap);
-                        officeMarker.bindPopup('<strong style="color: #0053C5;">Kantor</strong><br><small>Radius: ' + radius + 'm</small>');
+                    var offIcon = L.divIcon({
+                        className: '',
+                        html: '<div style="background:#2563EB;width:34px;height:34px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center;"><ion-icon name="business" style="color:white;font-size:17px;"></ion-icon></div>',
+                        iconSize: [34, 34], iconAnchor: [17, 17]
+                    });
 
-                        var group = L.featureGroup([window.leafletMarker, officeMarker, circle]);
-                        window.leafletMap.fitBounds(group.getBounds().pad(0.1));
-                    }
+                    var offMarker = L.marker([latK, lngK], { icon: offIcon })
+                        .addTo(window.leafletMap)
+                        .bindPopup('<strong style="color:#2563EB;">Kantor</strong><br><small>Radius: ' + radius + 'm</small>');
+
+                    window.leafletMap.fitBounds(
+                        L.featureGroup([window.leafletMarker, offMarker])
+                         .getBounds().pad(0.15)
+                    );
                 }
-                
-                // Start QR Scanner only once when map is initialized
+
                 startQRScanner();
             } else {
                 if (window.leafletMarker) {
-                    window.leafletMarker.setLatLng([latitude, longitude]);
-                    window.leafletMap.setView([latitude, longitude]);
+                    window.leafletMarker.setLatLng([lat, lng]);
+                    window.leafletMap.setView([lat, lng]);
                 }
             }
         } catch (e) {
-            console.error('Map initialization error:', e);
+            console.error('Map error:', e);
         }
-
-        // startQRScanner is now called inside map initialization block
     }
 
-    function errorCallback(error) {
-        $("#status-text").text("Gagal mendapatkan lokasi. Aktifkan GPS.");
+    function errorCallback() {
+        setStatus('GPS Gagal', false);
         Swal.fire({
             icon: 'error',
             title: 'Lokasi Tidak Terdeteksi',
-            text: 'Pastikan GPS Anda aktif dan beri izin browser untuk mengakses lokasi.'
+            text: 'Aktifkan GPS dan beri izin browser untuk mengakses lokasi.',
+            confirmButtonColor: '#2563EB'
         });
     }
 
-    let isScanning = false;
-
+    /* ── QR Scanner ── */
     function startQRScanner() {
-        const html5QrCode = new Html5Qrcode("reader");
-        const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+        const html5QrCode = new Html5Qrcode('reader');
+        const config = { fps: 10, qrbox: { width: 220, height: 220 } };
 
-        html5QrCode.start({ facingMode: "environment" }, config, (decodedText, decodedResult) => {
-            if(isScanning) return; // Mencegah double scan
-            
-            isScanning = true;
-            console.log(`Scan result: ${decodedText}`);
-            
-            // Hentikan scanner sementara
-            html5QrCode.stop().then((ignore) => {
-                // Kirim data ke server
-                prosesAbsen(decodedText);
-            }).catch((err) => {
-                console.log(err);
-            });
-            
-        }, (errorMessage) => {
-            // parse error, ignore it.
-        }).catch((err) => {
-            console.log(`Error starting scanner: ${err}`);
+        html5QrCode.start(
+            { facingMode: 'environment' },
+            config,
+            function (decodedText) {
+                if (isScanning) return;
+                isScanning = true;
+
+                html5QrCode.stop().then(function () {
+                    prosesAbsen(decodedText);
+                }).catch(console.error);
+            },
+            function () { /* scan error — ignore */ }
+        ).catch(function (err) {
+            console.error('Scanner start error:', err);
         });
     }
 
+    /* ── Submit absen ── */
     function prosesAbsen(qrCodeData) {
-        var lokasi = $("#lokasi").val();
-        
+        var lokasi = document.getElementById('lokasi').value;
+
         $.ajax({
             type: 'POST',
             url: '{{ route("presensi.storeQr") }}',
-            data: {
-                _token: "{{ csrf_token() }}",
-                qr_code: qrCodeData,
-                lokasi: lokasi
-            },
+            data: { _token: '{{ csrf_token() }}', qr_code: qrCodeData, lokasi: lokasi },
             cache: false,
-            success: function(respond) {
-                if (respond.success) {
-                    // Cek message untuk mengetahui masuk atau pulang
-                    if (respond.message.includes('Masuk')) {
-                        notifikasi_in.play();
-                    } else {
-                        notifikasi_out.play();
-                    }
-
+            success: function (res) {
+                if (res.success) {
+                    (res.message.includes('Masuk') ? notifikasi_in : notifikasi_out).play();
                     Swal.fire({
                         icon: 'success',
                         title: 'Berhasil!',
-                        text: respond.message,
-                        timer: 3000
-                    }).then(() => {
+                        text: res.message,
+                        confirmButtonColor: '#2563EB',
+                        timer: 3000,
+                        showConfirmButton: false
+                    }).then(function () {
                         window.location.href = '{{ route("dashboard") }}';
                     });
                 } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Gagal!',
-                        text: respond.message,
-                    }).then(() => {
-                        // Restart scanner
-                        isScanning = false;
-                        startQRScanner();
-                    });
+                    Swal.fire({ icon:'error', title:'Gagal!', text: res.message, confirmButtonColor:'#2563EB' })
+                       .then(function () { isScanning = false; startQRScanner(); });
                 }
             },
-            error: function(xhr) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: 'Terjadi kesalahan sistem.'
-                }).then(() => {
-                    isScanning = false;
-                    startQRScanner();
-                });
+            error: function () {
+                Swal.fire({ icon:'error', title:'Kesalahan', text:'Terjadi kesalahan sistem. Coba lagi.', confirmButtonColor:'#2563EB' })
+                   .then(function () { isScanning = false; startQRScanner(); });
             }
         });
     }

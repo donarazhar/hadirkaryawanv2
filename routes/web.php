@@ -109,6 +109,12 @@ Route::middleware('auth:karyawan')->group(function () {
         Route::delete('/delete', [FaceEnrollmentController::class, 'destroy'])->name('delete');
     });
 
+    // Fingerprint / Biometric WebAuthn
+    Route::controller(App\Http\Controllers\Karyawan\WebAuthnController::class)->prefix('biometric')->name('biometric.')->group(function () {
+        Route::get('/enrollment', 'enrollment')->name('enrollment');
+        Route::post('/store', 'store')->name('store');
+        Route::post('/delete', 'delete')->name('delete');
+    });
 
 });
 

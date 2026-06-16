@@ -635,6 +635,20 @@
             </div>
         </div>
 
+        {{-- Fingerprint / Biometrik --}}
+        <div class="form-card" style="margin-bottom: 12px; cursor: pointer;" onclick="window.location.href='{{ route('biometric.enrollment') }}'">
+            <div class="card-head">
+                <div class="card-head-icon" style="background: var(--success-soft);"><ion-icon name="finger-print-outline" style="color: var(--success);"></ion-icon></div>
+                <div class="card-title" style="flex: 1;">Fingerprint / Biometrik HP</div>
+                <ion-icon name="chevron-forward-outline" style="color: var(--text-400); font-size: 18px;"></ion-icon>
+            </div>
+            <div class="form-body" style="padding: 10px 16px;">
+                <div class="form-hint" style="color: var(--text-600); font-size: 12px;">
+                    Gunakan sensor sidik jari bawaan HP Anda sebagai alternatif Face ID.
+                </div>
+            </div>
+        </div>
+
         {{-- Informasi Pribadi --}}
         <div class="form-card" style="margin-bottom: 12px;">
             <div class="card-head">

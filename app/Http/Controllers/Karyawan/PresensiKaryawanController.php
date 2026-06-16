@@ -354,52 +354,58 @@ class PresensiKaryawanController extends Controller
                 'nama_jam_kerja' => $jamkerja->nama_jam_kerja
             ]);
 
-            // Validasi Face Verification (Server-Side)
+            // Validasi Biometrik (WebAuthn / Fingerprint ATAU Face ID)
             $is_face_verified = $request->filled('verified') && $request->verified == 'true';
             if (!$is_face_verified) {
-                return response("error|Face Verification diwajibkan! Silakan gunakan tombol Absen + Verifikasi Wajah.|system", 200);
+                return response("error|Verifikasi biometrik diwajibkan! Silakan gunakan tombol Absen + Verifikasi Wajah atau Fingerprint.|system", 200);
             }
 
-            // Menerima descriptor dari client
-            $client_descriptor_json = $request->input('face_descriptor');
-            if (!$client_descriptor_json) {
-                return response("error|Data wajah tidak lengkap. Pastikan kamera mendeteksi wajah dengan jelas.|system", 200);
-            }
+            $verified_by = $request->input('verified_by', 'face');
 
-            $client_descriptor = json_decode($client_descriptor_json, true);
-            
-            // Ambil referensi wajah dari database
-            $faceData = \App\Models\FaceData::where('nik', $nik)->where('status', 'active')->first();
-            
-            if (!$faceData) {
-                return response("error|Data wajah referensi tidak ditemukan. Silakan hubungi admin.|system", 200);
-            }
-
-            $reference_descriptor = json_decode($faceData->face_descriptor, true);
-
-            // Kalkulasi Euclidean Distance
-            if (is_array($client_descriptor) && is_array($reference_descriptor) && count($client_descriptor) === count($reference_descriptor)) {
-                $sum = 0;
-                for ($i = 0; $i < count($client_descriptor); $i++) {
-                    $sum += pow($client_descriptor[$i] - $reference_descriptor[$i], 2);
+            if ($verified_by !== 'fingerprint') {
+                // JIKA MENGGUNAKAN FACE ID: Validasi Face Verification (Server-Side)
+                $client_descriptor_json = $request->input('face_descriptor');
+                if (!$client_descriptor_json) {
+                    return response("error|Data wajah tidak lengkap. Pastikan kamera mendeteksi wajah dengan jelas.|system", 200);
                 }
-                $distance = sqrt($sum);
 
-                // Threshold jarak wajah
-                $threshold = 0.60; 
+                $client_descriptor = json_decode($client_descriptor_json, true);
                 
-                Log::info('Server-side face verification', [
-                    'nik' => $nik,
-                    'distance' => $distance,
-                    'threshold' => $threshold
-                ]);
+                // Ambil referensi wajah dari database
+                $faceData = \App\Models\FaceData::where('nik', $nik)->where('status', 'active')->first();
+                
+                if (!$faceData) {
+                    return response("error|Data wajah referensi tidak ditemukan. Silakan hubungi admin.|system", 200);
+                }
 
-                if ($distance > $threshold) {
-                    Log::warning('Face spoofing attempt detected', ['nik' => $nik, 'distance' => $distance]);
-                    return response("error|Verifikasi wajah gagal! Identitas tidak cocok.|system", 200);
+                $reference_descriptor = json_decode($faceData->face_descriptor, true);
+
+                // Kalkulasi Euclidean Distance
+                if (is_array($client_descriptor) && is_array($reference_descriptor) && count($client_descriptor) === count($reference_descriptor)) {
+                    $sum = 0;
+                    for ($i = 0; $i < count($client_descriptor); $i++) {
+                        $sum += pow($client_descriptor[$i] - $reference_descriptor[$i], 2);
+                    }
+                    $distance = sqrt($sum);
+
+                    // Threshold jarak wajah
+                    $threshold = 0.60; 
+                    
+                    Log::info('Server-side face verification', [
+                        'nik' => $nik,
+                        'distance' => $distance,
+                        'threshold' => $threshold
+                    ]);
+
+                    if ($distance > $threshold) {
+                        Log::warning('Face spoofing attempt detected', ['nik' => $nik, 'distance' => $distance]);
+                        return response("error|Verifikasi wajah gagal! Identitas tidak cocok.|system", 200);
+                    }
+                } else {
+                    return response("error|Format data wajah tidak valid.|system", 200);
                 }
             } else {
-                return response("error|Format data wajah tidak valid.|system", 200);
+                Log::info('Biometric verified by WebAuthn/Fingerprint', ['nik' => $nik]);
             }
 
             // Menerima parameter multi-shift

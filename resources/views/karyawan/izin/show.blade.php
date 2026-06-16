@@ -3,206 +3,262 @@
 @section('content')
 
 <style>
-    /* ===== MODERN DETAIL IZIN PAGE ===== */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
     :root {
-        --primary: #0053C5;
-        --primary-gradient: linear-gradient(135deg, #0053C5 0%, #2E7CE6 100%);
-        --success: #10b981;
-        --danger: #ef4444;
-        --warning: #f59e0b;
-        --info: #06b6d4;
-        --bg-main: #f0f4f8;
-        --bg-card: #ffffff;
-        --text-primary: #1e293b;
-        --text-secondary: #64748b;
+        --primary:      #2563EB;
+        --primary-soft: #EFF6FF;
+        --primary-mid:  #BFDBFE;
+        --success:      #10B981;
+        --success-soft: #ECFDF5;
+        --danger:       #EF4444;
+        --danger-soft:  #FEF2F2;
+        --warning:      #F59E0B;
+        --warning-soft: #FFFBEB;
+        --info:         #06B6D4;
+        --info-soft:    #ECFEFF;
+        --purple:       #8B5CF6;
+        --purple-soft:  #F5F3FF;
+        --text-900:     #111827;
+        --text-600:     #4B5563;
+        --text-400:     #9CA3AF;
+        --border:       #F1F5F9;
+        --border-med:   #E2E8F0;
+        --surface:      #FFFFFF;
+        --bg:           #F8FAFC;
+        --radius-sm:    10px;
+        --radius-md:    14px;
+        --radius-lg:    18px;
+        --shadow-sm:    0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
     }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-        background: var(--bg-main);
+        font-family: 'Inter', -apple-system, sans-serif;
+        background: var(--bg);
+        color: var(--text-900);
+        -webkit-font-smoothing: antialiased;
     }
 
-    /* ===== PAGE HEADER ===== */
-    .page-header {
-        background: var(--primary-gradient);
-        padding: 24px 20px 100px 20px;
-        position: relative;
-        overflow: hidden;
-        margin: 0;
-    }
-
-    .page-header::before {
-        content: '';
-        position: absolute;
-        top: -40%;
-        right: -15%;
-        width: 250px;
-        height: 250px;
-        background: rgba(255, 255, 255, 0.08);
-        border-radius: 50%;
-        filter: blur(50px);
-    }
-
-    .header-content {
-        position: relative;
-        z-index: 2;
+    /* ── PAGE HEADER ── */
+    .pg-header {
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        padding: 16px 20px;
         display: flex;
         align-items: center;
-        gap: 16px;
+        gap: 12px;
+        position: sticky;
+        top: 0;
+        z-index: 50;
     }
 
     .btn-back {
-        width: 40px;
-        height: 40px;
-        background: rgba(255, 255, 255, 0.15);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        width: 36px; height: 36px;
+        background: var(--bg);
+        border: 1px solid var(--border-med);
+        border-radius: var(--radius-sm);
+        display: flex; align-items: center; justify-content: center;
         text-decoration: none;
+        flex-shrink: 0;
+        transition: background 0.2s;
+        -webkit-tap-highlight-color: transparent;
     }
 
-    .btn-back ion-icon {
-        font-size: 24px;
-        color: white;
-    }
+    .btn-back:active { background: var(--border-med); }
+    .btn-back ion-icon { font-size: 20px; color: var(--text-600); }
 
-    .header-title h1 {
-        font-size: 22px;
+    .pg-title {
+        font-size: 17px;
         font-weight: 700;
-        color: white;
-        margin: 0 0 4px 0;
+        color: var(--text-900);
+        line-height: 1.2;
     }
 
-    .header-title p {
-        font-size: 13px;
-        color: rgba(255, 255, 255, 0.8);
-        margin: 0;
+    .pg-sub {
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--text-400);
+        display: block;
+        margin-top: 1px;
+        font-family: monospace;
     }
 
-    /* ===== STATUS CARD ===== */
-    .status-section {
-        padding: 0 20px;
-        margin-top: -85px;
-        margin-bottom: 20px;
-        position: relative;
-        z-index: 10;
-    }
-
-    .status-card {
-        background: var(--bg-card);
-        border-radius: 20px;
-        padding: 24px 20px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-        border: 1px solid rgba(0, 83, 197, 0.08);
-        text-align: center;
-    }
-
-    .status-icon-wrapper {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
+    /* ── PAGE BODY ── */
+    .pg-body {
+        padding: 16px;
         display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 16px;
-        background: var(--status-bg);
-        box-shadow: 0 8px 20px var(--status-shadow);
+        flex-direction: column;
+        gap: 12px;
+        padding-bottom: 100px;
     }
 
-    .status-icon-wrapper ion-icon {
-        font-size: 40px;
-        color: white;
+    /* ── STATUS HERO CARD ── */
+    .status-hero {
+        border-radius: var(--radius-lg);
+        padding: 24px 20px;
+        text-align: center;
+        border: 1px solid transparent;
+        position: relative;
+        overflow: hidden;
     }
 
-    .status-card.pending {
-        --status-bg: linear-gradient(135deg, var(--warning) 0%, #fb923c 100%);
-        --status-shadow: rgba(245, 158, 11, 0.3);
+    .status-hero::before {
+        content: '';
+        position: absolute;
+        top: -30px; right: -30px;
+        width: 120px; height: 120px;
+        border-radius: 50%;
+        opacity: 0.08;
+        background: currentColor;
     }
 
-    .status-card.approved {
-        --status-bg: linear-gradient(135deg, var(--success) 0%, #34d399 100%);
-        --status-shadow: rgba(16, 185, 129, 0.3);
+    .status-hero.pending  { background: var(--warning-soft); border-color: #FDE68A; color: var(--warning); }
+    .status-hero.approved { background: var(--success-soft); border-color: #A7F3D0; color: var(--success); }
+    .status-hero.rejected { background: var(--danger-soft);  border-color: #FECACA; color: var(--danger); }
+
+    .status-icon-ring {
+        width: 72px; height: 72px;
+        border-radius: 50%;
+        margin: 0 auto 14px;
+        display: flex; align-items: center; justify-content: center;
+        position: relative;
     }
 
-    .status-card.rejected {
-        --status-bg: linear-gradient(135deg, var(--danger) 0%, #f87171 100%);
-        --status-shadow: rgba(239, 68, 68, 0.3);
-    }
+    .status-hero.pending  .status-icon-ring { background: #FEF3C7; box-shadow: 0 0 0 8px rgba(245,158,11,0.12); }
+    .status-hero.approved .status-icon-ring { background: #D1FAE5; box-shadow: 0 0 0 8px rgba(16,185,129,0.12); }
+    .status-hero.rejected .status-icon-ring { background: #FEE2E2; box-shadow: 0 0 0 8px rgba(239,68,68,0.12); }
+
+    .status-icon-ring ion-icon { font-size: 36px; }
+    .status-hero.pending  .status-icon-ring ion-icon { color: #D97706; }
+    .status-hero.approved .status-icon-ring ion-icon { color: var(--success); }
+    .status-hero.rejected .status-icon-ring ion-icon { color: var(--danger); }
 
     .status-title {
-        font-size: 18px;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin-bottom: 4px;
+        font-size: 17px;
+        font-weight: 800;
+        line-height: 1.2;
+        margin-bottom: 5px;
     }
 
-    .status-subtitle {
-        font-size: 13px;
-        color: var(--text-secondary);
+    .status-hero.pending  .status-title { color: #92400E; }
+    .status-hero.approved .status-title { color: #065F46; }
+    .status-hero.rejected .status-title { color: #991B1B; }
+
+    .status-sub {
+        font-size: 12px;
+        font-weight: 500;
+        opacity: 0.75;
     }
 
-    /* ===== DETAIL SECTION ===== */
-    .detail-section {
-        padding: 0 20px 100px;
-    }
-
+    /* ── DETAIL CARD ── */
     .detail-card {
-        background: var(--bg-card);
-        border-radius: 16px;
-        padding: 20px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-        border: 1px solid rgba(0, 83, 197, 0.08);
-        margin-bottom: 16px;
+        background: var(--surface);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
     }
 
-    .detail-card-title {
-        font-size: 16px;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin-bottom: 16px;
+    .card-head {
         display: flex;
         align-items: center;
         gap: 8px;
+        padding: 13px 16px;
+        border-bottom: 1px solid var(--border);
     }
 
-    .detail-card-title ion-icon {
-        font-size: 20px;
+    .card-head-icon {
+        width: 28px; height: 28px;
+        border-radius: 8px;
+        background: var(--primary-soft);
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .card-head-icon ion-icon { font-size: 14px; color: var(--primary); }
+
+    .card-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--text-900);
+    }
+
+    /* ── INFO ROWS ── */
+    .info-row {
+        display: flex;
+        align-items: flex-start;
+        padding: 11px 16px;
+        border-bottom: 1px solid var(--border);
+        gap: 12px;
+    }
+
+    .info-row:last-child { border-bottom: none; }
+
+    .info-label {
+        flex: 0 0 108px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-400);
+        padding-top: 1px;
+    }
+
+    .info-value {
+        flex: 1;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-900);
+        line-height: 1.5;
+    }
+
+    /* ── TYPE BADGE ── */
+    .type-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 10px;
+        border-radius: 50px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .type-badge ion-icon { font-size: 13px; }
+    .type-badge.izin  { background: var(--warning-soft); color: #D97706; }
+    .type-badge.sakit { background: var(--info-soft);    color: #0891B2; }
+    .type-badge.cuti  { background: var(--purple-soft);  color: var(--purple); }
+
+    /* ── DURATION PILL ── */
+    .duration-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 10px;
+        background: var(--primary-soft);
+        border: 1px solid var(--primary-mid);
+        border-radius: 50px;
+        font-size: 12px;
+        font-weight: 700;
         color: var(--primary);
     }
 
-    .detail-row {
-        display: flex;
-        padding: 12px 0;
-        border-bottom: 1px solid #f1f5f9;
-    }
+    .duration-pill ion-icon { font-size: 13px; }
 
-    .detail-row:last-child {
-        border-bottom: none;
-    }
-
-    .detail-label {
-        flex: 0 0 120px;
+    /* ── KETERANGAN BOX ── */
+    .ket-box {
+        padding: 13px 16px;
         font-size: 13px;
-        font-weight: 600;
-        color: var(--text-secondary);
+        line-height: 1.7;
+        color: var(--text-600);
     }
 
-    .detail-value {
-        flex: 1;
-        font-size: 14px;
-        font-weight: 600;
-        color: var(--text-primary);
-    }
-
-    .document-preview {
+    /* ── DOCUMENT SECTION ── */
+    .doc-img {
         width: 100%;
-        height: 200px;
-        border-radius: 12px;
+        aspect-ratio: 16/9;
         object-fit: cover;
-        border: 2px solid #e2e8f0;
-        margin-top: 12px;
+        display: block;
+        border-bottom: 1px solid var(--border);
     }
 
     .btn-download {
@@ -210,171 +266,199 @@
         align-items: center;
         justify-content: center;
         gap: 8px;
-        padding: 12px 20px;
-        background: linear-gradient(135deg, var(--info) 0%, #0ea5e9 100%);
-        color: white;
-        border-radius: 12px;
+        padding: 13px 16px;
+        background: var(--info-soft);
+        color: #0891B2;
+        font-size: 13px;
+        font-weight: 700;
         text-decoration: none;
-        font-weight: 600;
-        margin-top: 12px;
-        box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+        font-family: 'Inter', sans-serif;
+        border-top: 1px solid #A5F3FC;
+        transition: background 0.2s;
+        -webkit-tap-highlight-color: transparent;
     }
 
-    .btn-delete {
+    .btn-download ion-icon { font-size: 17px; }
+    .btn-download:active { background: #CFFAFE; }
+
+    /* ── DELETE BUTTON ── */
+    .btn-delete-full {
+        width: 100%;
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 8px;
-        padding: 12px 20px;
-        background: white;
+        padding: 14px;
+        background: var(--surface);
         color: var(--danger);
-        border: 1px solid var(--danger);
-        border-radius: 12px;
-        font-weight: 600;
+        border: 1.5px solid #FECACA;
+        border-radius: var(--radius-lg);
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        font-weight: 700;
         cursor: pointer;
+        transition: background 0.2s, transform 0.15s;
+        -webkit-tap-highlight-color: transparent;
+        box-shadow: var(--shadow-sm);
     }
 
-    .btn-delete:active {
-        background: var(--danger);
-        color: white;
-        transform: scale(0.98);
+    .btn-delete-full ion-icon { font-size: 18px; }
+    .btn-delete-full:active { background: var(--danger-soft); transform: scale(0.98); }
+
+    /* ── Animations ── */
+    @keyframes fadeSlide {
+        from { opacity: 0; transform: translateY(8px); }
+        to   { opacity: 1; transform: translateY(0); }
     }
+
+    .pg-body > * {
+        animation: fadeSlide 0.28s ease both;
+    }
+    .pg-body > *:nth-child(1) { animation-delay: 0.04s; }
+    .pg-body > *:nth-child(2) { animation-delay: 0.08s; }
+    .pg-body > *:nth-child(3) { animation-delay: 0.12s; }
+    .pg-body > *:nth-child(4) { animation-delay: 0.16s; }
+    .pg-body > *:nth-child(5) { animation-delay: 0.20s; }
 </style>
 
-<!-- Page Header -->
-<div class="page-header">
-    <div class="header-content">
-        <a href="{{ route('izin.index') }}" class="btn-back">
-            <ion-icon name="chevron-back-outline"></ion-icon>
-        </a>
-        <div class="header-title">
-            <h1>Detail Pengajuan</h1>
-            <p>{{ $dataizin->kode_izin }}</p>
-        </div>
-    </div>
-</div>
-
-<!-- Status Card -->
-<div class="status-section">
-    @php
-    $statusClass = '';
-    $statusText = '';
-    $statusIcon = '';
-    if ($dataizin->status_approved == 0) {
-    $statusClass = 'pending';
-    $statusText = 'Menunggu Persetujuan';
-    $statusIcon = 'time';
-    } elseif ($dataizin->status_approved == 1) {
-    $statusClass = 'approved';
-    $statusText = 'Pengajuan Disetujui';
-    $statusIcon = 'checkmark-circle';
-    } else {
-    $statusClass = 'rejected';
-    $statusText = 'Pengajuan Ditolak';
-    $statusIcon = 'close-circle';
+@php
+    switch($dataizin->status_approved) {
+        case 0:  $sClass = 'pending';  $sText = 'Menunggu Persetujuan'; $sIcon = 'time-outline';          $sSub = 'Menunggu konfirmasi dari atasan'; break;
+        case 1:  $sClass = 'approved'; $sText = 'Pengajuan Disetujui';  $sIcon = 'checkmark-circle-outline'; $sSub = 'Pengajuan Anda telah disetujui'; break;
+        default: $sClass = 'rejected'; $sText = 'Pengajuan Ditolak';    $sIcon = 'close-circle-outline';  $sSub = 'Silakan hubungi atasan untuk informasi lebih lanjut'; break;
     }
-    @endphp
 
-    <div class="status-card {{ $statusClass }}">
-        <div class="status-icon-wrapper">
-            <ion-icon name="{{ $statusIcon }}"></ion-icon>
-        </div>
-        <div class="status-title">{{ $statusText }}</div>
-        <div class="status-subtitle">
-            @if($dataizin->status_approved == 0)
-            Menunggu konfirmasi dari atasan
-            @elseif($dataizin->status_approved == 1)
-            Pengajuan Anda telah disetujui
-            @else
-            Silakan hubungi atasan untuk informasi lebih lanjut
-            @endif
-        </div>
+    switch($dataizin->status) {
+        case 'i': $tClass = 'izin';  $tText = 'Izin';  $tIcon = 'calendar-outline'; break;
+        case 's': $tClass = 'sakit'; $tText = 'Sakit'; $tIcon = 'medkit-outline';   break;
+        default:  $tClass = 'cuti';  $tText = 'Cuti';  $tIcon = 'leaf-outline';      break;
+    }
+
+    $durasi = \Carbon\Carbon::parse($dataizin->tgl_izin_dari)->diffInDays(\Carbon\Carbon::parse($dataizin->tgl_izin_sampai)) + 1;
+
+    $ext = !empty($dataizin->doc_sid) ? strtolower(pathinfo($dataizin->doc_sid, PATHINFO_EXTENSION)) : '';
+    $isImage = in_array($ext, ['jpg','jpeg','png','webp']);
+@endphp
+
+{{-- ── PAGE HEADER ── --}}
+<div class="pg-header">
+    <a href="{{ route('izin.index') }}" class="btn-back">
+        <ion-icon name="chevron-back-outline"></ion-icon>
+    </a>
+    <div>
+        <div class="pg-title">Detail Pengajuan</div>
+        <span class="pg-sub">{{ $dataizin->kode_izin }}</span>
     </div>
 </div>
 
-<!-- Detail Section -->
-<div class="detail-section">
-    <!-- Informasi Umum -->
+{{-- ── PAGE BODY ── --}}
+<div class="pg-body">
+
+    {{-- Status Hero --}}
+    <div class="status-hero {{ $sClass }}">
+        <div class="status-icon-ring">
+            <ion-icon name="{{ $sIcon }}"></ion-icon>
+        </div>
+        <div class="status-title">{{ $sText }}</div>
+        <div class="status-sub">{{ $sSub }}</div>
+    </div>
+
+    {{-- Informasi Umum --}}
     <div class="detail-card">
-        <div class="detail-card-title">
-            <ion-icon name="information-circle"></ion-icon>
-            Informasi Umum
+        <div class="card-head">
+            <div class="card-head-icon"><ion-icon name="information-circle-outline"></ion-icon></div>
+            <div class="card-title">Informasi Umum</div>
         </div>
 
-        <div class="detail-row">
-            <div class="detail-label">Tipe</div>
-            <div class="detail-value">
-                @if($dataizin->status == 'i')
-                🗓️ Izin
-                @elseif($dataizin->status == 's')
-                🏥 Sakit
-                @else
-                🏖️ Cuti {{ $dataizin->nama_cuti ?? '' }}
-                @endif
+        <div class="info-row">
+            <div class="info-label">Tipe</div>
+            <div class="info-value">
+                <span class="type-badge {{ $tClass }}">
+                    <ion-icon name="{{ $tIcon }}"></ion-icon>
+                    {{ $tText }}
+                    @if($dataizin->status == 'c' && !empty($dataizin->nama_cuti))
+                        — {{ $dataizin->nama_cuti }}
+                    @endif
+                </span>
             </div>
         </div>
 
-        <div class="detail-row">
-            <div class="detail-label">Tanggal Mulai</div>
-            <div class="detail-value">{{ \Carbon\Carbon::parse($dataizin->tgl_izin_dari)->isoFormat('dddd, D MMMM Y') }}</div>
+        <div class="info-row">
+            <div class="info-label">Tanggal Mulai</div>
+            <div class="info-value">
+                {{ \Carbon\Carbon::parse($dataizin->tgl_izin_dari)->isoFormat('dddd, D MMMM Y') }}
+            </div>
         </div>
 
-        <div class="detail-row">
-            <div class="detail-label">Tanggal Selesai</div>
-            <div class="detail-value">{{ \Carbon\Carbon::parse($dataizin->tgl_izin_sampai)->isoFormat('dddd, D MMMM Y') }}</div>
+        <div class="info-row">
+            <div class="info-label">Tanggal Selesai</div>
+            <div class="info-value">
+                {{ \Carbon\Carbon::parse($dataizin->tgl_izin_sampai)->isoFormat('dddd, D MMMM Y') }}
+            </div>
         </div>
 
-        <div class="detail-row">
-            <div class="detail-label">Durasi</div>
-            <div class="detail-value">
-                {{ \Carbon\Carbon::parse($dataizin->tgl_izin_dari)->diffInDays(\Carbon\Carbon::parse($dataizin->tgl_izin_sampai)) + 1 }} hari
+        <div class="info-row">
+            <div class="info-label">Durasi</div>
+            <div class="info-value">
+                <span class="duration-pill">
+                    <ion-icon name="hourglass-outline"></ion-icon>
+                    {{ $durasi }} hari
+                </span>
+            </div>
+        </div>
+
+        <div class="info-row">
+            <div class="info-label">Diajukan</div>
+            <div class="info-value">
+                {{ \Carbon\Carbon::parse($dataizin->created_at)->isoFormat('D MMM Y, HH:mm') }}
             </div>
         </div>
     </div>
 
-    <!-- Keterangan -->
+    {{-- Keterangan --}}
     <div class="detail-card">
-        <div class="detail-card-title">
-            <ion-icon name="document-text"></ion-icon>
-            Keterangan
+        <div class="card-head">
+            <div class="card-head-icon"><ion-icon name="chatbubble-outline"></ion-icon></div>
+            <div class="card-title">Keterangan</div>
         </div>
-        <p style="margin: 0; font-size: 14px; line-height: 1.6; color: var(--text-primary);">
+        <div class="ket-box">
             {{ $dataizin->keterangan }}
-        </p>
+        </div>
     </div>
 
-    <!-- Dokumen -->
+    {{-- Dokumen --}}
     @if(!empty($dataizin->doc_sid))
     <div class="detail-card">
-        <div class="detail-card-title">
-            <ion-icon name="document-attach"></ion-icon>
-            Dokumen Pendukung
+        <div class="card-head">
+            <div class="card-head-icon"><ion-icon name="document-attach-outline"></ion-icon></div>
+            <div class="card-title">Dokumen Pendukung</div>
         </div>
-        @php
-        $extension = pathinfo($dataizin->doc_sid, PATHINFO_EXTENSION);
-        @endphp
-        @if(in_array(strtolower($extension), ['jpg', 'jpeg', 'png']))
+
+        @if($isImage)
         <img src="{{ Storage::url('uploads/sid/' . $dataizin->doc_sid) }}"
-            alt="Dokumen" class="document-preview">
+             alt="Dokumen Pendukung" class="doc-img"
+             onclick="previewDoc('{{ Storage::url('uploads/sid/' . $dataizin->doc_sid) }}')">
         @endif
+
         <a href="{{ route('izin.download', $dataizin->kode_izin) }}" class="btn-download">
-            <ion-icon name="download"></ion-icon>
-            <span>Download Dokumen</span>
+            <ion-icon name="download-outline"></ion-icon>
+            Download Dokumen
         </a>
     </div>
     @endif
 
-    <!-- Delete Button (hanya jika pending) -->
+    {{-- Delete button (pending only) --}}
     @if($dataizin->status_approved == 0)
-    <button type="button" class="btn-delete" onclick="confirmDelete()">
-        <ion-icon name="trash"></ion-icon>
-        <span>Hapus Pengajuan</span>
+    <button type="button" class="btn-delete-full" onclick="confirmDelete()">
+        <ion-icon name="trash-outline"></ion-icon>
+        Hapus Pengajuan
     </button>
     @endif
+
 </div>
 
-<!-- Form Delete (Hidden) -->
-<form id="form-delete" action="{{ route('izin.delete', $dataizin->kode_izin) }}" method="POST" style="display: none;">
+{{-- Hidden delete form --}}
+<form id="form-delete" action="{{ route('izin.delete', $dataizin->kode_izin) }}" method="POST" style="display:none;">
     @csrf
     @method('DELETE')
 </form>
@@ -383,17 +467,28 @@
 
 @push('myscript')
 <script>
+    function previewDoc(src) {
+        Swal.fire({
+            imageUrl: src,
+            imageAlt: 'Dokumen Pendukung',
+            showCloseButton: true,
+            showConfirmButton: false,
+            width: '92%',
+            padding: '12px'
+        });
+    }
+
     function confirmDelete() {
         Swal.fire({
             title: 'Hapus Pengajuan?',
-            text: 'Pengajuan izin akan dihapus secara permanen',
+            text: 'Pengajuan izin akan dihapus secara permanen dan tidak dapat dikembalikan.',
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#ef4444',
-            cancelButtonColor: '#64748b',
+            confirmButtonColor: '#EF4444',
+            cancelButtonColor: '#6B7280',
             confirmButtonText: 'Ya, Hapus',
             cancelButtonText: 'Batal'
-        }).then((result) => {
+        }).then(function (result) {
             if (result.isConfirmed) {
                 document.getElementById('form-delete').submit();
             }

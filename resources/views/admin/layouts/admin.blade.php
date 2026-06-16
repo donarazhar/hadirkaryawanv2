@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 
 <head>
@@ -97,9 +97,9 @@
 
         .sidebar.collapsed { width: var(--sidebar-col); }
 
-        .sidebar::-webkit-scrollbar { width: 4px; }
-        .sidebar::-webkit-scrollbar-track { background: transparent; }
-        .sidebar::-webkit-scrollbar-thumb { background: var(--sl-700); border-radius: 4px; }
+        .sb-nav::-webkit-scrollbar { width: 4px; }
+        .sb-nav::-webkit-scrollbar-track { background: transparent; }
+        .sb-nav::-webkit-scrollbar-thumb { background: var(--sl-700); border-radius: 4px; }
 
         /* ── SIDEBAR BRAND ── */
         .sb-brand {
@@ -133,7 +133,7 @@
         .sb-app-sub { font-size: 10px; color: var(--sl-400); font-weight: 500; margin-top: 1px; }
 
         /* ── NAV BODY ── */
-        .sb-nav { flex: 1; padding: 12px 0 20px; overflow: hidden; }
+        .sb-nav { flex: 1; padding: 12px 0 20px; overflow-y: auto; overflow-x: hidden; }
 
         /* ── SECTION LABEL ── */
         .sb-section-label {

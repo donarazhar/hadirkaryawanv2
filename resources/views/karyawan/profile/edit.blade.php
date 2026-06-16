@@ -13,6 +13,12 @@
         --danger:        #EF4444;
         --danger-soft:   #FEF2F2;
         --warning:       #F59E0B;
+        --warning-soft:  #FFFBEB;
+        --info:          #6366F1;
+        --info-soft:     #EEF2FF;
+        --info-mid:      #C7D2FE;
+        --orange:        #F97316;
+        --orange-soft:   #FFF7ED;
         --text-900:      #111827;
         --text-600:      #4B5563;
         --text-400:      #9CA3AF;
@@ -317,6 +323,7 @@
         outline: none;
         transition: border-color 0.2s, box-shadow 0.2s;
         -webkit-appearance: none;
+        appearance: none;
     }
 
     .form-control:focus {
@@ -495,6 +502,117 @@
         .hero-chips { gap: 5px; }
         .hero-chip  { padding: 7px 8px; }
     }
+
+    /* ── SECURITY NAV CARDS (FaceID & Fingerprint) ── */
+    .sec-nav-group {
+        background: var(--surface);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+    }
+    .sec-nav-head {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 11px 16px;
+        border-bottom: 1px solid var(--border);
+        background: var(--bg);
+    }
+    .sec-nav-head-icon {
+        width: 22px; height: 22px;
+        border-radius: 6px;
+        background: var(--warning-soft);
+        display: flex; align-items: center; justify-content: center;
+    }
+    .sec-nav-head-icon ion-icon { font-size: 13px; color: var(--warning); }
+    .sec-nav-head-label {
+        font-size: 10.5px;
+        font-weight: 700;
+        color: var(--text-400);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .sec-nav-item {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 16px;
+        cursor: pointer;
+        text-decoration: none;
+        transition: background 0.15s;
+        -webkit-tap-highlight-color: transparent;
+        background: var(--surface);
+        border: none;
+        width: 100%;
+        text-align: left;
+    }
+    .sec-nav-item:not(:last-child) {
+        border-bottom: 1px solid var(--border);
+    }
+    .sec-nav-item:active { background: var(--bg); }
+
+    .sec-nav-icon-wrap {
+        width: 44px; height: 44px;
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+        position: relative;
+    }
+    .sec-nav-icon-wrap.face {
+        background: linear-gradient(135deg, #EEF2FF 0%, #C7D2FE 100%);
+        border: 1px solid #C7D2FE;
+    }
+    .sec-nav-icon-wrap.finger {
+        background: linear-gradient(135deg, #ECFDF5 0%, #A7F3D0 100%);
+        border: 1px solid #A7F3D0;
+    }
+    .sec-nav-icon-wrap ion-icon { font-size: 22px; }
+    .sec-nav-icon-wrap.face ion-icon   { color: var(--info); }
+    .sec-nav-icon-wrap.finger ion-icon { color: var(--success); }
+
+    .sec-nav-text { flex: 1; min-width: 0; }
+    .sec-nav-title {
+        font-size: 13.5px;
+        font-weight: 700;
+        color: var(--text-900);
+        margin-bottom: 2px;
+    }
+    .sec-nav-desc {
+        font-size: 11.5px;
+        color: var(--text-400);
+        line-height: 1.4;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .sec-nav-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        font-size: 10.5px;
+        font-weight: 700;
+        padding: 3px 8px;
+        border-radius: 50px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    .sec-nav-badge.setup {
+        background: var(--warning-soft);
+        color: #B45309;
+        border: 1px solid #FDE68A;
+    }
+    .sec-nav-badge.active {
+        background: var(--success-soft);
+        color: #065F46;
+        border: 1px solid #A7F3D0;
+    }
+    .sec-nav-badge ion-icon { font-size: 11px; }
+
+    .sec-nav-arrow { color: var(--text-400); flex-shrink: 0; }
+    .sec-nav-arrow ion-icon { font-size: 18px; }
 </style>
 
 {{-- ── STICKY HEADER ── --}}
@@ -621,32 +739,52 @@
             </div>
         </div>
 
-        {{-- FaceID --}}
-        <div class="form-card" style="margin-bottom: 12px; cursor: pointer;" onclick="window.location.href='{{ route('face.enrollment') }}'">
-            <div class="card-head">
-                <div class="card-head-icon" style="background: var(--info-soft);"><ion-icon name="scan-outline" style="color: var(--info);"></ion-icon></div>
-                <div class="card-title" style="flex: 1;">FaceID / Verifikasi Wajah</div>
-                <ion-icon name="chevron-forward-outline" style="color: var(--text-400); font-size: 18px;"></ion-icon>
-            </div>
-            <div class="form-body" style="padding: 10px 16px;">
-                <div class="form-hint" style="color: var(--text-600); font-size: 12px;">
-                    Daftar atau perbarui data wajah Anda untuk keperluan absensi.
+        {{-- Security Methods Group --}}
+        <div class="sec-nav-group" style="margin-bottom: 12px;">
+            <div class="sec-nav-head">
+                <div class="sec-nav-head-icon">
+                    <ion-icon name="shield-checkmark-outline"></ion-icon>
                 </div>
+                <span class="sec-nav-head-label">Metode Keamanan Absensi</span>
             </div>
-        </div>
 
-        {{-- Fingerprint / Biometrik --}}
-        <div class="form-card" style="margin-bottom: 12px; cursor: pointer;" onclick="window.location.href='{{ route('biometric.enrollment') }}'">
-            <div class="card-head">
-                <div class="card-head-icon" style="background: var(--success-soft);"><ion-icon name="finger-print-outline" style="color: var(--success);"></ion-icon></div>
-                <div class="card-title" style="flex: 1;">Fingerprint / Biometrik HP</div>
-                <ion-icon name="chevron-forward-outline" style="color: var(--text-400); font-size: 18px;"></ion-icon>
-            </div>
-            <div class="form-body" style="padding: 10px 16px;">
-                <div class="form-hint" style="color: var(--text-600); font-size: 12px;">
-                    Gunakan sensor sidik jari bawaan HP Anda sebagai alternatif Face ID.
+            {{-- FaceID --}}
+            <a href="{{ route('face.enrollment') }}" class="sec-nav-item">
+                <div class="sec-nav-icon-wrap face">
+                    <ion-icon name="scan-outline"></ion-icon>
                 </div>
-            </div>
+                <div class="sec-nav-text">
+                    <div class="sec-nav-title">Face ID / Verifikasi Wajah</div>
+                    <div class="sec-nav-desc">Daftar atau perbarui data wajah untuk absensi</div>
+                </div>
+                @php
+                    $hasFaceData = !empty($karyawan->foto_muka ?? null);
+                @endphp
+                <span class="sec-nav-badge {{ $hasFaceData ? 'active' : 'setup' }}">
+                    <ion-icon name="{{ $hasFaceData ? 'checkmark-circle-outline' : 'alert-circle-outline' }}"></ion-icon>
+                    {{ $hasFaceData ? 'Aktif' : 'Siapkan' }}
+                </span>
+                <div class="sec-nav-arrow"><ion-icon name="chevron-forward-outline"></ion-icon></div>
+            </a>
+
+            {{-- Fingerprint --}}
+            <a href="{{ route('biometric.enrollment') }}" class="sec-nav-item">
+                <div class="sec-nav-icon-wrap finger">
+                    <ion-icon name="finger-print-outline"></ion-icon>
+                </div>
+                <div class="sec-nav-text">
+                    <div class="sec-nav-title">Fingerprint / Biometrik HP</div>
+                    <div class="sec-nav-desc">Gunakan sensor sidik jari bawaan HP Anda</div>
+                </div>
+                @php
+                    $hasBiometric = !empty($karyawan->credential_id ?? null);
+                @endphp
+                <span class="sec-nav-badge {{ $hasBiometric ? 'active' : 'setup' }}">
+                    <ion-icon name="{{ $hasBiometric ? 'checkmark-circle-outline' : 'alert-circle-outline' }}"></ion-icon>
+                    {{ $hasBiometric ? 'Aktif' : 'Siapkan' }}
+                </span>
+                <div class="sec-nav-arrow"><ion-icon name="chevron-forward-outline"></ion-icon></div>
+            </a>
         </div>
 
         {{-- Informasi Pribadi --}}

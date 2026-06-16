@@ -2,7 +2,7 @@
     "name": "Hadir Karyawan - YPI Al Azhar",
     "short_name": "Hadir Karyawan",
     "description": "Sistem Presensi Karyawan YPI Al Azhar",
-    "start_url": "/",
+    "start_url": "/login",
     "display": "standalone",
     "background_color": "#ffffff",
     "theme_color": "#0053C5",

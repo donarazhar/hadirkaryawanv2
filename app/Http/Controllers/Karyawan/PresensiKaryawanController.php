@@ -276,39 +276,49 @@ class PresensiKaryawanController extends Controller
             $latitudeuser = trim($lokasiuser[0]);
             $longitudeuser = trim($lokasiuser[1]);
 
-            // Geofencing Multi-Lokasi
-            $semua_cabang = DB::table('cabang')->get();
-            $within_geofence = false;
-            $cabang_presensi = null;
-            $radius = 0;
+            // Geofencing — hanya periksa cabang milik karyawan sendiri
+            $lok_kantor = DB::table('cabang')->where('kode_cabang', $kode_cabang)->first();
 
-            foreach ($semua_cabang as $c) {
-                $lok = explode(",", $c->lokasi_cabang);
-                if (count($lok) >= 2) {
-                    $latitudekantor = trim($lok[0]);
-                    $longitudekantor = trim($lok[1]);
-                    $jarak = $this->distance($latitudekantor, $longitudekantor, $latitudeuser, $longitudeuser);
-                    $radius_calc = round($jarak["meters"]);
-
-                    if ($radius_calc <= $c->radius_cabang) {
-                        $within_geofence = true;
-                        $cabang_presensi = $c;
-                        $radius = $radius_calc;
-                        break;
-                    }
-                }
-            }
-
-            if (!$within_geofence) {
-                Log::warning('Outside all radius', [
-                    'nik' => $nik,
-                    'lokasi' => $lokasi
+            if (!$lok_kantor) {
+                Log::error('Cabang karyawan tidak ditemukan', [
+                    'nik'         => $nik,
+                    'kode_cabang' => $kode_cabang
                 ]);
-                return response("error|Maaf, Anda berada diluar radius seluruh kantor/cabang.|radius", 200);
+                return response("error|Data cabang Anda tidak ditemukan. Hubungi admin.|system", 200);
             }
 
-            // Gunakan cabang presensi terpilih untuk sisa fungsi jika diperlukan
-            $lok_kantor = $cabang_presensi;
+            $lok_split = explode(",", $lok_kantor->lokasi_cabang);
+            if (count($lok_split) < 2) {
+                Log::error('Format lokasi cabang tidak valid', [
+                    'nik'          => $nik,
+                    'kode_cabang'  => $kode_cabang,
+                    'lokasi_cabang'=> $lok_kantor->lokasi_cabang
+                ]);
+                return response("error|Data lokasi cabang tidak valid. Hubungi admin.|system", 200);
+            }
+
+            $latitudekantor  = trim($lok_split[0]);
+            $longitudekantor = trim($lok_split[1]);
+            $jarak           = $this->distance($latitudekantor, $longitudekantor, $latitudeuser, $longitudeuser);
+            $radius          = round($jarak['meters']);
+
+            Log::info('Geofencing check', [
+                'nik'          => $nik,
+                'kode_cabang'  => $kode_cabang,
+                'nama_cabang'  => $lok_kantor->nama_cabang,
+                'jarak_meter'  => $radius,
+                'radius_izin'  => $lok_kantor->radius_cabang
+            ]);
+
+            if ($radius > $lok_kantor->radius_cabang) {
+                Log::warning('Outside branch radius', [
+                    'nik'         => $nik,
+                    'kode_cabang' => $kode_cabang,
+                    'jarak'       => $radius,
+                    'radius_izin' => $lok_kantor->radius_cabang
+                ]);
+                return response("error|Anda berada di luar radius kantor {$lok_kantor->nama_cabang} ({$radius}m dari {$lok_kantor->radius_cabang}m yang diizinkan).|radius", 200);
+            }
 
             // Get jam kerja berdasarkan cabang dan departemen
             $namahari = $this->getHari(date("D", strtotime($tgl_presensi)));
@@ -456,16 +466,24 @@ class PresensiKaryawanController extends Controller
                 }
 
                 $data_pulang = [
-                    'jam_out' => $jam,
-                    'foto_out' => $fileName,
+                    'jam_out'    => $jam,
+                    'foto_out'   => $fileName,
                     'lokasi_out' => $lokasi,
                     'updated_at' => Carbon::now('Asia/Jakarta')
                 ];
 
-                $update = DB::table('presensi')
+                $query_update = DB::table('presensi')
                     ->where('tgl_presensi', $tgl_presensi)
-                    ->where('nik', $nik)
-                    ->update($data_pulang);
+                    ->where('nik', $nik);
+
+                // Filter per shift jika multi-shift
+                if ($is_multi_shift) {
+                    $query_update->where('shift_ke', $shift_ke);
+                } else {
+                    $query_update->whereNull('shift_ke');
+                }
+
+                $update = $query_update->update($data_pulang);
 
                 if ($update) {
                     // Storage::put($file, $image_base64); // Disabled to save storage

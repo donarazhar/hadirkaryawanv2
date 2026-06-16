@@ -753,6 +753,37 @@
     }
 
     /* ══════════════════════════════════════
+       TEXT-TO-SPEECH HELPER (Web Speech API)
+       ══════════════════════════════════════ */
+    function speakText(text) {
+        if (!window.speechSynthesis) return;
+        // Strip emoji & pipes before speaking
+        var clean = text
+            .replace(/[|]/g, ' ')
+            .replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27FF}\u{2300}-\u{23FF}\u{2B00}-\u{2BFF}\u{FE00}-\u{FEFF}✅❌⚠⌛⏳📍📷🔒🆔📅📷🤖]/gu, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+        window.speechSynthesis.cancel();
+        var utter = new SpeechSynthesisUtterance(clean);
+        utter.lang  = 'id-ID';
+        utter.rate  = 1.0;
+        utter.pitch = 1.0;
+        utter.volume = 1.0;
+        // Prefer Indonesian voice if available
+        var voices = window.speechSynthesis.getVoices();
+        var idVoice = voices.find(function(v) { return v.lang === 'id-ID'; });
+        if (idVoice) utter.voice = idVoice;
+        window.speechSynthesis.speak(utter);
+    }
+
+    // Pre-load voices (some browsers load them async)
+    if (window.speechSynthesis) {
+        window.speechSynthesis.onvoiceschanged = function() {
+            window.speechSynthesis.getVoices();
+        };
+    }
+
+    /* ══════════════════════════════════════
        NOTIFICATION HELPER
        Parses controller response: "status|message|type"
        ══════════════════════════════════════ */
@@ -765,6 +796,8 @@
         if (status === 'success') {
             var isIn = (type === 'in');
             (isIn ? notifikasi_in : notifikasi_out).play();
+            var successTitle = isIn ? 'Absen Masuk Berhasil' : 'Absen Pulang Berhasil';
+            speakText(successTitle + '. ' + message);
             Swal.fire({
                 icon: 'success',
                 iconColor: isIn ? '#10B981' : '#2563EB',
@@ -851,6 +884,10 @@
                     hint  = 'Silakan coba lagi atau hubungi admin jika masalah berlanjut.';
                 }
             }
+
+            // Speak clean title + message
+            var speakTitle = title.replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27FF}\u{2B00}-\u{2BFF}✅❌⚠⌛⏳📍📷🔒🆔📅📷🤖]/gu, '').trim();
+            speakText(speakTitle + '. ' + message);
 
             Swal.fire({
                 icon: icon,

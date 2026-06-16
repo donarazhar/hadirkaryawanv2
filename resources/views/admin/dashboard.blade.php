@@ -5,621 +5,797 @@
 
 @push('styles')
 <style>
-    /* Reset & Base Dashboard Layout */
-    .dashboard-container {
-        padding-bottom: 40px;
-        background: var(--bg-app);
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+    :root {
+        --blue:       #2563EB;
+        --blue-dark:  #1D4ED8;
+        --blue-soft:  #EFF6FF;
+        --blue-mid:   #BFDBFE;
+        --green:      #10B981;
+        --green-soft: #ECFDF5;
+        --green-mid:  #A7F3D0;
+        --amber:      #F59E0B;
+        --amber-soft: #FFFBEB;
+        --red:        #EF4444;
+        --red-soft:   #FEF2F2;
+        --purple:     #8B5CF6;
+        --purple-soft:#F5F3FF;
+        --slate-900:  #111827;
+        --slate-700:  #374151;
+        --slate-600:  #4B5563;
+        --slate-400:  #9CA3AF;
+        --slate-200:  #E5E7EB;
+        --slate-100:  #F3F4F6;
+        --slate-50:   #F9FAFB;
+        --white:      #FFFFFF;
+        --shadow-sm:  0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+        --shadow-md:  0 4px 12px rgba(0,0,0,0.07);
+        --radius:     14px;
+        --radius-sm:  10px;
     }
 
-    /* ============================
-       HERO BANNER
-    ============================ */
-    .hero-banner {
-        background: #ffffff;
-        border: 1px solid #f3f4f6;
-        padding: 40px 32px;
-        position: relative;
-        overflow: hidden;
-        border-radius: 20px;
-        margin-bottom: 32px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
-        display: flex;
-        align-items: center;
-    }
-
-    .hero-icon-bg {
-        width: 80px;
-        height: 80px;
-        background: #eff6ff;
-        border-radius: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 24px;
-    }
-
-    .hero-icon-bg i {
-        font-size: 40px;
-        color: #0053C5;
-    }
-
-    .hero-banner::before {
-        content: '';
-        position: absolute;
-        top: -50px; right: -50px;
-        width: 250px; height: 250px;
-        background: radial-gradient(circle, rgba(0,83,197,0.03) 0%, transparent 60%);
-        border-radius: 50%;
-    }
-    .hero-banner::after {
-        content: '';
-        position: absolute;
-        bottom: -80px; left: -20px;
-        width: 200px; height: 200px;
-        border: 2px solid rgba(0,83,197,0.02);
-        border-radius: 50%;
-    }
-    .hero-text {
-        position: relative;
-        z-index: 2;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex: 1;
-    }
-    .hero-text-left h1 {
-        font-size: 26px;
-        font-weight: 800;
-        color: #111827;
-        margin-bottom: 8px;
-        letter-spacing: -0.02em;
-    }
-    .hero-text-left p {
-        font-size: 14px;
-        color: #6b7280;
-        margin: 0;
-    }
-    .hero-actions .btn {
-        border-radius: 10px;
-        font-weight: 600;
-        padding: 10px 20px;
-        margin-left: 10px;
-    }
-
-    /* ============================
-       SECTION TITLE
-    ============================ */
-    .section-title {
-        font-size: 18px;
-        font-weight: 800;
-        color: #111827;
-        margin: 0 0 16px 0;
-        letter-spacing: -0.01em;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    .section-title i {
-        color: #0053C5;
-    }
-
-    /* ============================
-       CATEGORY GRID (Master Data)
-    ============================ */
-    .category-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 16px;
-        margin-bottom: 32px;
-    }
-    @media (max-width: 992px) {
-        .category-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-    .cat-card {
-        background: #ffffff;
-        border: 1px solid #f3f4f6;
-        border-radius: 16px;
-        padding: 20px;
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-        transition: transform 0.2s;
-    }
-    .cat-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.06);
-    }
-    .cat-icon {
-        width: 50px;
-        height: 50px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 24px;
-        flex-shrink: 0;
-    }
-    .cat-text {
+    .dash {
         display: flex;
         flex-direction: column;
+        gap: 28px;
     }
-    .cat-val {
+
+    /* ── HERO BANNER ── */
+    .hero-card {
+        background: var(--white);
+        border: 1px solid var(--slate-200);
+        border-radius: var(--radius);
+        padding: 28px 32px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        box-shadow: var(--shadow-sm);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-card::before {
+        content: '';
+        position: absolute;
+        top: -40px; right: -40px;
+        width: 220px; height: 220px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(37,99,235,0.06) 0%, transparent 70%);
+        pointer-events: none;
+    }
+
+    .hero-left { display: flex; align-items: center; gap: 18px; z-index: 1; }
+
+    .hero-icon {
+        width: 56px; height: 56px;
+        border-radius: 14px;
+        background: var(--blue-soft);
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .hero-icon i { font-size: 28px; color: var(--blue); }
+
+    .hero-name {
         font-size: 20px;
         font-weight: 800;
-        color: #111827;
+        color: var(--slate-900);
+        line-height: 1.2;
+        letter-spacing: -0.3px;
     }
-    .cat-title {
+
+    .hero-date {
         font-size: 13px;
-        color: #6b7280;
+        color: var(--slate-400);
         font-weight: 500;
+        margin-top: 3px;
     }
 
-    /* ============================
-       STATUS CARDS (Presensi)
-    ============================ */
-    .status-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-        margin-bottom: 32px;
-    }
-    @media (max-width: 992px) {
-        .status-grid {
-            grid-template-columns: 1fr;
-        }
-    }
-    .status-card {
-        background: #ffffff;
-        border-radius: 16px;
-        border: 1px solid #f3f4f6;
-        padding: 24px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-    }
-    .status-header {
+    .hero-right { display: flex; gap: 10px; z-index: 1; flex-shrink: 0; }
+
+    .btn-hero {
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        margin-bottom: 20px;
-        padding-bottom: 15px;
-        border-bottom: 1px dashed #e5e7eb;
-    }
-    .status-header h6 {
-        margin: 0;
+        gap: 6px;
+        padding: 9px 18px;
+        border-radius: var(--radius-sm);
+        font-size: 13px;
         font-weight: 700;
-        color: #111827;
-        font-size: 16px;
+        text-decoration: none;
+        cursor: pointer;
+        border: none;
+        transition: opacity 0.2s, transform 0.15s;
+        font-family: 'Inter', sans-serif;
     }
-    .mini-stat-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 12px;
-    }
-    @media (max-width: 576px) {
-        .mini-stat-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-    .mini-stat {
-        text-align: center;
-        padding: 16px 12px;
-        border-radius: 12px;
-        background: #f9fafb;
-        transition: background 0.2s;
-    }
-    .mini-stat:hover {
-        background: #f3f4f6;
-    }
-    .mini-stat i {
-        font-size: 24px;
-        margin-bottom: 8px;
-        display: block;
-    }
-    .mini-stat-number {
-        font-size: 18px;
-        font-weight: 800;
-        margin-bottom: 4px;
-    }
-    .mini-stat-label {
+
+    .btn-hero:active { opacity: 0.85; transform: scale(0.98); }
+    .btn-hero i { font-size: 16px; }
+
+    .btn-hero-primary { background: var(--blue); color: var(--white); box-shadow: 0 3px 10px rgba(37,99,235,0.25); }
+    .btn-hero-outline { background: var(--white); color: var(--slate-700); border: 1.5px solid var(--slate-200); }
+
+    /* ── SECTION LABEL ── */
+    .sec-label {
         font-size: 11px;
-        color: #6b7280;
-        text-transform: uppercase;
-        font-weight: 600;
-        letter-spacing: 0.5px;
-    }
-
-    /* ============================
-       VERTICAL STACK (Leaderboards)
-    ============================ */
-    .vertical-stack-wrapper {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 20px;
-        margin-bottom: 32px;
-    }
-    @media (max-width: 992px) {
-        .vertical-stack-wrapper {
-            grid-template-columns: 1fr;
-        }
-    }
-    .vertical-list-card {
-        background: #ffffff;
-        border-radius: 16px;
-        border: 1px solid #f3f4f6;
-        padding: 20px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-    }
-    .vertical-list-card h6 {
-        margin: 0 0 16px 0;
         font-weight: 700;
-        color: #111827;
-        font-size: 15px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    .v-card {
-        display: flex;
-        background: #ffffff;
-        border: 1px solid #f3f4f6;
-        border-radius: 12px;
-        overflow: hidden;
+        color: var(--slate-400);
+        text-transform: uppercase;
+        letter-spacing: 0.7px;
         margin-bottom: 12px;
-        transition: transform 0.2s;
-    }
-    .v-card:last-child {
-        margin-bottom: 0;
-    }
-    .v-card:hover {
-        transform: translateX(4px);
-        border-color: #e5e7eb;
-    }
-    .v-img {
-        width: 60px;
         display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 20px;
-        font-weight: 800;
-        color: white;
-    }
-    .v-img.gold { background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); }
-    .v-img.silver { background: linear-gradient(135deg, #9CA3AF 0%, #6B7280 100%); }
-    .v-img.bronze { background: linear-gradient(135deg, #D97706 0%, #92400E 100%); }
-    .v-img.other { background: #f3f4f6; color: #6b7280; }
-    
-    .v-content {
-        padding: 12px;
-        flex: 1;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    .v-title {
-        font-size: 14px;
-        font-weight: 700;
-        color: #111827;
-        margin-bottom: 2px;
-    }
-    .v-subtitle {
-        font-size: 12px;
-        color: #6b7280;
-    }
-    .v-badge {
-        padding: 4px 8px;
-        border-radius: 8px;
-        font-size: 12px;
-        font-weight: 700;
-    }
-
-    /* ============================
-       TABLE CARD
-    ============================ */
-    .table-responsive-custom {
-        background: #ffffff;
-        border-radius: 16px;
-        border: 1px solid #f3f4f6;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-        overflow: hidden;
-    }
-    .table-responsive-custom table {
-        margin: 0;
-    }
-    .table-responsive-custom th {
-        background: #f9fafb;
-        color: #6b7280;
-        font-size: 12px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        font-weight: 600;
-        padding: 16px;
-        border-bottom: 1px solid #e5e7eb;
-    }
-    .table-responsive-custom td {
-        padding: 16px;
-        vertical-align: middle;
-        border-bottom: 1px solid #f3f4f6;
-    }
-    .table-responsive-custom tr:last-child td {
-        border-bottom: none;
-    }
-    .user-td {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-    .user-td-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 10px;
-        background: #eff6ff;
-        color: #0053C5;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 18px;
-    }
-    .status-badge-custom {
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 600;
-        display: inline-flex;
         align-items: center;
         gap: 6px;
     }
-    .status-badge-custom.success { background: #dcfce7; color: #166534; }
-    .status-badge-custom.danger { background: #fee2e2; color: #991b1b; }
-    .status-badge-custom.warning { background: #fef3c7; color: #92400e; }
-    .status-badge-custom.info { background: #dbeafe; color: #1e40af; }
 
-    /* Chart Container */
+    .sec-label i { font-size: 14px; color: var(--blue); }
+
+    /* ── STATS GRID (Master Data) ── */
+    .stats-4 {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+    }
+
+    @media (max-width: 1100px) { .stats-4 { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 520px)  { .stats-4 { grid-template-columns: repeat(2, 1fr); } }
+
+    .stat-card {
+        background: var(--white);
+        border: 1px solid var(--slate-200);
+        border-radius: var(--radius);
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        box-shadow: var(--shadow-sm);
+        transition: box-shadow 0.2s, transform 0.2s;
+    }
+
+    .stat-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+
+    .stat-icon {
+        width: 46px; height: 46px;
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .stat-icon i { font-size: 22px; }
+
+    .stat-val {
+        font-size: 22px;
+        font-weight: 900;
+        color: var(--slate-900);
+        line-height: 1;
+        margin-bottom: 3px;
+        letter-spacing: -0.5px;
+    }
+
+    .stat-lbl {
+        font-size: 12px;
+        color: var(--slate-400);
+        font-weight: 600;
+    }
+
+    /* ── 2-COL PRESENSI GRID ── */
+    .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+    }
+
+    @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    /* Presensi panel card */
+    .panel-card {
+        background: var(--white);
+        border: 1px solid var(--slate-200);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+    }
+
+    .panel-card-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--slate-100);
+    }
+
+    .panel-card-head-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--slate-900);
+    }
+
+    .panel-card-head-left i { font-size: 18px; color: var(--blue); }
+
+    .panel-total-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 10px;
+        border-radius: 50px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .badge-blue  { background: var(--blue-soft);  color: var(--blue); }
+    .badge-green { background: var(--green-soft);  color: var(--green); }
+
+    /* Mini stat inside panel */
+    .mini-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0;
+        padding: 16px;
+        gap: 10px;
+    }
+
+    @media (max-width: 480px) { .mini-grid { grid-template-columns: repeat(2, 1fr); } }
+
+    .mini-stat {
+        text-align: center;
+        padding: 14px 8px;
+        background: var(--slate-50);
+        border-radius: var(--radius-sm);
+        transition: background 0.15s;
+    }
+
+    .mini-stat:hover { background: var(--slate-100); }
+
+    .mini-stat i { font-size: 22px; display: block; margin-bottom: 6px; }
+    .mini-num { font-size: 20px; font-weight: 800; line-height: 1; margin-bottom: 4px; letter-spacing: -0.5px; }
+    .mini-lbl { font-size: 10px; font-weight: 700; color: var(--slate-400); text-transform: uppercase; letter-spacing: 0.4px; }
+
+    /* ── CHART CARD ── */
     .chart-card {
-        background: #ffffff;
-        border-radius: 16px;
-        border: 1px solid #f3f4f6;
-        padding: 24px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-        margin-bottom: 32px;
+        background: var(--white);
+        border: 1px solid var(--slate-200);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+    }
+
+    .chart-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--slate-100);
+    }
+
+    .chart-head-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--slate-900);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .chart-head-title i { font-size: 18px; color: var(--blue); }
+
+    .chart-range {
+        font-size: 12px;
+        color: var(--slate-400);
+        font-weight: 500;
+    }
+
+    .chart-body {
+        padding: 20px;
+        position: relative;
+        height: 280px;
+    }
+
+    /* ── LEADERBOARD 3-COL ── */
+    .grid-3 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+    }
+
+    @media (max-width: 992px) { .grid-3 { grid-template-columns: 1fr; } }
+    @media (min-width: 600px) and (max-width: 992px) { .grid-3 { grid-template-columns: repeat(2, 1fr); } }
+
+    .lb-card {
+        background: var(--white);
+        border: 1px solid var(--slate-200);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+    }
+
+    .lb-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--slate-100);
+    }
+
+    .lb-head-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--slate-900);
+        display: flex;
+        align-items: center;
+        gap: 7px;
+    }
+
+    .lb-period {
+        font-size: 10px;
+        color: var(--slate-400);
+        font-weight: 600;
+        background: var(--slate-100);
+        padding: 3px 8px;
+        border-radius: 50px;
+    }
+
+    .lb-list { padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+
+    .lb-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 10px;
+        border-radius: var(--radius-sm);
+        border: 1px solid transparent;
+        transition: background 0.15s;
+    }
+
+    .lb-row:hover { background: var(--slate-50); border-color: var(--slate-200); }
+
+    .lb-rank {
+        width: 28px; height: 28px;
+        border-radius: 8px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 12px;
+        font-weight: 800;
+        flex-shrink: 0;
+        color: var(--white);
+    }
+
+    .rank-1 { background: linear-gradient(135deg, #F59E0B, #D97706); }
+    .rank-2 { background: linear-gradient(135deg, #9CA3AF, #6B7280); }
+    .rank-3 { background: linear-gradient(135deg, #D97706, #92400E); }
+    .rank-n { background: var(--slate-200); color: var(--slate-600); }
+
+    .lb-name {
+        flex: 1;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--slate-900);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .lb-sub {
+        font-size: 11px;
+        color: var(--slate-400);
+        margin-top: 1px;
+    }
+
+    .lb-count {
+        font-size: 12px;
+        font-weight: 800;
+        padding: 3px 9px;
+        border-radius: 50px;
+        flex-shrink: 0;
+    }
+
+    .count-blue   { background: var(--blue-soft); color: var(--blue); }
+    .count-green  { background: var(--green-soft); color: var(--green); }
+    .count-red    { background: var(--red-soft); color: var(--red); }
+
+    .lb-empty { padding: 24px; text-align: center; color: var(--slate-400); font-size: 13px; }
+    .lb-empty i { font-size: 36px; display: block; margin-bottom: 8px; color: var(--slate-200); }
+
+    /* ── TABLE CARD ── */
+    .tbl-card {
+        background: var(--white);
+        border: 1px solid var(--slate-200);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+    }
+
+    .tbl-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 20px;
+        border-bottom: 1px solid var(--slate-100);
+    }
+
+    .tbl-head-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--slate-900);
+        display: flex;
+        align-items: center;
+        gap: 7px;
+    }
+
+    .tbl-head-title i { font-size: 17px; color: var(--blue); }
+
+    .tbl-wrap { overflow-x: auto; }
+
+    .tbl-wrap table { width: 100%; border-collapse: collapse; }
+
+    .tbl-wrap thead th {
+        padding: 10px 16px;
+        background: var(--slate-50);
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--slate-400);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid var(--slate-200);
+        white-space: nowrap;
+    }
+
+    .tbl-wrap tbody td {
+        padding: 12px 16px;
+        font-size: 13px;
+        color: var(--slate-700);
+        border-bottom: 1px solid var(--slate-100);
+        vertical-align: middle;
+    }
+
+    .tbl-wrap tbody tr:last-child td { border-bottom: none; }
+    .tbl-wrap tbody tr:hover td { background: var(--slate-50); }
+
+    /* User cell */
+    .user-cell {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .user-avatar {
+        width: 34px; height: 34px;
+        border-radius: 9px;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+        font-size: 16px;
+    }
+
+    .avatar-blue  { background: var(--blue-soft); color: var(--blue); }
+    .avatar-green { background: var(--green-soft); color: var(--green); }
+
+    .user-name { font-size: 13px; font-weight: 700; color: var(--slate-900); }
+    .user-sub  { font-size: 11px; color: var(--slate-400); margin-top: 1px; }
+
+    /* Status badge */
+    .sb {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        border-radius: 50px;
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .sb i { font-size: 13px; }
+    .sb-success { background: var(--green-soft); color: var(--green); }
+    .sb-danger  { background: var(--red-soft);   color: var(--red); }
+    .sb-warning { background: var(--amber-soft);  color: #D97706; }
+    .sb-info    { background: var(--blue-soft);   color: var(--blue); }
+
+    /* Time cell */
+    .time-in  { font-size: 12px; font-weight: 700; color: var(--green); }
+    .time-out { font-size: 12px; font-weight: 700; color: var(--red); }
+
+    /* Empty row */
+    .empty-row { padding: 32px; text-align: center; color: var(--slate-400); font-size: 13px; }
+    .empty-row i { font-size: 32px; display: block; margin-bottom: 8px; color: var(--slate-200); }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .hero-card { flex-direction: column; align-items: flex-start; padding: 20px; }
+        .hero-right { display: none; }
+        .hero-name { font-size: 17px; }
     }
 </style>
 @endpush
 
 @section('content')
-<div class="dashboard-container">
-    
-    <!-- HERO BANNER -->
-    <div class="hero-banner">
-        <div class="hero-icon-bg">
-            <i class="mdi mdi-hand-wave"></i>
+<div class="dash">
+
+    {{-- ── HERO BANNER ── --}}
+    <div class="hero-card">
+        <div class="hero-left">
+            <div class="hero-icon">
+                <i class="mdi mdi-hand-wave"></i>
+            </div>
+            <div>
+                <div class="hero-name">Selamat Datang, {{ Auth::guard('user')->user()->name }}!</div>
+                <div class="hero-date">{{ \Carbon\Carbon::now()->isoFormat('dddd, D MMMM Y') }} — PresensiGPS YPI Al Azhar</div>
+            </div>
         </div>
-        <div class="hero-text">
-            <div class="hero-text-left">
-                <h1>Selamat Datang, {{ Auth::guard('user')->user()->name }}!</h1>
-                <p>Sistem Presensi YPI Al Azhar - {{ \Carbon\Carbon::now()->isoFormat('dddd, D MMMM Y') }}</p>
-            </div>
-            <div class="hero-actions d-none d-md-block">
-                <button class="btn btn-primary"><i class="mdi mdi-file-chart me-1"></i> Laporan</button>
-            </div>
+        <div class="hero-right">
+            <a href="{{ route('panel.laporan.index') }}" class="btn-hero btn-hero-outline">
+                <i class="mdi mdi-file-chart"></i> Laporan
+            </a>
+            <a href="{{ route('panel.monitoring.index') }}" class="btn-hero btn-hero-primary">
+                <i class="mdi mdi-map"></i> Monitoring
+            </a>
         </div>
     </div>
 
-    <!-- MASTER DATA -->
-    <h3 class="section-title"><i class="mdi mdi-database"></i> Master Data</h3>
-    <div class="category-grid">
-        <div class="cat-card">
-            <div class="cat-icon" style="background: #eff6ff; color: #0053C5;"><i class="mdi mdi-office-building"></i></div>
-            <div class="cat-text">
-                <span class="cat-val">{{ $totalCabang }}</span>
-                <span class="cat-title">Total Cabang</span>
-            </div>
-        </div>
-        <div class="cat-card">
-            <div class="cat-icon" style="background: #dcfce7; color: #15803d;"><i class="mdi mdi-file-tree"></i></div>
-            <div class="cat-text">
-                <span class="cat-val">{{ $totalDepartemen }}</span>
-                <span class="cat-title">Total Departemen</span>
-            </div>
-        </div>
-        <div class="cat-card">
-            <div class="cat-icon" style="background: #f3e8ff; color: #7e22ce;"><i class="mdi mdi-account-group"></i></div>
-            <div class="cat-text">
-                <span class="cat-val">{{ $totalKaryawan }}</span>
-                <span class="cat-title">Total Karyawan</span>
-            </div>
-        </div>
-        <div class="cat-card">
-            <div class="cat-icon" style="background: #fef3c7; color: #b45309;"><i class="mdi mdi-clock-outline"></i></div>
-            <div class="cat-text">
-                <span class="cat-val">{{ $totalJamKerja }}</span>
-                <span class="cat-title">Total Jam Kerja</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- PRESENSI HARI INI -->
-    <h3 class="section-title"><i class="mdi mdi-calendar-today"></i> Presensi Hari Ini</h3>
-    <div class="status-grid">
-        <!-- GPS -->
-        <div class="status-card">
-            <div class="status-header">
-                <h6><i class="mdi mdi-map-marker-check text-primary me-2"></i>Presensi GPS</h6>
-                <span class="badge bg-primary rounded-pill">{{ $presensiGPSHariIni }} Total</span>
-            </div>
-            <div class="mini-stat-grid">
-                <div class="mini-stat">
-                    <i class="mdi mdi-account-check text-success"></i>
-                    <div class="mini-stat-number text-success">{{ $hadirGPS }}</div>
-                    <div class="mini-stat-label">Hadir</div>
+    {{-- ── MASTER DATA ── --}}
+    <div>
+        <div class="sec-label"><i class="mdi mdi-database"></i> Master Data</div>
+        <div class="stats-4">
+            <div class="stat-card">
+                <div class="stat-icon" style="background:var(--blue-soft);">
+                    <i class="mdi mdi-office-building" style="color:var(--blue);"></i>
                 </div>
-                <div class="mini-stat">
-                    <i class="mdi mdi-account-clock text-warning"></i>
-                    <div class="mini-stat-number text-warning">{{ $terlambatGPS }}</div>
-                    <div class="mini-stat-label">Terlambat</div>
-                </div>
-                <div class="mini-stat">
-                    <i class="mdi mdi-file-document text-info"></i>
-                    <div class="mini-stat-number text-info">{{ $izinGPS }}</div>
-                    <div class="mini-stat-label">Izin/Sakit</div>
-                </div>
-                <div class="mini-stat">
-                    <i class="mdi mdi-close-octagon text-danger"></i>
-                    <div class="mini-stat-number text-danger">{{ $totalKaryawan - $presensiGPSHariIni }}</div>
-                    <div class="mini-stat-label">Absen</div>
+                <div>
+                    <div class="stat-val">{{ $totalCabang }}</div>
+                    <div class="stat-lbl">Total Cabang</div>
                 </div>
             </div>
-        </div>
-
-        <!-- Face -->
-        <div class="status-card">
-            <div class="status-header">
-                <h6><i class="mdi mdi-face-recognition text-success me-2"></i>Presensi Face Recognition</h6>
-                <span class="badge bg-success rounded-pill">{{ $presensiFaceHariIni }} Total</span>
+            <div class="stat-card">
+                <div class="stat-icon" style="background:var(--green-soft);">
+                    <i class="mdi mdi-file-tree" style="color:var(--green);"></i>
+                </div>
+                <div>
+                    <div class="stat-val">{{ $totalDepartemen }}</div>
+                    <div class="stat-lbl">Total Departemen</div>
+                </div>
             </div>
-            <div class="mini-stat-grid">
-                <div class="mini-stat">
-                    <i class="mdi mdi-login text-success"></i>
-                    <div class="mini-stat-number text-success">{{ $checkInFace }}</div>
-                    <div class="mini-stat-label">Check In</div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background:var(--purple-soft);">
+                    <i class="mdi mdi-account-group" style="color:var(--purple);"></i>
                 </div>
-                <div class="mini-stat">
-                    <i class="mdi mdi-logout text-danger"></i>
-                    <div class="mini-stat-number text-danger">{{ $checkOutFace }}</div>
-                    <div class="mini-stat-label">Check Out</div>
+                <div>
+                    <div class="stat-val">{{ $totalKaryawan }}</div>
+                    <div class="stat-lbl">Total Karyawan</div>
                 </div>
-                <div class="mini-stat">
-                    <i class="mdi mdi-check-circle text-primary"></i>
-                    <div class="mini-stat-number text-primary">{{ $verifiedFace }}</div>
-                    <div class="mini-stat-label">Terverifikasi</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background:var(--amber-soft);">
+                    <i class="mdi mdi-clock-outline" style="color:var(--amber);"></i>
                 </div>
-                <div class="mini-stat">
-                    <i class="mdi mdi-close-circle text-warning"></i>
-                    <div class="mini-stat-number text-warning">{{ $failedFace }}</div>
-                    <div class="mini-stat-label">Gagal</div>
+                <div>
+                    <div class="stat-val">{{ $totalJamKerja }}</div>
+                    <div class="stat-lbl">Total Jam Kerja</div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- VERIFIKASI WAJAH STATUS -->
-    <h3 class="section-title"><i class="mdi mdi-shield-account"></i> Status Face Enrollment</h3>
-    <div class="category-grid">
-        <div class="cat-card">
-            <div class="cat-icon" style="background: #eff6ff; color: #0053C5;"><i class="mdi mdi-account-multiple-check"></i></div>
-            <div class="cat-text">
-                <span class="cat-val">{{ $totalEnrolled }}</span>
-                <span class="cat-title">Total Enrolled ({{ $totalKaryawan > 0 ? number_format(($totalEnrolled / $totalKaryawan * 100), 1) : 0 }}%)</span>
+    {{-- ── PRESENSI HARI INI ── --}}
+    <div>
+        <div class="sec-label"><i class="mdi mdi-calendar-today"></i> Presensi Hari Ini</div>
+        <div class="grid-2">
+            {{-- GPS --}}
+            <div class="panel-card">
+                <div class="panel-card-head">
+                    <div class="panel-card-head-left">
+                        <i class="mdi mdi-map-marker-check"></i> Presensi GPS
+                    </div>
+                    <span class="panel-total-badge badge-blue">{{ $presensiGPSHariIni }} total</span>
+                </div>
+                <div class="mini-grid">
+                    <div class="mini-stat">
+                        <i class="mdi mdi-account-check" style="color:var(--green);"></i>
+                        <div class="mini-num" style="color:var(--green);">{{ $hadirGPS }}</div>
+                        <div class="mini-lbl">Hadir</div>
+                    </div>
+                    <div class="mini-stat">
+                        <i class="mdi mdi-account-clock" style="color:var(--amber);"></i>
+                        <div class="mini-num" style="color:var(--amber);">{{ $terlambatGPS }}</div>
+                        <div class="mini-lbl">Terlambat</div>
+                    </div>
+                    <div class="mini-stat">
+                        <i class="mdi mdi-file-document" style="color:var(--blue);"></i>
+                        <div class="mini-num" style="color:var(--blue);">{{ $izinGPS }}</div>
+                        <div class="mini-lbl">Izin/Sakit</div>
+                    </div>
+                    <div class="mini-stat">
+                        <i class="mdi mdi-close-octagon" style="color:var(--red);"></i>
+                        <div class="mini-num" style="color:var(--red);">{{ $totalKaryawan - $presensiGPSHariIni }}</div>
+                        <div class="mini-lbl">Absen</div>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div class="cat-card">
-            <div class="cat-icon" style="background: #dcfce7; color: #15803d;"><i class="mdi mdi-check-all"></i></div>
-            <div class="cat-text">
-                <span class="cat-val">{{ $enrolledActive }}</span>
-                <span class="cat-title">Enrolled Aktif</span>
-            </div>
-        </div>
-        <div class="cat-card">
-            <div class="cat-icon" style="background: #f3f4f6; color: #6b7280;"><i class="mdi mdi-cancel"></i></div>
-            <div class="cat-text">
-                <span class="cat-val">{{ $enrolledInactive }}</span>
-                <span class="cat-title">Enrolled Nonaktif</span>
-            </div>
-        </div>
-        <div class="cat-card">
-            <div class="cat-icon" style="background: #fee2e2; color: #b91c1c;"><i class="mdi mdi-alert-circle"></i></div>
-            <div class="cat-text">
-                <span class="cat-val">{{ $belumEnroll }}</span>
-                <span class="cat-title">Belum Enroll</span>
+
+            {{-- Face --}}
+            <div class="panel-card">
+                <div class="panel-card-head">
+                    <div class="panel-card-head-left">
+                        <i class="mdi mdi-face-recognition"></i> Face Recognition
+                    </div>
+                    <span class="panel-total-badge badge-green">{{ $presensiFaceHariIni }} total</span>
+                </div>
+                <div class="mini-grid">
+                    <div class="mini-stat">
+                        <i class="mdi mdi-login" style="color:var(--green);"></i>
+                        <div class="mini-num" style="color:var(--green);">{{ $checkInFace }}</div>
+                        <div class="mini-lbl">Check In</div>
+                    </div>
+                    <div class="mini-stat">
+                        <i class="mdi mdi-logout" style="color:var(--red);"></i>
+                        <div class="mini-num" style="color:var(--red);">{{ $checkOutFace }}</div>
+                        <div class="mini-lbl">Check Out</div>
+                    </div>
+                    <div class="mini-stat">
+                        <i class="mdi mdi-check-circle" style="color:var(--blue);"></i>
+                        <div class="mini-num" style="color:var(--blue);">{{ $verifiedFace }}</div>
+                        <div class="mini-lbl">Verified</div>
+                    </div>
+                    <div class="mini-stat">
+                        <i class="mdi mdi-close-circle" style="color:var(--amber);"></i>
+                        <div class="mini-num" style="color:var(--amber);">{{ $failedFace }}</div>
+                        <div class="mini-lbl">Gagal</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- CHART 7 HARI TERAKHIR -->
+    {{-- ── FACE ENROLLMENT ── --}}
+    <div>
+        <div class="sec-label"><i class="mdi mdi-shield-account"></i> Status Face Enrollment</div>
+        <div class="stats-4">
+            <div class="stat-card">
+                <div class="stat-icon" style="background:var(--blue-soft);">
+                    <i class="mdi mdi-account-multiple-check" style="color:var(--blue);"></i>
+                </div>
+                <div>
+                    <div class="stat-val">{{ $totalEnrolled }}</div>
+                    <div class="stat-lbl">Total Enrolled ({{ $totalKaryawan > 0 ? number_format(($totalEnrolled / $totalKaryawan * 100), 1) : 0 }}%)</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background:var(--green-soft);">
+                    <i class="mdi mdi-check-all" style="color:var(--green);"></i>
+                </div>
+                <div>
+                    <div class="stat-val">{{ $enrolledActive }}</div>
+                    <div class="stat-lbl">Enrolled Aktif</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background:var(--slate-100);">
+                    <i class="mdi mdi-cancel" style="color:var(--slate-400);"></i>
+                </div>
+                <div>
+                    <div class="stat-val">{{ $enrolledInactive }}</div>
+                    <div class="stat-lbl">Enrolled Nonaktif</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background:var(--red-soft);">
+                    <i class="mdi mdi-alert-circle" style="color:var(--red);"></i>
+                </div>
+                <div>
+                    <div class="stat-val">{{ $belumEnroll }}</div>
+                    <div class="stat-lbl">Belum Enroll</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- ── CHART ── --}}
     <div class="chart-card">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h6 class="m-0 fw-bold"><i class="mdi mdi-chart-line text-primary me-2"></i>Grafik Presensi 7 Hari Terakhir</h6>
-            <small class="text-muted">{{ \Carbon\Carbon::now()->subDays(6)->format('d M') }} - {{ \Carbon\Carbon::now()->format('d M Y') }}</small>
+        <div class="chart-head">
+            <div class="chart-head-title">
+                <i class="mdi mdi-chart-line"></i>
+                Grafik Presensi 7 Hari Terakhir
+            </div>
+            <div class="chart-range">
+                {{ \Carbon\Carbon::now()->subDays(6)->format('d M') }} — {{ \Carbon\Carbon::now()->format('d M Y') }}
+            </div>
         </div>
-        <div style="position: relative; height: 300px; width: 100%;">
+        <div class="chart-body">
             <canvas id="presensiChart"></canvas>
         </div>
     </div>
 
-    <!-- LEADERBOARDS & TERLAMBAT -->
-    <div class="vertical-stack-wrapper">
-        <!-- Top Cabang -->
-        <div class="vertical-list-card">
-            <h6><i class="mdi mdi-trophy text-warning"></i> Top 5 Cabang <small class="text-muted fw-normal ms-auto">Bulan ini</small></h6>
-            @forelse($rankingCabang as $index => $item)
-            <div class="v-card">
-                <div class="v-img {{ $index == 0 ? 'gold' : ($index == 1 ? 'silver' : ($index == 2 ? 'bronze' : 'other')) }}">
-                    {{ $index + 1 }}
-                </div>
-                <div class="v-content">
-                    <div>
-                        <div class="v-title">{{ $item->nama_cabang }}</div>
-                    </div>
-                    <div class="v-badge bg-primary text-white">{{ $item->total_presensi }}</div>
-                </div>
-            </div>
-            @empty
-            <p class="text-muted text-center py-4">Tidak ada data</p>
-            @endforelse
-        </div>
+    {{-- ── LEADERBOARDS ── --}}
+    <div>
+        <div class="sec-label"><i class="mdi mdi-trophy"></i> Ranking & Keterlambatan</div>
+        <div class="grid-3">
 
-        <!-- Top Departemen -->
-        <div class="vertical-list-card">
-            <h6><i class="mdi mdi-star text-success"></i> Top 5 Departemen <small class="text-muted fw-normal ms-auto">Bulan ini</small></h6>
-            @forelse($rankingDepartemen as $index => $item)
-            <div class="v-card">
-                <div class="v-img {{ $index == 0 ? 'gold' : ($index == 1 ? 'silver' : ($index == 2 ? 'bronze' : 'other')) }}">
-                    {{ $index + 1 }}
-                </div>
-                <div class="v-content">
-                    <div>
-                        <div class="v-title">{{ $item->nama_dept }}</div>
+            {{-- Top Cabang --}}
+            <div class="lb-card">
+                <div class="lb-head">
+                    <div class="lb-head-title">
+                        <i class="mdi mdi-trophy" style="color:var(--amber);"></i>
+                        Top 5 Cabang
                     </div>
-                    <div class="v-badge bg-success text-white">{{ $item->total_presensi }}</div>
+                    <span class="lb-period">Bulan ini</span>
+                </div>
+                <div class="lb-list">
+                    @forelse($rankingCabang as $i => $item)
+                    <div class="lb-row">
+                        <div class="lb-rank {{ $i==0 ? 'rank-1' : ($i==1 ? 'rank-2' : ($i==2 ? 'rank-3' : 'rank-n')) }}">{{ $i+1 }}</div>
+                        <div class="lb-name">{{ $item->nama_cabang }}</div>
+                        <span class="lb-count count-blue">{{ $item->total_presensi }}</span>
+                    </div>
+                    @empty
+                    <div class="lb-empty"><i class="mdi mdi-database-off"></i>Tidak ada data</div>
+                    @endforelse
                 </div>
             </div>
-            @empty
-            <p class="text-muted text-center py-4">Tidak ada data</p>
-            @endforelse
-        </div>
 
-        <!-- Karyawan Terlambat -->
-        <div class="vertical-list-card">
-            <h6><i class="mdi mdi-clock-alert text-danger"></i> Karyawan Terlambat <small class="text-muted fw-normal ms-auto">Hari ini</small></h6>
-            @forelse($karyawanTerlambat as $item)
-            <div class="v-card">
-                <div class="v-img bg-light text-danger">
-                    <i class="mdi mdi-account"></i>
-                </div>
-                <div class="v-content">
-                    <div>
-                        <div class="v-title">{{ $item->nama_lengkap }}</div>
-                        <div class="v-subtitle">{{ $item->nama_cabang }}</div>
+            {{-- Top Departemen --}}
+            <div class="lb-card">
+                <div class="lb-head">
+                    <div class="lb-head-title">
+                        <i class="mdi mdi-star" style="color:var(--green);"></i>
+                        Top 5 Departemen
                     </div>
-                    <div class="v-badge bg-danger text-white">{{ $item->jam_in }}</div>
+                    <span class="lb-period">Bulan ini</span>
+                </div>
+                <div class="lb-list">
+                    @forelse($rankingDepartemen as $i => $item)
+                    <div class="lb-row">
+                        <div class="lb-rank {{ $i==0 ? 'rank-1' : ($i==1 ? 'rank-2' : ($i==2 ? 'rank-3' : 'rank-n')) }}">{{ $i+1 }}</div>
+                        <div class="lb-name">{{ $item->nama_dept }}</div>
+                        <span class="lb-count count-green">{{ $item->total_presensi }}</span>
+                    </div>
+                    @empty
+                    <div class="lb-empty"><i class="mdi mdi-database-off"></i>Tidak ada data</div>
+                    @endforelse
                 </div>
             </div>
-            @empty
-            <div class="text-center py-4">
-                <i class="mdi mdi-emoticon-happy-outline text-success" style="font-size: 48px;"></i>
-                <p class="text-muted mt-2 m-0">Tidak ada keterlambatan</p>
+
+            {{-- Terlambat hari ini --}}
+            <div class="lb-card">
+                <div class="lb-head">
+                    <div class="lb-head-title">
+                        <i class="mdi mdi-clock-alert" style="color:var(--red);"></i>
+                        Terlambat
+                    </div>
+                    <span class="lb-period">Hari ini</span>
+                </div>
+                <div class="lb-list">
+                    @forelse($karyawanTerlambat as $item)
+                    <div class="lb-row">
+                        <div class="lb-rank rank-n"><i class="mdi mdi-account" style="font-size:14px;"></i></div>
+                        <div>
+                            <div class="lb-name">{{ $item->nama_lengkap }}</div>
+                            <div class="lb-sub">{{ $item->nama_cabang }}</div>
+                        </div>
+                        <span class="lb-count count-red">{{ $item->jam_in }}</span>
+                    </div>
+                    @empty
+                    <div class="lb-empty">
+                        <i class="mdi mdi-emoticon-happy-outline" style="color:var(--green);"></i>
+                        Tidak ada keterlambatan
+                    </div>
+                    @endforelse
+                </div>
             </div>
-            @endforelse
+
         </div>
     </div>
 
-    <!-- DATA TERBARU TABLES -->
-    <div class="row">
-        <div class="col-lg-6 mb-4">
-            <h3 class="section-title"><i class="mdi mdi-map-marker-check"></i> GPS Terbaru</h3>
-            <div class="table-responsive-custom">
-                <table class="table table-borderless">
+    {{-- ── RECENT TABLES ── --}}
+    <div class="grid-2">
+
+        {{-- GPS Terbaru --}}
+        <div class="tbl-card">
+            <div class="tbl-head">
+                <div class="tbl-head-title">
+                    <i class="mdi mdi-map-marker-check"></i> GPS Terbaru
+                </div>
+            </div>
+            <div class="tbl-wrap">
+                <table>
                     <thead>
                         <tr>
                             <th>Karyawan</th>
@@ -631,41 +807,44 @@
                         @forelse($presensiGPSTerbaru as $item)
                         <tr>
                             <td>
-                                <div class="user-td">
-                                    <div class="user-td-icon"><i class="mdi mdi-account"></i></div>
+                                <div class="user-cell">
+                                    <div class="user-avatar avatar-blue"><i class="mdi mdi-account"></i></div>
                                     <div>
-                                        <div class="fw-bold text-dark" style="font-size: 14px;">{{ $item->nama_lengkap }}</div>
-                                        <div class="text-muted" style="font-size: 12px;">{{ $item->nama_cabang }}</div>
+                                        <div class="user-name">{{ $item->nama_lengkap }}</div>
+                                        <div class="user-sub">{{ $item->nama_cabang }}</div>
                                     </div>
                                 </div>
                             </td>
-                            <td><span class="fw-semibold text-dark">{{ $item->jam_in }}</span></td>
+                            <td><strong>{{ $item->jam_in }}</strong></td>
                             <td>
-                                @if($item->status == 'h')
-                                <span class="status-badge-custom success"><i class="mdi mdi-check-circle"></i> Hadir</span>
-                                @elseif($item->status == 'i')
-                                <span class="status-badge-custom info"><i class="mdi mdi-information"></i> Izin</span>
-                                @elseif($item->status == 's')
-                                <span class="status-badge-custom warning"><i class="mdi mdi-hospital-box"></i> Sakit</span>
+                                @if($item->status=='h')
+                                    <span class="sb sb-success"><i class="mdi mdi-check-circle"></i> Hadir</span>
+                                @elseif($item->status=='i')
+                                    <span class="sb sb-info"><i class="mdi mdi-information"></i> Izin</span>
+                                @elseif($item->status=='s')
+                                    <span class="sb sb-warning"><i class="mdi mdi-hospital-box"></i> Sakit</span>
                                 @else
-                                <span class="status-badge-custom bg-light text-dark">{{ $item->status }}</span>
+                                    <span class="sb sb-danger">{{ $item->status }}</span>
                                 @endif
                             </td>
                         </tr>
                         @empty
-                        <tr>
-                            <td colspan="3" class="text-center text-muted py-4">Tidak ada data presensi</td>
-                        </tr>
+                        <tr><td colspan="3"><div class="empty-row"><i class="mdi mdi-database-off"></i>Tidak ada data presensi</div></td></tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <div class="col-lg-6 mb-4">
-            <h3 class="section-title"><i class="mdi mdi-face-recognition"></i> Face Terbaru</h3>
-            <div class="table-responsive-custom">
-                <table class="table table-borderless">
+        {{-- Face Terbaru --}}
+        <div class="tbl-card">
+            <div class="tbl-head">
+                <div class="tbl-head-title">
+                    <i class="mdi mdi-face-recognition"></i> Face Recognition Terbaru
+                </div>
+            </div>
+            <div class="tbl-wrap">
+                <table>
                     <thead>
                         <tr>
                             <th>Karyawan</th>
@@ -677,39 +856,34 @@
                         @forelse($presensiFaceTerbaru as $item)
                         <tr>
                             <td>
-                                <div class="user-td">
-                                    <div class="user-td-icon" style="background: #dcfce7; color: #15803d;"><i class="mdi mdi-face-recognition"></i></div>
+                                <div class="user-cell">
+                                    <div class="user-avatar avatar-green"><i class="mdi mdi-face-recognition"></i></div>
                                     <div>
-                                        <div class="fw-bold text-dark" style="font-size: 14px;">{{ $item->nama_lengkap }}</div>
-                                        <div class="text-muted" style="font-size: 12px;">{{ $item->nama_cabang }}</div>
+                                        <div class="user-name">{{ $item->nama_lengkap }}</div>
+                                        <div class="user-sub">{{ $item->nama_cabang }}</div>
                                     </div>
                                 </div>
                             </td>
                             <td>
-                                @if($item->jam_masuk)
-                                <div style="font-size: 13px;"><span class="text-success fw-bold">In:</span> {{ $item->jam_masuk }}</div>
-                                @endif
-                                @if($item->jam_pulang)
-                                <div style="font-size: 13px;"><span class="text-danger fw-bold">Out:</span> {{ $item->jam_pulang }}</div>
-                                @endif
+                                @if($item->jam_masuk) <div class="time-in">In: {{ $item->jam_masuk }}</div> @endif
+                                @if($item->jam_pulang) <div class="time-out">Out: {{ $item->jam_pulang }}</div> @endif
                             </td>
                             <td>
-                                @if($item->status == 'verified')
-                                <span class="status-badge-custom success"><i class="mdi mdi-check-circle"></i> Verified</span>
+                                @if($item->status=='verified')
+                                    <span class="sb sb-success"><i class="mdi mdi-check-circle"></i> Verified</span>
                                 @else
-                                <span class="status-badge-custom danger"><i class="mdi mdi-close-circle"></i> Failed</span>
+                                    <span class="sb sb-danger"><i class="mdi mdi-close-circle"></i> Failed</span>
                                 @endif
                             </td>
                         </tr>
                         @empty
-                        <tr>
-                            <td colspan="3" class="text-center text-muted py-4">Tidak ada data presensi</td>
-                        </tr>
+                        <tr><td colspan="3"><div class="empty-row"><i class="mdi mdi-database-off"></i>Tidak ada data presensi</div></td></tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
         </div>
+
     </div>
 
 </div>
@@ -718,13 +892,13 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const ctx = document.getElementById('presensiChart');
+    document.addEventListener('DOMContentLoaded', function () {
+        var ctx = document.getElementById('presensiChart');
         if (!ctx) return;
 
-        const labels = @json($last7Days ?? []);
-        const gpsData = @json($presensiGPSChart ?? []);
-        const faceData = @json($presensiFaceChart ?? []);
+        var labels   = @json($last7Days ?? []);
+        var gpsData  = @json($presensiGPSChart ?? []);
+        var faceData = @json($presensiFaceChart ?? []);
 
         if (!labels.length) return;
 
@@ -732,39 +906,39 @@
             type: 'line',
             data: {
                 labels: labels,
-                datasets: [{
-                    label: 'Presensi GPS',
-                    data: gpsData,
-                    borderColor: '#0053C5',
-                    backgroundColor: 'rgba(0, 83, 197, 0.1)',
-                    borderWidth: 3,
-                    tension: 0.4,
-                    fill: true,
-                    pointBackgroundColor: '#0053C5',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                    pointRadius: 4,
-                }, {
-                    label: 'Presensi Face',
-                    data: faceData,
-                    borderColor: '#10b981',
-                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                    borderWidth: 3,
-                    tension: 0.4,
-                    fill: true,
-                    pointBackgroundColor: '#10b981',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                    pointRadius: 4,
-                }]
+                datasets: [
+                    {
+                        label: 'Presensi GPS',
+                        data: gpsData,
+                        borderColor: '#2563EB',
+                        backgroundColor: 'rgba(37,99,235,0.08)',
+                        borderWidth: 2.5,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#2563EB',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                    },
+                    {
+                        label: 'Presensi Face',
+                        data: faceData,
+                        borderColor: '#10B981',
+                        backgroundColor: 'rgba(16,185,129,0.07)',
+                        borderWidth: 2.5,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#10B981',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                    }
+                ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                interaction: {
-                    mode: 'index',
-                    intersect: false,
-                },
+                interaction: { mode: 'index', intersect: false },
                 plugins: {
                     legend: {
                         position: 'top',
@@ -772,19 +946,21 @@
                             usePointStyle: true,
                             boxWidth: 8,
                             padding: 20,
-                            font: { family: "'Segoe UI', sans-serif", size: 13, weight: '600' }
+                            font: { family: 'Inter', size: 12, weight: '600' }
                         }
                     }
                 },
                 scales: {
                     y: {
                         beginAtZero: true,
-                        grid: { color: '#f3f4f6', drawBorder: false },
-                        border: { display: false }
+                        grid: { color: '#F3F4F6' },
+                        border: { display: false },
+                        ticks: { font: { family: 'Inter', size: 11 }, color: '#9CA3AF' }
                     },
                     x: {
                         grid: { display: false },
-                        border: { display: false }
+                        border: { display: false },
+                        ticks: { font: { family: 'Inter', size: 11 }, color: '#9CA3AF' }
                     }
                 }
             }

@@ -13,10 +13,12 @@
     <link rel="manifest" href="/manifest.json">
     <link rel="shortcut icon" href="/assets/img/logoypia.png" type="image/png" />
     <link rel="apple-touch-icon" href="/assets/img/pwa-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 

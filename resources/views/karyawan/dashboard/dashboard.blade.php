@@ -1,9 +1,8 @@
-@extends('karyawan.layouts.presensi')
+﻿@extends('karyawan.layouts.presensi')
 @section('content')
 
 <style>
     /* ===== GOOGLE FONTS ===== */
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
     /* ===== DESIGN TOKENS ===== */
     :root {

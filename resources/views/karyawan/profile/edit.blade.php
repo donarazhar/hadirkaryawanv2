@@ -745,39 +745,31 @@
                 <div class="sec-nav-head-icon">
                     <ion-icon name="shield-checkmark-outline"></ion-icon>
                 </div>
-                <span class="sec-nav-head-label">Metode Keamanan Absensi</span>
+                <span class="sec-nav-head-label">Pengaturan Keamanan</span>
             </div>
 
-            {{-- FaceID --}}
-            <a href="{{ route('face.enrollment') }}" class="sec-nav-item">
-                <div class="sec-nav-icon-wrap face">
-                    <ion-icon name="scan-outline"></ion-icon>
+            <a href="{{ route('face.enrollment') }}" class="sec-nav-item" style="flex-direction: column; align-items: stretch; gap: 10px;">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <div class="sec-nav-icon-wrap" style="background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%); border: 1px solid #C7D2FE;">
+                        <ion-icon name="lock-closed-outline" style="color: var(--primary);"></ion-icon>
+                    </div>
+                    <div class="sec-nav-text">
+                        <div class="sec-nav-title">Metode Keamanan Absensi</div>
+                        <div class="sec-nav-desc">Kelola verifikasi Face ID & Fingerprint</div>
+                    </div>
+                    <div class="sec-nav-arrow"><ion-icon name="chevron-forward-outline"></ion-icon></div>
                 </div>
-                <div class="sec-nav-text">
-                    <div class="sec-nav-title">Face ID / Verifikasi Wajah</div>
-                    <div class="sec-nav-desc">Daftar atau perbarui data wajah untuk absensi</div>
+                
+                <div style="display: flex; gap: 8px; margin-top: 2px; padding-left: 58px;">
+                    <span class="sec-nav-badge {{ $hasFaceData ? 'active' : 'setup' }}">
+                        <ion-icon name="scan-outline"></ion-icon>
+                        Face: {{ $hasFaceData ? 'Terdaftar' : 'Siapkan' }}
+                    </span>
+                    <span class="sec-nav-badge {{ $hasBiometric ? 'active' : 'setup' }}">
+                        <ion-icon name="finger-print-outline"></ion-icon>
+                        Finger: {{ $hasBiometric ? 'Terdaftar' : 'Siapkan' }}
+                    </span>
                 </div>
-                <span class="sec-nav-badge {{ $hasFaceData ? 'active' : 'setup' }}">
-                    <ion-icon name="{{ $hasFaceData ? 'checkmark-circle-outline' : 'alert-circle-outline' }}"></ion-icon>
-                    {{ $hasFaceData ? 'Terdaftar' : 'Siapkan' }}
-                </span>
-                <div class="sec-nav-arrow"><ion-icon name="chevron-forward-outline"></ion-icon></div>
-            </a>
-
-            {{-- Fingerprint --}}
-            <a href="{{ route('biometric.enrollment') }}" class="sec-nav-item">
-                <div class="sec-nav-icon-wrap finger">
-                    <ion-icon name="finger-print-outline"></ion-icon>
-                </div>
-                <div class="sec-nav-text">
-                    <div class="sec-nav-title">Fingerprint / Biometrik HP</div>
-                    <div class="sec-nav-desc">Gunakan sensor sidik jari bawaan HP Anda</div>
-                </div>
-                <span class="sec-nav-badge {{ $hasBiometric ? 'active' : 'setup' }}">
-                    <ion-icon name="{{ $hasBiometric ? 'checkmark-circle-outline' : 'alert-circle-outline' }}"></ion-icon>
-                    {{ $hasBiometric ? 'Terdaftar' : 'Siapkan' }}
-                </span>
-                <div class="sec-nav-arrow"><ion-icon name="chevron-forward-outline"></ion-icon></div>
             </a>
         </div>
 

@@ -18,7 +18,7 @@
         --text-600:      #475569;
         --text-400:      #94A3B8;
         --border:        rgba(255,255,255,0.4);
-        --surface:       rgba(255,255,255,0.85); /* Semi-transparent for floating cards */
+        --surface:       rgba(255,255,255,0.85);
         --surface-solid: #FFFFFF;
         --bg:            #F8FAFC;
         --shadow-sm:     0 2px 8px rgba(0,0,0,0.1);
@@ -35,7 +35,7 @@
         background: #000;
         color: var(--text-900);
         -webkit-font-smoothing: antialiased;
-        overflow: hidden; /* Prevent scrolling, full screen cam */
+        overflow: hidden;
         height: 100vh;
         width: 100vw;
     }
@@ -53,15 +53,16 @@
         z-index: 1;
     }
 
-    /* Dark vignette for better contrast with floating white cards */
+    /* Gradient overlay to make text readable */
     .cam-vignette {
         position: fixed; inset: 0; z-index: 2; pointer-events: none;
         background:
             linear-gradient(to bottom,
-                rgba(0,0,0,0.5) 0%, 
-                transparent 30%,
+                rgba(0,0,0,0.65) 0%, 
+                rgba(0,0,0,0.2) 20%,
+                transparent 40%, 
                 transparent 70%, 
-                rgba(0,0,0,0.6) 100%);
+                rgba(0,0,0,0.5) 100%);
     }
 
     /* Oval guide */
@@ -69,11 +70,11 @@
         position: fixed;
         top: 50%; left: 50%;
         transform: translate(-50%, -55%);
-        width: 200px; height: 265px;
-        border: 2px solid rgba(255,255,255,0.7);
+        width: 220px; height: 290px;
+        border: 2px solid rgba(255,255,255,0.6);
         border-radius: 50%;
         z-index: 3; pointer-events: none;
-        box-shadow: 0 0 0 9999px rgba(0,0,0,0.3);
+        box-shadow: 0 0 0 9999px rgba(0,0,0,0.4);
     }
     .face-guide::before, .face-guide::after {
         content: ''; position: absolute;
@@ -99,8 +100,8 @@
         position: fixed;
         top: 0; left: 0; right: 0;
         z-index: 10;
-        padding: 16px;
-        display: flex; flex-direction: column; gap: 12px;
+        padding: 20px 16px;
+        display: flex; flex-direction: column; gap: 8px;
     }
     .bottom-overlay {
         position: fixed;
@@ -111,12 +112,78 @@
         display: flex; flex-direction: column; gap: 12px;
     }
     @supports (padding: max(0px)) {
-        .top-overlay { padding-top: max(16px, env(safe-area-inset-top)); }
+        .top-overlay { padding-top: max(20px, env(safe-area-inset-top)); }
         .bottom-overlay { bottom: max(80px, calc(env(safe-area-inset-bottom) + 80px)); }
     }
 
     /* ═══════════════════════════
-       CARDS (White, Glassy)
+       TOP TEXT UI (No Cards)
+    ═══════════════════════════ */
+    .header-row {
+        display: flex; align-items: center; gap: 12px; margin-bottom: 6px;
+    }
+    .btn-back-transparent {
+        width: 38px; height: 38px;
+        background: rgba(0,0,0,0.4);
+        backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255,255,255,0.25);
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        text-decoration: none;
+        color: white;
+        transition: transform 0.15s;
+    }
+    .btn-back-transparent:active { transform: scale(0.95); }
+    .btn-back-transparent ion-icon { font-size: 22px; }
+
+    .header-title {
+        display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    }
+    .title-text {
+        font-size: 19px; font-weight: 800; color: white;
+        text-shadow: 0 2px 6px rgba(0,0,0,0.8);
+        letter-spacing: -0.3px;
+    }
+    .badge-text {
+        display: inline-flex; align-items: center; gap: 4px;
+        padding: 3px 10px; border-radius: 50px;
+        font-size: 11px; font-weight: 700;
+        backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+    }
+    .badge-text.done { background: rgba(16,185,129,0.85); color: white; border: 1px solid rgba(255,255,255,0.4); }
+    .badge-text.pending { background: rgba(245,158,11,0.85); color: white; border: 1px solid rgba(255,255,255,0.4); }
+
+    .info-text-row {
+        display: flex; flex-direction: column; gap: 6px; padding-left: 2px;
+    }
+    .info-text-item {
+        display: flex; align-items: center; gap: 8px;
+        font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.95);
+        text-shadow: 0 2px 5px rgba(0,0,0,0.8);
+    }
+    .info-text-item ion-icon { font-size: 16px; color: #93C5FD; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5)); }
+
+    .shift-text-row {
+        margin-top: 6px; position: relative; display: inline-block; align-self: flex-start;
+    }
+    .transparent-select {
+        appearance: none; -webkit-appearance: none;
+        background: rgba(0,0,0,0.45); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+        border: 1px solid rgba(255,255,255,0.3);
+        border-radius: 50px;
+        padding: 8px 36px 8px 16px;
+        color: white; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+        outline: none;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .transparent-select option { color: #000; }
+    .select-icon {
+        position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+        color: white; font-size: 16px; pointer-events: none;
+    }
+
+    /* ═══════════════════════════
+       BOTTOM CARDS
     ═══════════════════════════ */
     .glass-card {
         background: var(--surface);
@@ -128,91 +195,8 @@
         overflow: hidden;
     }
 
-    /* PAGE HEADER (Inside Top Overlay) */
-    .pg-header {
-        padding: 12px 14px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-    .btn-back {
-        width: 36px; height: 36px;
-        background: var(--surface-solid);
-        border: 1px solid var(--border-med);
-        border-radius: 10px;
-        display: flex; align-items: center; justify-content: center;
-        text-decoration: none; flex-shrink: 0;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-    .btn-back ion-icon { font-size: 20px; color: var(--text-900); }
-
-    .pg-meta { flex: 1; min-width: 0; }
-    .pg-title { font-size: 15px; font-weight: 800; color: var(--text-900); }
-    
-    .pg-badge {
-        display: inline-flex; align-items: center; gap: 4px;
-        padding: 4px 8px;
-        border-radius: 50px;
-        font-size: 10.5px; font-weight: 700;
-        flex-shrink: 0;
-    }
-    .pg-badge.done    { background: var(--success-soft); color: var(--success); }
-    .pg-badge.pending { background: #FFF7ED; color: #EA580C; }
-
-    /* INFO GRID */
-    .info-grid {
-        display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
-    }
-    .info-card {
-        padding: 12px;
-        display: flex; align-items: center; gap: 10px;
-    }
-    .info-icon-wrap {
-        width: 38px; height: 38px;
-        border-radius: 12px;
-        display: flex; align-items: center; justify-content: center;
-        flex-shrink: 0;
-    }
-    .info-icon-wrap.blue  { background: var(--primary-soft); color: var(--primary); }
-    .info-icon-wrap.green { background: var(--success-soft); color: var(--success); }
-    .info-icon-wrap ion-icon { font-size: 18px; }
-
-    .info-card-label {
-        font-size: 9.5px; font-weight: 700;
-        color: var(--text-600);
-        text-transform: uppercase; letter-spacing: 0.5px;
-    }
-    .info-card-value {
-        font-size: 13px; font-weight: 800;
-        color: var(--text-900); line-height: 1.2; margin-top: 2px;
-    }
-    .info-card-sub { font-size: 10.5px; color: var(--text-600); font-weight: 500; }
-
-    /* SHIFT SELECTOR */
-    .shift-card { padding: 8px; }
-    .shift-select-wrap { position: relative; }
-    .shift-select-wrap select {
-        width: 100%; appearance: none; -webkit-appearance: none;
-        padding: 10px 38px 10px 14px;
-        background: var(--surface-solid);
-        border: 1px solid var(--border-med);
-        border-radius: 12px;
-        color: var(--text-900);
-        font-family: 'Inter', sans-serif;
-        font-size: 13px; font-weight: 700;
-        outline: none; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-    .shift-select-wrap ion-icon {
-        position: absolute; right: 14px; top: 50%;
-        transform: translateY(-50%);
-        color: var(--text-600); font-size: 16px; pointer-events: none;
-    }
-
     /* MAP CARD */
-    .map-card {
-        padding: 6px;
-        position: relative;
-    }
+    .map-card { padding: 6px; position: relative; }
     #map { width: 100%; height: 90px; border-radius: 12px; }
     .radius-badge {
         position: absolute; bottom: 12px; right: 12px; z-index: 500;
@@ -222,21 +206,18 @@
         font-size: 10px; font-weight: 600; border: 1px solid rgba(255,255,255,0.2);
     }
 
-    /* ═══════════════════════════
-       ACTION BUTTONS & STATUS
-    ═══════════════════════════ */
     /* Auto-scan status pill */
     .status-pill-wrap {
         display: flex; justify-content: center;
-        margin-bottom: -4px; /* Pull it slightly closer to bottom elements */
+        margin-bottom: -4px;
     }
     #auto-scan-pill {
         display: inline-flex; align-items: center; gap: 6px;
-        padding: 6px 14px;
+        padding: 6px 16px;
         border-radius: 50px;
-        font-size: 12px; font-weight: 700;
+        font-size: 12.5px; font-weight: 700;
         background: var(--surface);
-        backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
         color: var(--text-900);
         border: 1px solid var(--surface-solid);
         box-shadow: 0 4px 12px rgba(0,0,0,0.15);
@@ -291,8 +272,7 @@
         background: rgba(0,0,0,0.65);
         display: none; align-items: center; justify-content: center;
         z-index: 9999;
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
+        backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
     }
     .loading-overlay.show { display: flex; }
 
@@ -316,7 +296,6 @@
     .loading-text { font-size: 15px; font-weight: 800; color: var(--text-900); }
     .loading-sub  { font-size: 11.5px; color: var(--text-600); margin-top: 4px; font-weight: 500; }
 
-    /* Fix Leaflet map z-index issues within floating card */
     .leaflet-pane { z-index: 1 !important; }
     .leaflet-bottom, .leaflet-top { z-index: 2 !important; }
 
@@ -343,71 +322,49 @@
 <div class="cam-vignette"></div>
 <div class="face-guide"></div>
 
-{{-- ── TOP FLOATING OVERLAY ── --}}
+{{-- ── TOP FLOATING OVERLAY (Text Only) ── --}}
 <div class="top-overlay">
-    {{-- Header Card --}}
-    <div class="glass-card pg-header">
-        <a href="{{ route('dashboard') }}" class="btn-back">
+    
+    <div class="header-row">
+        <a href="{{ route('dashboard') }}" class="btn-back-transparent">
             <ion-icon name="chevron-back-outline"></ion-icon>
         </a>
-        <div class="pg-meta">
-            <div class="pg-title">{{ $cek > 0 ? 'Absen Pulang' : 'Absen Masuk' }}</div>
+        <div class="header-title">
+            <span class="title-text">{{ $cek > 0 ? 'Absen Pulang' : 'Absen Masuk' }}</span>
+            @if($cek > 0)
+                <span class="badge-text done"><ion-icon name="checkmark-circle"></ion-icon> Sudah</span>
+            @else
+                <span class="badge-text pending"><ion-icon name="time"></ion-icon> Belum</span>
+            @endif
         </div>
-        @if($cek > 0)
-            <span class="pg-badge done"><ion-icon name="checkmark-circle"></ion-icon> Sudah</span>
-        @else
-            <span class="pg-badge pending"><ion-icon name="time"></ion-icon> Belum</span>
-        @endif
     </div>
-
-    {{-- Info Grid --}}
-    <div class="info-grid">
-        <div class="glass-card info-card">
-            <div class="info-icon-wrap blue"><ion-icon name="calendar-outline"></ion-icon></div>
-            <div>
-                <div class="info-card-label">Tanggal</div>
-                <div class="info-card-value">{{ \Carbon\Carbon::parse($hariini)->isoFormat('D MMM') }}</div>
-                <div class="info-card-sub">{{ $namahari }}</div>
-            </div>
+    
+    <div class="info-text-row">
+        <div class="info-text-item">
+            <ion-icon name="calendar-outline"></ion-icon> 
+            {{ \Carbon\Carbon::parse($hariini)->isoFormat('D MMM Y') }} &nbsp;({{ $namahari }})
         </div>
-        <div class="glass-card info-card">
-            <div class="info-icon-wrap {{ $cek > 0 ? 'green' : 'blue' }}">
-                <ion-icon name="{{ $cek > 0 ? 'log-out-outline' : 'log-in-outline' }}"></ion-icon>
-            </div>
-            <div>
-                <div class="info-card-label">Jam Kerja</div>
-                <div class="info-card-value">
-                    @if(isset($is_multi_shift) && $is_multi_shift)
-                        {{ date('H:i', strtotime($current_shift->jam_masuk)) }}
-                    @else
-                        {{ date('H:i', strtotime($jamkerja->jam_masuk)) }}
-                    @endif
-                </div>
-                <div class="info-card-sub">
-                    @if(isset($is_multi_shift) && $is_multi_shift)
-                        s/d {{ date('H:i', strtotime($current_shift->jam_pulang)) }}
-                    @else
-                        s/d {{ date('H:i', strtotime($jamkerja->jam_pulang)) }}
-                    @endif
-                </div>
-            </div>
+        <div class="info-text-item">
+            <ion-icon name="time-outline"></ion-icon> 
+            @if(isset($is_multi_shift) && $is_multi_shift)
+                {{ date('H:i', strtotime($current_shift->jam_masuk)) }} s/d {{ date('H:i', strtotime($current_shift->jam_pulang)) }}
+            @else
+                {{ date('H:i', strtotime($jamkerja->jam_masuk)) }} s/d {{ date('H:i', strtotime($jamkerja->jam_pulang)) }}
+            @endif
         </div>
     </div>
 
-    {{-- Shift Selector --}}
     @if(isset($is_multi_shift) && $is_multi_shift)
-    <div class="glass-card shift-card">
+    <div class="shift-text-row">
         <form action="{{ route('presensi.create') }}" method="GET" id="shift-form">
-            <div class="shift-select-wrap">
-                <select name="shift_ke" id="shift_ke" onchange="document.getElementById('shift-form').submit()">
-                    @foreach($shifts_available as $s)
-                        <option value="{{ $s->shift_ke }}" {{ $shift_ke == $s->shift_ke ? 'selected' : '' }}>
-                            Shift {{ $s->shift_ke }} – {{ $s->nama_shift }}
-                        </option>
-                    @endforeach
-                </select>
-                <ion-icon name="chevron-down-outline"></ion-icon>
-            </div>
+            <select name="shift_ke" id="shift_ke" onchange="document.getElementById('shift-form').submit()" class="transparent-select">
+                @foreach($shifts_available as $s)
+                    <option value="{{ $s->shift_ke }}" {{ $shift_ke == $s->shift_ke ? 'selected' : '' }}>
+                        Shift {{ $s->shift_ke }} – {{ $s->nama_shift }}
+                    </option>
+                @endforeach
+            </select>
+            <ion-icon name="chevron-down-outline" class="select-icon"></ion-icon>
         </form>
     </div>
     @endif

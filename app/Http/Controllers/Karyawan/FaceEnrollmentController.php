@@ -23,12 +23,13 @@ class FaceEnrollmentController extends Controller
      */
     public function index()
     {
-        $nik = Auth::guard('karyawan')->user()->nik;
+        $karyawan = Auth::guard('karyawan')->user();
+        $nik = $karyawan->nik;
         
         // Cek apakah sudah pernah mendaftar
         $faceData = FaceData::where('nik', $nik)->first();
         
-        return view('karyawan.face.enrollment', compact('faceData'));
+        return view('karyawan.face.enrollment', compact('faceData', 'karyawan'));
     }
 
     /**

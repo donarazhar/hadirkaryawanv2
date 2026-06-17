@@ -171,8 +171,8 @@
         background: rgba(0,0,0,0.45); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
         border: 1px solid rgba(255,255,255,0.3);
         border-radius: 50px;
-        padding: 8px 36px 8px 16px;
-        color: white; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+        padding: 6px 30px 6px 14px;
+        color: white; font-family: 'Inter', sans-serif; font-size: 11.5px; font-weight: 600;
         outline: none;
         box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
@@ -360,7 +360,7 @@
             <select name="shift_ke" id="shift_ke" onchange="document.getElementById('shift-form').submit()" class="transparent-select">
                 @foreach($shifts_available as $s)
                     <option value="{{ $s->shift_ke }}" {{ $shift_ke == $s->shift_ke ? 'selected' : '' }}>
-                        Shift {{ $s->shift_ke }} – {{ $s->nama_shift }}
+                        Shift {{ $s->shift_ke }}: {{ $s->nama_shift }} ({{ date('H:i', strtotime($s->jam_masuk)) }}-{{ date('H:i', strtotime($s->jam_pulang)) }})
                     </option>
                 @endforeach
             </select>

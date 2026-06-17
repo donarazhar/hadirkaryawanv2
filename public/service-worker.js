@@ -51,20 +51,9 @@ self.addEventListener('fetch', event => {
   if (!url.startsWith('http')) return;
 
   // 2. Bypass total untuk /panel dan semua sub-path-nya
-  //    Gunakan cache: 'no-store' agar browser tidak cache redirect dari server
   if (shouldBypass(url)) {
-    event.respondWith(
-      fetch(request, { cache: 'no-store', redirect: 'follow' })
-        .catch(() => {
-          // Jika offline, tampilkan pesan bahwa panel tidak tersedia offline
-          return new Response(
-            '<html><body style="font-family:sans-serif;text-align:center;padding:40px">' +
-            '<h2>Panel Admin</h2><p>Tidak dapat terhubung ke server. Silakan cek koneksi internet Anda.</p>' +
-            '<a href="/panel" style="color:blue">Coba lagi</a></body></html>',
-            { status: 503, headers: { 'Content-Type': 'text/html' } }
-          );
-        })
-    );
+    // Return tanpa event.respondWith agar request ditangani oleh browser secara native.
+    // Ini memperbaiki masalah redirect error di admin panel.
     return;
   }
 
@@ -82,9 +71,10 @@ self.addEventListener('fetch', event => {
             return networkResponse;
           }
           // Cache hanya response sukses
-          if (networkResponse.ok) {
+          if (networkResponse.ok && networkResponse.type === 'basic') {
+            const responseToCache = networkResponse.clone();
             caches.open(CACHE_NAME).then(cache => {
-              cache.put(request, networkResponse.clone());
+              cache.put(request, responseToCache);
             });
           }
           return networkResponse;
@@ -101,9 +91,10 @@ self.addEventListener('fetch', event => {
         if (cached) return cached;
         return fetch(request).then(networkResponse => {
           // Jangan cache redirect
-          if (networkResponse.ok) {
+          if (networkResponse.ok && networkResponse.type === 'basic') {
+            const responseToCache = networkResponse.clone();
             caches.open(CACHE_NAME).then(cache => {
-              cache.put(request, networkResponse.clone());
+              cache.put(request, responseToCache);
             });
           }
           return networkResponse;

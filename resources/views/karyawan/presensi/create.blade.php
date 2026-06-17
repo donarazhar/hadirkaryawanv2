@@ -17,14 +17,12 @@
         --text-900:      #0F172A;
         --text-600:      #475569;
         --text-400:      #94A3B8;
-        --border:        #F1F5F9;
-        --border-med:    #E2E8F0;
-        --surface:       #FFFFFF;
+        --border:        rgba(255,255,255,0.4);
+        --surface:       rgba(255,255,255,0.85); /* Semi-transparent for floating cards */
+        --surface-solid: #FFFFFF;
         --bg:            #F8FAFC;
-        --shadow-sm:     0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.05);
-        --shadow-md:     0 4px 12px rgba(0,0,0,0.08);
-        --shadow-blue:   0 4px 16px rgba(37,99,235,0.28);
-        --shadow-green:  0 4px 16px rgba(16,185,129,0.28);
+        --shadow-sm:     0 2px 8px rgba(0,0,0,0.1);
+        --shadow-md:     0 8px 24px rgba(0,0,0,0.15);
         --radius-md:     14px;
         --radius-lg:     18px;
         --radius-xl:     24px;
@@ -34,146 +32,218 @@
 
     body {
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        background: var(--bg);
+        background: #000;
         color: var(--text-900);
         -webkit-font-smoothing: antialiased;
-        min-height: 100vh;
+        overflow: hidden; /* Prevent scrolling, full screen cam */
+        height: 100vh;
+        width: 100vw;
     }
 
     /* ═══════════════════════════
-       PAGE HEADER
+       WEBCAM BACKGROUND (FULLSCREEN)
     ═══════════════════════════ */
-    .pg-header {
+    .webcam-capture,
+    .webcam-capture video {
+        position: fixed !important;
+        top: 0; left: 0;
+        width: 100vw !important;
+        height: 100vh !important;
+        object-fit: cover !important;
+        z-index: 1;
+    }
+
+    /* Dark vignette for better contrast with floating white cards */
+    .cam-vignette {
+        position: fixed; inset: 0; z-index: 2; pointer-events: none;
+        background:
+            linear-gradient(to bottom,
+                rgba(0,0,0,0.5) 0%, 
+                transparent 30%,
+                transparent 70%, 
+                rgba(0,0,0,0.6) 100%);
+    }
+
+    /* Oval guide */
+    .face-guide {
+        position: fixed;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -55%);
+        width: 200px; height: 265px;
+        border: 2px solid rgba(255,255,255,0.7);
+        border-radius: 50%;
+        z-index: 3; pointer-events: none;
+        box-shadow: 0 0 0 9999px rgba(0,0,0,0.3);
+    }
+    .face-guide::before, .face-guide::after {
+        content: ''; position: absolute;
+        width: 28px; height: 28px;
+    }
+    .face-guide::before {
+        top: -2px; left: -2px;
+        border-top: 3px solid var(--primary);
+        border-left: 3px solid var(--primary);
+        border-radius: 50% 0 0 0;
+    }
+    .face-guide::after {
+        bottom: -2px; right: -2px;
+        border-bottom: 3px solid var(--primary);
+        border-right: 3px solid var(--primary);
+        border-radius: 0 0 50% 0;
+    }
+
+    /* ═══════════════════════════
+       FLOATING OVERLAYS
+    ═══════════════════════════ */
+    .top-overlay {
+        position: fixed;
+        top: 0; left: 0; right: 0;
+        z-index: 10;
+        padding: 16px;
+        display: flex; flex-direction: column; gap: 12px;
+    }
+    .bottom-overlay {
+        position: fixed;
+        bottom: 80px; /* Above bottom nav */
+        left: 0; right: 0;
+        z-index: 10;
+        padding: 16px;
+        display: flex; flex-direction: column; gap: 12px;
+    }
+    @supports (padding: max(0px)) {
+        .top-overlay { padding-top: max(16px, env(safe-area-inset-top)); }
+        .bottom-overlay { bottom: max(80px, calc(env(safe-area-inset-bottom) + 80px)); }
+    }
+
+    /* ═══════════════════════════
+       CARDS (White, Glassy)
+    ═══════════════════════════ */
+    .glass-card {
         background: var(--surface);
-        border-bottom: 1px solid var(--border);
-        padding: 14px 18px;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid var(--surface-solid);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-md);
+        overflow: hidden;
+    }
+
+    /* PAGE HEADER (Inside Top Overlay) */
+    .pg-header {
+        padding: 12px 14px;
         display: flex;
         align-items: center;
         gap: 12px;
-        position: sticky;
-        top: 0;
-        z-index: 50;
-        box-shadow: var(--shadow-sm);
     }
-
     .btn-back {
         width: 36px; height: 36px;
-        background: var(--bg);
+        background: var(--surface-solid);
         border: 1px solid var(--border-med);
         border-radius: 10px;
         display: flex; align-items: center; justify-content: center;
-        text-decoration: none;
-        flex-shrink: 0;
-        transition: background 0.2s, transform 0.15s;
-        -webkit-tap-highlight-color: transparent;
+        text-decoration: none; flex-shrink: 0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
-    .btn-back:active { background: var(--border-med); transform: scale(0.95); }
-    .btn-back ion-icon { font-size: 20px; color: var(--text-600); }
+    .btn-back ion-icon { font-size: 20px; color: var(--text-900); }
 
     .pg-meta { flex: 1; min-width: 0; }
-    .pg-title { font-size: 16px; font-weight: 700; color: var(--text-900); }
-    .pg-sub   { font-size: 11px; font-weight: 500; color: var(--text-400); margin-top: 1px; }
-
+    .pg-title { font-size: 15px; font-weight: 800; color: var(--text-900); }
+    
     .pg-badge {
-        display: inline-flex; align-items: center; gap: 5px;
-        padding: 5px 10px;
+        display: inline-flex; align-items: center; gap: 4px;
+        padding: 4px 8px;
         border-radius: 50px;
-        font-size: 11px; font-weight: 700;
+        font-size: 10.5px; font-weight: 700;
         flex-shrink: 0;
     }
     .pg-badge.done    { background: var(--success-soft); color: var(--success); }
     .pg-badge.pending { background: #FFF7ED; color: #EA580C; }
-    .pg-badge ion-icon { font-size: 12px; }
 
-    /* ═══════════════════════════
-       MAIN BODY
-    ═══════════════════════════ */
-    .page-body {
-        padding: 14px 16px;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        padding-bottom: 120px;
+    /* INFO GRID */
+    .info-grid {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
     }
-
-    /* ═══════════════════════════
-       INFO CARD (date + shift)
-    ═══════════════════════════ */
     .info-card {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-lg);
-        box-shadow: var(--shadow-sm);
-        padding: 16px;
-        display: flex;
-        align-items: center;
-        gap: 14px;
+        padding: 12px;
+        display: flex; align-items: center; gap: 10px;
     }
-
     .info-icon-wrap {
-        width: 46px; height: 46px;
-        border-radius: 14px;
+        width: 38px; height: 38px;
+        border-radius: 12px;
         display: flex; align-items: center; justify-content: center;
         flex-shrink: 0;
     }
-    .info-icon-wrap.blue  { background: var(--primary-soft); }
-    .info-icon-wrap.green { background: var(--success-soft); }
-    .info-icon-wrap ion-icon { font-size: 22px; }
-    .info-icon-wrap.blue  ion-icon { color: var(--primary); }
-    .info-icon-wrap.green ion-icon { color: var(--success); }
+    .info-icon-wrap.blue  { background: var(--primary-soft); color: var(--primary); }
+    .info-icon-wrap.green { background: var(--success-soft); color: var(--success); }
+    .info-icon-wrap ion-icon { font-size: 18px; }
 
     .info-card-label {
-        font-size: 10px; font-weight: 600;
-        color: var(--text-400);
+        font-size: 9.5px; font-weight: 700;
+        color: var(--text-600);
         text-transform: uppercase; letter-spacing: 0.5px;
-        margin-bottom: 3px;
     }
     .info-card-value {
-        font-size: 14px; font-weight: 700;
-        color: var(--text-900); line-height: 1.3;
+        font-size: 13px; font-weight: 800;
+        color: var(--text-900); line-height: 1.2; margin-top: 2px;
     }
-    .info-card-sub {
-        font-size: 11.5px; color: var(--text-600);
-        margin-top: 1px;
+    .info-card-sub { font-size: 10.5px; color: var(--text-600); font-weight: 500; }
+
+    /* SHIFT SELECTOR */
+    .shift-card { padding: 8px; }
+    .shift-select-wrap { position: relative; }
+    .shift-select-wrap select {
+        width: 100%; appearance: none; -webkit-appearance: none;
+        padding: 10px 38px 10px 14px;
+        background: var(--surface-solid);
+        border: 1px solid var(--border-med);
+        border-radius: 12px;
+        color: var(--text-900);
+        font-family: 'Inter', sans-serif;
+        font-size: 13px; font-weight: 700;
+        outline: none; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .shift-select-wrap ion-icon {
+        position: absolute; right: 14px; top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-600); font-size: 16px; pointer-events: none;
+    }
+
+    /* MAP CARD */
+    .map-card {
+        padding: 6px;
+        position: relative;
+    }
+    #map { width: 100%; height: 90px; border-radius: 12px; }
+    .radius-badge {
+        position: absolute; bottom: 12px; right: 12px; z-index: 500;
+        display: inline-flex; align-items: center; gap: 4px;
+        padding: 3px 8px; background: rgba(0,0,0,0.65); color: white;
+        backdrop-filter: blur(4px); border-radius: 8px;
+        font-size: 10px; font-weight: 600; border: 1px solid rgba(255,255,255,0.2);
     }
 
     /* ═══════════════════════════
-       CAMERA CARD
+       ACTION BUTTONS & STATUS
     ═══════════════════════════ */
-    .cam-card {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-xl);
-        box-shadow: var(--shadow-md);
-        overflow: hidden;
-        position: relative;
-    }
-
-    .cam-card-header {
-        padding: 12px 16px 10px;
-        border-bottom: 1px solid var(--border);
-        display: flex; align-items: center; justify-content: space-between;
-    }
-
-    .cam-card-title {
-        display: flex; align-items: center; gap: 8px;
-        font-size: 13px; font-weight: 700; color: var(--text-900);
-    }
-    .cam-card-title ion-icon { font-size: 16px; color: var(--primary); }
-
     /* Auto-scan status pill */
+    .status-pill-wrap {
+        display: flex; justify-content: center;
+        margin-bottom: -4px; /* Pull it slightly closer to bottom elements */
+    }
     #auto-scan-pill {
         display: inline-flex; align-items: center; gap: 6px;
-        padding: 4px 10px;
+        padding: 6px 14px;
         border-radius: 50px;
-        font-size: 10.5px; font-weight: 700;
-        background: var(--success-soft);
-        color: var(--success);
-        border: 1px solid var(--success-mid);
+        font-size: 12px; font-weight: 700;
+        background: var(--surface);
+        backdrop-filter: blur(10px);
+        color: var(--text-900);
+        border: 1px solid var(--surface-solid);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         transition: all 0.3s;
     }
     #auto-scan-pill .pill-dot {
-        width: 7px; height: 7px; border-radius: 50%;
+        width: 8px; height: 8px; border-radius: 50%;
         background: var(--success);
         animation: pulseDot 1.5s ease-in-out infinite;
     }
@@ -181,302 +251,78 @@
         0%,100% { opacity:1; transform:scale(1); }
         50%      { opacity:0.3; transform:scale(0.65); }
     }
+    #auto-scan-pill.scanning { color: var(--primary-dark); }
+    #auto-scan-pill.scanning .pill-dot { background: var(--primary); }
+    
+    #auto-scan-pill.matched {
+        background: var(--success-soft); color: var(--success);
+        border-color: var(--success-mid);
+    }
+    #auto-scan-pill.matched .pill-dot { background: var(--success); animation:none; }
+    
     #auto-scan-pill.mismatch {
         background: var(--danger-soft); color: var(--danger);
         border-color: #FECACA;
     }
     #auto-scan-pill.mismatch .pill-dot { background: var(--danger); animation:none; }
 
-    /* Webcam area */
-    .webcam-wrap {
-        position: relative;
-        width: 100%;
-        aspect-ratio: 3/4;
-        background: #0F172A;
-        overflow: hidden;
-    }
-
-    .webcam-capture,
-    .webcam-capture video {
-        width: 100% !important;
-        height: 100% !important;
-        object-fit: cover !important;
-        border-radius: 0 !important;
-    }
-
-    /* Dark vignette */
-    .cam-vignette {
-        position: absolute; inset: 0; z-index: 2; pointer-events: none;
-        background:
-            linear-gradient(to bottom,
-                rgba(0,0,0,0.4) 0%, transparent 25%,
-                transparent 65%, rgba(0,0,0,0.5) 100%);
-    }
-
-    /* Oval guide */
-    .face-guide {
-        position: absolute;
-        top: 50%; left: 50%;
-        transform: translate(-50%, -55%);
-        width: 160px; height: 215px;
-        border: 2px solid rgba(255,255,255,0.75);
-        border-radius: 50%;
-        z-index: 5; pointer-events: none;
-        box-shadow: 0 0 0 9999px rgba(0,0,0,0.25);
-    }
-    .face-guide::before {
-        content: '';
-        position: absolute; top: -2px; left: -2px;
-        width: 28px; height: 28px;
-        border-top: 2.5px solid #60A5FA;
-        border-left: 2.5px solid #60A5FA;
-        border-radius: 50% 0 0 0;
-    }
-    .face-guide::after {
-        content: '';
-        position: absolute; bottom: -2px; right: -2px;
-        width: 28px; height: 28px;
-        border-bottom: 2.5px solid #60A5FA;
-        border-right: 2.5px solid #60A5FA;
-        border-radius: 0 0 50% 0;
-    }
-
-    /* Cam hint bar */
-    .cam-hint-bar {
-        position: absolute; bottom: 0; left: 0; right: 0;
-        z-index: 6; padding: 10px 14px 12px;
-        background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 100%);
-        text-align: center;
-    }
-    .cam-hint-text {
-        font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.9);
-    }
-
-    /* ═══════════════════════════
-       MAP CARD
-    ═══════════════════════════ */
-    .map-card {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-lg);
-        box-shadow: var(--shadow-sm);
-        overflow: hidden;
-    }
-
-    .map-card-header {
-        padding: 11px 14px;
-        border-bottom: 1px solid var(--border);
-        display: flex; align-items: center; justify-content: space-between;
-    }
-    .map-card-title {
-        display: flex; align-items: center; gap: 7px;
-        font-size: 12.5px; font-weight: 700; color: var(--text-900);
-    }
-    .map-card-title ion-icon { font-size: 15px; color: var(--primary); }
-
-    .radius-badge {
-        display: inline-flex; align-items: center; gap: 4px;
-        padding: 3px 9px;
-        background: var(--primary-soft);
-        color: var(--primary);
-        border-radius: 50px;
-        font-size: 10.5px; font-weight: 700;
-    }
-
-    #map { width: 100%; height: 130px; }
-
-    /* ═══════════════════════════
-       SHIFT SELECTOR
-    ═══════════════════════════ */
-    .shift-card {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-lg);
-        box-shadow: var(--shadow-sm);
-        overflow: hidden;
-    }
-
-    .shift-card-header {
-        padding: 11px 14px;
-        border-bottom: 1px solid var(--border);
-        display: flex; align-items: center; gap: 7px;
-        font-size: 12.5px; font-weight: 700; color: var(--text-900);
-    }
-    .shift-card-header ion-icon { font-size: 15px; color: var(--primary); }
-
-    .shift-select-wrap {
-        position: relative; padding: 12px;
-    }
-    .shift-select-wrap select {
-        width: 100%;
-        appearance: none; -webkit-appearance: none;
-        padding: 11px 38px 11px 14px;
-        background: var(--bg);
-        border: 1.5px solid var(--border-med);
-        border-radius: 12px;
-        color: var(--text-900);
-        font-family: 'Inter', sans-serif;
-        font-size: 13px; font-weight: 600;
-        outline: none;
-        -webkit-tap-highlight-color: transparent;
-    }
-    .shift-select-wrap ion-icon {
-        position: absolute; right: 24px; top: 50%;
-        transform: translateY(-50%);
-        color: var(--text-400); font-size: 16px;
-        pointer-events: none;
-    }
-
-    /* ═══════════════════════════
-       ACTION BUTTONS
-    ═══════════════════════════ */
-    .action-section {
-        display: flex; flex-direction: column; gap: 10px;
-    }
-
-    /* Primary — Face Absen (auto handled, shown as status) */
-    .btn-absen-face {
-        display: flex; align-items: center; justify-content: space-between;
-        width: 100%;
-        padding: 16px 18px;
-        background: var(--primary);
-        color: white;
-        border: none;
-        border-radius: var(--radius-lg);
-        font-family: 'Inter', sans-serif;
-        font-size: 15px; font-weight: 700;
-        cursor: pointer;
-        box-shadow: var(--shadow-blue);
-        transition: opacity 0.2s, transform 0.15s;
-        -webkit-tap-highlight-color: transparent;
-    }
-    .btn-absen-face:active { opacity: 0.88; transform: scale(0.98); }
-    .btn-absen-face:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    .btn-absen-face-left {
-        display: flex; align-items: center; gap: 10px;
-    }
-    .btn-absen-face-left ion-icon { font-size: 22px; }
-    .btn-absen-face-text { text-align: left; }
-    .btn-absen-face-text .btn-label { font-size: 15px; font-weight: 700; display: block; }
-    .btn-absen-face-text .btn-sublabel { font-size: 10.5px; font-weight: 500; opacity: 0.82; display: block; margin-top: 1px; }
-    .btn-absen-face ion-icon.arrow-icon { font-size: 20px; opacity: 0.7; }
-
     /* Fingerprint button */
     .btn-fingerprint {
         display: flex; align-items: center; justify-content: center;
-        gap: 10px;
-        width: 100%;
-        padding: 15px 18px;
-        background: var(--surface);
+        gap: 10px; width: 100%; padding: 16px 18px;
+        background: var(--surface-solid);
         color: var(--text-900);
-        border: 1.5px solid var(--border-med);
-        border-radius: var(--radius-lg);
+        border: none; border-radius: var(--radius-lg);
         font-family: 'Inter', sans-serif;
-        font-size: 14px; font-weight: 700;
+        font-size: 15px; font-weight: 800;
         cursor: pointer;
-        box-shadow: var(--shadow-sm);
-        transition: border-color 0.2s, background 0.2s, transform 0.15s;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        transition: transform 0.15s;
         -webkit-tap-highlight-color: transparent;
     }
-    .btn-fingerprint:active { background: var(--bg); transform: scale(0.98); }
-    .btn-fingerprint ion-icon { font-size: 20px; color: var(--success); }
-    .btn-fingerprint-text { text-align: left; flex: 1; }
-    .btn-fingerprint-text .fp-label { font-size: 14px; font-weight: 700; display: block; color: var(--text-900); }
-    .btn-fingerprint-text .fp-sub { font-size: 10.5px; font-weight: 500; color: var(--text-400); display: block; margin-top: 1px; }
-
-    /* Divider with text */
-    .or-divider {
-        display: flex; align-items: center; gap: 10px;
-    }
-    .or-divider::before,
-    .or-divider::after {
-        content: ''; flex: 1;
-        height: 1px; background: var(--border-med);
-    }
-    .or-divider span {
-        font-size: 10.5px; font-weight: 600;
-        color: var(--text-400);
-        text-transform: uppercase; letter-spacing: 0.5px;
-        flex-shrink: 0;
-    }
-
+    .btn-fingerprint:active { transform: scale(0.97); }
+    .btn-fingerprint ion-icon { font-size: 22px; color: var(--success); }
+    
     /* ═══════════════════════════
        LOADING OVERLAY
     ═══════════════════════════ */
     .loading-overlay {
         position: fixed; inset: 0;
-        background: rgba(0,0,0,0.55);
+        background: rgba(0,0,0,0.65);
         display: none; align-items: center; justify-content: center;
         z-index: 9999;
-        backdrop-filter: blur(4px);
-        -webkit-backdrop-filter: blur(4px);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
     }
     .loading-overlay.show { display: flex; }
 
     .loading-card {
-        background: white;
+        background: var(--surface-solid);
         border-radius: 20px;
         padding: 28px 36px;
         text-align: center;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-        width: 200px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        width: 210px;
     }
-
     .loading-ring {
         width: 48px; height: 48px;
-        border: 4px solid #EFF6FF;
+        border: 4px solid var(--primary-soft);
         border-top: 4px solid var(--primary);
         border-radius: 50%;
         animation: spin 0.8s linear infinite;
         margin: 0 auto 14px;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { font-size: 15px; font-weight: 800; color: var(--text-900); }
+    .loading-sub  { font-size: 11.5px; color: var(--text-600); margin-top: 4px; font-weight: 500; }
 
-    .loading-text { font-size: 14px; font-weight: 700; color: var(--text-900); }
-    .loading-sub  { font-size: 11.5px; color: var(--text-400); margin-top: 4px; }
+    /* Fix Leaflet map z-index issues within floating card */
+    .leaflet-pane { z-index: 1 !important; }
+    .leaflet-bottom, .leaflet-top { z-index: 2 !important; }
 
-    /* ═══════════════════════════
-       ANIMATIONS
-    ═══════════════════════════ */
-    @keyframes fadeUp {
-        from { opacity: 0; transform: translateY(10px); }
-        to   { opacity: 1; transform: translateY(0); }
-    }
-    .page-body > * { animation: fadeUp 0.3s ease both; }
-    .page-body > *:nth-child(1) { animation-delay: 0.04s; }
-    .page-body > *:nth-child(2) { animation-delay: 0.08s; }
-    .page-body > *:nth-child(3) { animation-delay: 0.12s; }
-    .page-body > *:nth-child(4) { animation-delay: 0.16s; }
-    .page-body > *:nth-child(5) { animation-delay: 0.20s; }
-    .page-body > *:nth-child(6) { animation-delay: 0.24s; }
-
-    @supports (padding: max(0px)) {
-        .page-body { padding-bottom: max(120px, calc(env(safe-area-inset-bottom) + 120px)); }
-    }
 </style>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
-{{-- ── PAGE HEADER ── --}}
-<div class="pg-header">
-    <a href="{{ route('dashboard') }}" class="btn-back">
-        <ion-icon name="chevron-back-outline"></ion-icon>
-    </a>
-    <div class="pg-meta">
-        <div class="pg-title">{{ $cek > 0 ? 'Absen Pulang' : 'Absen Masuk' }}</div>
-        <div class="pg-sub">{{ $namahari }}, {{ \Carbon\Carbon::parse($hariini)->isoFormat('D MMM Y') }}</div>
-    </div>
-    @if($cek > 0)
-        <span class="pg-badge done">
-            <ion-icon name="checkmark-circle"></ion-icon> Sudah Absen
-        </span>
-    @else
-        <span class="pg-badge pending">
-            <ion-icon name="time"></ion-icon> Belum Absen
-        </span>
-    @endif
-</div>
 
 {{-- ── HIDDEN INPUTS ── --}}
 <input type="hidden" id="lokasi">
@@ -492,22 +338,39 @@
     <input type="hidden" id="shift_jam_pulang_val"  value="">
 @endif
 
-{{-- ── MAIN BODY ── --}}
-<div class="page-body">
+{{-- ── FULLSCREEN BACKGROUND ── --}}
+<div class="webcam-capture"></div>
+<div class="cam-vignette"></div>
+<div class="face-guide"></div>
 
-    {{-- ── INFO ROW: Tanggal + Shift ── --}}
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-        <div class="info-card">
-            <div class="info-icon-wrap blue">
-                <ion-icon name="calendar-outline"></ion-icon>
-            </div>
+{{-- ── TOP FLOATING OVERLAY ── --}}
+<div class="top-overlay">
+    {{-- Header Card --}}
+    <div class="glass-card pg-header">
+        <a href="{{ route('dashboard') }}" class="btn-back">
+            <ion-icon name="chevron-back-outline"></ion-icon>
+        </a>
+        <div class="pg-meta">
+            <div class="pg-title">{{ $cek > 0 ? 'Absen Pulang' : 'Absen Masuk' }}</div>
+        </div>
+        @if($cek > 0)
+            <span class="pg-badge done"><ion-icon name="checkmark-circle"></ion-icon> Sudah</span>
+        @else
+            <span class="pg-badge pending"><ion-icon name="time"></ion-icon> Belum</span>
+        @endif
+    </div>
+
+    {{-- Info Grid --}}
+    <div class="info-grid">
+        <div class="glass-card info-card">
+            <div class="info-icon-wrap blue"><ion-icon name="calendar-outline"></ion-icon></div>
             <div>
                 <div class="info-card-label">Tanggal</div>
                 <div class="info-card-value">{{ \Carbon\Carbon::parse($hariini)->isoFormat('D MMM') }}</div>
                 <div class="info-card-sub">{{ $namahari }}</div>
             </div>
         </div>
-        <div class="info-card">
+        <div class="glass-card info-card">
             <div class="info-icon-wrap {{ $cek > 0 ? 'green' : 'blue' }}">
                 <ion-icon name="{{ $cek > 0 ? 'log-out-outline' : 'log-in-outline' }}"></ion-icon>
             </div>
@@ -531,20 +394,15 @@
         </div>
     </div>
 
-    {{-- ── SHIFT SELECTOR (multi-shift only) ── --}}
+    {{-- Shift Selector --}}
     @if(isset($is_multi_shift) && $is_multi_shift)
-    <div class="shift-card">
-        <div class="shift-card-header">
-            <ion-icon name="swap-horizontal-outline"></ion-icon>
-            Pilih Shift
-        </div>
+    <div class="glass-card shift-card">
         <form action="{{ route('presensi.create') }}" method="GET" id="shift-form">
             <div class="shift-select-wrap">
                 <select name="shift_ke" id="shift_ke" onchange="document.getElementById('shift-form').submit()">
                     @foreach($shifts_available as $s)
                         <option value="{{ $s->shift_ke }}" {{ $shift_ke == $s->shift_ke ? 'selected' : '' }}>
                             Shift {{ $s->shift_ke }} – {{ $s->nama_shift }}
-                            ({{ date('H:i', strtotime($s->jam_masuk)) }}–{{ date('H:i', strtotime($s->jam_pulang)) }})
                         </option>
                     @endforeach
                 </select>
@@ -553,84 +411,41 @@
         </form>
     </div>
     @endif
+</div>
 
-    {{-- ── CAMERA CARD ── --}}
-    <div class="cam-card">
-        <div class="cam-card-header">
-            <div class="cam-card-title">
-                <ion-icon name="scan-outline"></ion-icon>
-                Verifikasi Wajah — Auto Scan
-            </div>
-            <div id="auto-scan-pill">
-                <div class="pill-dot"></div>
-                <span id="pill-label">Scanning…</span>
-            </div>
-        </div>
-
-        <div class="webcam-wrap">
-            <div class="webcam-capture"></div>
-            <div class="cam-vignette"></div>
-            <div class="face-guide"></div>
-            <div class="cam-hint-bar">
-                <div class="cam-hint-text" id="cam-hint-text">Arahkan wajah ke bingkai oval</div>
-            </div>
+{{-- ── BOTTOM FLOATING OVERLAY ── --}}
+<div class="bottom-overlay">
+    
+    {{-- Auto Scan Pill --}}
+    <div class="status-pill-wrap">
+        <div id="auto-scan-pill" class="scanning">
+            <div class="pill-dot"></div>
+            <span id="pill-label">Memindai Wajah...</span>
         </div>
     </div>
 
-    {{-- ── MAP CARD ── --}}
-    <div class="map-card">
-        <div class="map-card-header">
-            <div class="map-card-title">
-                <ion-icon name="location-outline"></ion-icon>
-                Lokasi Saat Ini
-            </div>
-            <div class="radius-badge">
-                <ion-icon name="radio-button-on"></ion-icon>
-                Radius {{ $lok_kantor->radius_cabang }}m
-            </div>
-        </div>
+    {{-- Map Card --}}
+    <div class="glass-card map-card">
         <div id="map"></div>
+        <div class="radius-badge">Radius {{ $lok_kantor->radius_cabang }}m</div>
     </div>
 
-    {{-- ── ACTION BUTTONS ── --}}
-    <div class="action-section">
+    {{-- Fingerprint Button (only if enrolled) --}}
+    @if(Auth::guard('karyawan')->user()->webauthn_id)
+    <button class="btn-fingerprint" id="btnWebAuthn">
+        <ion-icon name="finger-print-outline"></ion-icon>
+        Absen Fingerprint / Face ID
+    </button>
+    @endif
 
-        {{-- Face auto-absen button (manual trigger) --}}
-        <button class="btn-absen-face" id="takeabsen" {{ $cek > 0 ? 'disabled' : '' }}>
-            <div class="btn-absen-face-left">
-                <ion-icon name="{{ $cek > 0 ? 'checkmark-circle' : 'camera-outline' }}"></ion-icon>
-                <div class="btn-absen-face-text">
-                    <span class="btn-label">{{ $cek > 0 ? 'Absen Pulang (Face)' : 'Absen Masuk (Face)' }}</span>
-                    <span class="btn-sublabel">{{ $cek > 0 ? 'Verifikasi wajah untuk pulang' : 'Otomatis saat wajah cocok' }}</span>
-                </div>
-            </div>
-            <ion-icon name="chevron-forward-outline" class="arrow-icon"></ion-icon>
-        </button>
-
-        @if(Auth::guard('karyawan')->user()->webauthn_id)
-        <div class="or-divider"><span>atau</span></div>
-
-        {{-- Fingerprint button ── --}}
-        <button class="btn-fingerprint" id="btnWebAuthn">
-            <ion-icon name="finger-print-outline"></ion-icon>
-            <div class="btn-fingerprint-text">
-                <span class="fp-label">Absen via Fingerprint</span>
-                <span class="fp-sub">Gunakan sensor sidik jari perangkat Anda</span>
-            </div>
-            <ion-icon name="chevron-forward-outline" style="font-size:16px; color:var(--text-400);"></ion-icon>
-        </button>
-        @endif
-
-    </div>
-
-</div>{{-- /page-body --}}
+</div>
 
 {{-- ── LOADING OVERLAY ── --}}
 <div class="loading-overlay" id="loading-overlay">
     <div class="loading-card">
         <div class="loading-ring"></div>
         <div class="loading-text">Memproses…</div>
-        <div class="loading-sub">Harap tunggu</div>
+        <div class="loading-sub">Harap tunggu sebentar</div>
     </div>
 </div>
 
@@ -693,31 +508,29 @@
                 var radius = {{ $lok_kantor->radius_cabang }};
 
                 circle = L.circle([latOff, lngOff], {
-                    color: '#2563EB', fillColor: '#2563EB', fillOpacity: 0.10,
+                    color: '#2563EB', fillColor: '#2563EB', fillOpacity: 0.15,
                     radius: radius, weight: 2, dashArray: '5,5'
                 }).addTo(map);
 
                 var offIcon = L.divIcon({
                     className: '',
-                    html: '<div style="background:#2563EB;width:32px;height:32px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;"><ion-icon name="business" style="color:white;font-size:15px;"></ion-icon></div>',
-                    iconSize: [32,32], iconAnchor: [16,16]
+                    html: '<div style="background:#2563EB;width:24px;height:24px;border-radius:50%;border:2px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;"><ion-icon name="business" style="color:white;font-size:12px;"></ion-icon></div>',
+                    iconSize: [24,24], iconAnchor: [12,12]
                 });
-                L.marker([latOff, lngOff], { icon: offIcon }).addTo(map)
-                 .bindPopup('<strong style="color:#2563EB;">Kantor</strong><br><small>Radius: ' + radius + 'm</small>');
+                L.marker([latOff, lngOff], { icon: offIcon }).addTo(map);
             }
 
             var userIcon = L.divIcon({
                 className: '',
-                html: '<div style="background:#10B981;width:32px;height:32px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;"><ion-icon name="person" style="color:white;font-size:15px;"></ion-icon></div>',
-                iconSize: [32,32], iconAnchor: [16,16]
+                html: '<div style="background:#10B981;width:24px;height:24px;border-radius:50%;border:2px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;"><ion-icon name="person" style="color:white;font-size:12px;"></ion-icon></div>',
+                iconSize: [24,24], iconAnchor: [12,12]
             });
 
             if (marker) {
                 marker.setLatLng([lat, lng]);
                 map.setView([lat, lng]);
             } else {
-                marker = L.marker([lat, lng], { icon: userIcon }).addTo(map)
-                          .bindPopup('<strong style="color:#10B981;">Lokasi Anda</strong>').openPopup();
+                marker = L.marker([lat, lng], { icon: userIcon }).addTo(map);
             }
         } catch(e) { console.error('Map error:', e); }
     }
@@ -792,23 +605,17 @@
     function setPillState(state) {
         var pill  = document.getElementById('auto-scan-pill');
         var label = document.getElementById('pill-label');
-        var hint  = document.getElementById('cam-hint-text');
         pill.className = '';
 
         if (state === 'scanning') {
-            pill.classList.add('');
-            label.textContent = 'Scanning…';
-            hint.textContent  = 'Arahkan wajah ke bingkai oval';
+            pill.classList.add('scanning');
+            label.textContent = 'Memindai Wajah...';
         } else if (state === 'matched') {
-            label.textContent = '✓ Wajah Cocok!';
-            hint.textContent  = 'Memproses presensi…';
-            pill.style.background = 'rgba(16,185,129,0.15)';
-            pill.style.color      = '#10B981';
-            pill.style.borderColor= '#6EE7B7';
+            pill.classList.add('matched');
+            label.textContent = 'Wajah Cocok!';
         } else if (state === 'mismatch') {
             pill.classList.add('mismatch');
             label.textContent = 'Tidak Cocok';
-            hint.textContent  = 'Coba lagi…';
         }
     }
 
@@ -904,7 +711,7 @@
         autoScanInterval = setInterval(async function() {
             if (isProcessing || !webcamReady || !modelsLoaded) return;
             var lokasi_val = document.getElementById('lokasi').value;
-            if (!lokasi_val) return;
+            if (!lokasi_val) return; // Wait for GPS
 
             isProcessing = true;
             var result = await verifyFaceSilent();
@@ -953,35 +760,6 @@
             });
         }, 1500);
     }
-
-    /* ══════════════════════════════════
-       MANUAL FACE BUTTON
-    ══════════════════════════════════ */
-    $('#takeabsen').click(function(e) {
-        e.preventDefault();
-        var lokasi_val = $('#lokasi').val();
-        if (!lokasi_val) return Swal.fire({ icon:'error', title:'Lokasi Belum Terdeteksi', text:'Mohon tunggu GPS aktif', confirmButtonColor:'#2563EB' });
-        if (!webcamReady) return Swal.fire({ icon:'error', title:'Kamera Belum Siap', text:'Mohon tunggu kamera aktif', confirmButtonColor:'#2563EB' });
-
-        document.getElementById('loading-overlay').classList.add('show');
-        Webcam.snap(async function(uri) {
-            const payload = { _token:'{{ csrf_token() }}', image:uri, lokasi:lokasi_val };
-            if (!navigator.onLine) {
-                const now=new Date(); const pad=n=>String(n).padStart(2,'0');
-                payload.offline_time=`${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-                await saveOfflinePresensi({ payload, timestamp:payload.offline_time });
-                document.getElementById('loading-overlay').classList.remove('show');
-                Swal.fire({ icon:'success', title:'Disimpan Offline', confirmButtonColor:'#10B981' })
-                    .then(()=>{ window.location.href='/dashboard'; });
-                return;
-            }
-            $.ajax({ type:'POST', url:'/presensi/store', data:payload, cache:false,
-                success:function(respond){ document.getElementById('loading-overlay').classList.remove('show'); showNotification(respond,null); },
-                error:function(){ document.getElementById('loading-overlay').classList.remove('show');
-                    Swal.fire({ icon:'error', title:'Koneksi Bermasalah', confirmButtonColor:'#EF4444' }); }
-            });
-        });
-    });
 
     /* ══════════════════════════════════
        FINGERPRINT / WEBAUTHN

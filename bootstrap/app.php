@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'auth' => \App\Http\Middleware\Authenticate::class,
             'auth.admin' => \App\Http\Middleware\AuthenticateAdmin::class,
             'role' => \App\Http\Middleware\RoleMiddleware::class,
+            'no-cache.panel' => \App\Http\Middleware\NoCachePanelMiddleware::class,
         ]);
 
         // Priority middleware
@@ -41,8 +42,8 @@ return Application::configure(basePath: dirname(__DIR__))
 
             $guards = $e->guards();
 
-            if (in_array('admin', $guards)) {
-                return redirect()->guest(route('admin.login'))
+            if (in_array('user', $guards) || in_array('admin', $guards)) {
+                return redirect()->guest(route('panel.login'))
                     ->with('error', 'Silakan login sebagai admin.');
             }
 

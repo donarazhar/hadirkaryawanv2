@@ -122,7 +122,7 @@ Route::middleware('auth:karyawan')->group(function () {
 // ADMIN PANEL ROUTES
 // ========================================
 
-Route::prefix('panel')->name('panel.')->group(function () {
+Route::prefix('panel')->name('panel.')->middleware('no-cache.panel')->group(function () {
 
     // Guest routes
     Route::middleware('guest:user')->group(function () {

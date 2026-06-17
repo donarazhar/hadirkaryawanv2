@@ -8,6 +8,7 @@
     "theme_color": "#0053C5",
     "orientation": "portrait",
     "scope": "/",
+    "id": "/login",
     "icons": [
       {
         "src": "/assets/img/icon-192.png",

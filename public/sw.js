@@ -1,58 +1,40 @@
-const CACHE_NAME = 'presensigps-cache-v2';
-const urlsToCache = [
-  '/login',
-  '/manifest.json',
-  '/assets/css/inc/bootstrap/bootstrap.min.css',
-  '/assets/js/lib/bootstrap.min.js',
-  '/assets/img/pwa-icon.png'
-];
+// sw.js - versi lama, diarahkan ke service-worker.js
+// File ini dibiarkan kosong/redirect agar tidak konflik
+// Service worker utama ada di /service-worker.js
 
-// Paths yang TIDAK boleh di-intercept oleh service worker (admin panel)
-const BYPASS_PATHS = ['/panel'];
+const CACHE_NAME = 'presensigps-cache-v4';
+const BYPASS_PREFIXES = ['/panel'];
 
-// Install Service Worker
-self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        return cache.addAll(urlsToCache);
-      })
+function shouldBypass(url) {
+  const pathname = new URL(url).pathname;
+  return BYPASS_PREFIXES.some(prefix =>
+    pathname === prefix ||
+    pathname.startsWith(prefix + '/') ||
+    pathname.startsWith(prefix + '?')
   );
+}
+
+self.addEventListener('install', event => {
   self.skipWaiting();
 });
 
-// Activate Service Worker
 self.addEventListener('activate', event => {
-  const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    }).then(() => self.clients.claim())
+    caches.keys().then(names => Promise.all(names.map(n => caches.delete(n))))
+      .then(() => self.clients.claim())
   );
 });
 
-// Fetch: bypass admin panel routes sepenuhnya
 self.addEventListener('fetch', event => {
-  const url = new URL(event.request.url);
+  const url = event.request.url;
+  if (!url.startsWith('http')) return;
 
-  // Jika request menuju /panel, langsung teruskan ke network (bypass cache)
-  const isBypass = BYPASS_PATHS.some(path => url.pathname.startsWith(path));
-  if (isBypass) {
-    event.respondWith(fetch(event.request));
+  if (shouldBypass(url)) {
+    event.respondWith(fetch(event.request, { cache: 'no-store', redirect: 'follow' }));
     return;
   }
 
-  // Untuk route lainnya: cache-first strategy
   event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        return response || fetch(event.request);
-      })
+    caches.match(event.request).then(r => r || fetch(event.request))
   );
 });

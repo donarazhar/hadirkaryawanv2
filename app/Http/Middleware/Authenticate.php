@@ -31,11 +31,18 @@ class Authenticate
 
             // If AJAX request, return JSON response
             if ($request->expectsJson()) {
+                $loginRoute = ($guard === 'user') ? route('panel.login') : route('login');
                 return response()->json([
                     'success' => false,
                     'message' => 'Unauthenticated.',
-                    'redirect' => route('login')
+                    'redirect' => $loginRoute
                 ], 401);
+            }
+
+            // Redirect ke panel login jika guard 'user' (admin panel)
+            if ($guard === 'user') {
+                return redirect()->route('panel.login')
+                    ->with('error', 'Silakan login sebagai admin terlebih dahulu.');
             }
 
             // Store intended URL for redirect after login

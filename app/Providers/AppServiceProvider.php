@@ -20,6 +20,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Force URL to use APP_URL from .env to prevent localhost:8000 redirect issues behind proxies
+        if (config('app.url')) {
+            \Illuminate\Support\Facades\URL::forceRootUrl(config('app.url'));
+        }
+        
         // Register Blade Components
         Blade::component('components.bottom-nav', 'bottom-nav');
         Blade::component('components.header', 'header');

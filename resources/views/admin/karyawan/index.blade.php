@@ -286,6 +286,7 @@
     .user-name    { font-size: 13px; font-weight: 700; color: var(--slate-900); }
     .user-nik     { font-size: 11px; color: var(--slate-400); }
     .user-jabatan { font-size: 11px; color: var(--slate-400); }
+    .user-email   { font-size: 11px; color: var(--slate-500); margin-top: 2px; }
 
     /* Placement cell */
     .place-cabang { font-size: 13px; font-weight: 700; color: var(--slate-900); }
@@ -598,6 +599,9 @@
                                     @if($item->jabatan)
                                         <div class="user-jabatan">{{ $item->jabatan }}</div>
                                     @endif
+                                    @if($item->email)
+                                        <div class="user-email"><i class="mdi mdi-email-outline"></i> {{ $item->email }}</div>
+                                    @endif
                                 </div>
                             </div>
                         </td>
@@ -609,6 +613,23 @@
                                 <div class="place-dept">{{ $item->departemen->nama_dept }}</div>
                             @else
                                 <div class="place-dept">—</div>
+                            @endif
+                            
+                            @php
+                                $karyawanUser = null;
+                                if ($item->nik) {
+                                    $karyawanUser = \App\Models\User::where('nik_karyawan', $item->nik)->first();
+                                }
+                                if (!$karyawanUser && $item->email) {
+                                    $karyawanUser = \App\Models\User::where('email', $item->email)->first();
+                                }
+                            @endphp
+                            @if($karyawanUser)
+                                <div class="place-role" style="margin-top: 6px;">
+                                    <span style="background:var(--blue-soft); color:var(--blue); padding:3px 8px; border-radius:6px; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing: 0.5px; display:inline-block; border: 1px solid var(--blue-mid);">
+                                        <i class="mdi mdi-shield-account"></i> {{ $karyawanUser->role }}
+                                    </span>
+                                </div>
                             @endif
                         </td>
                         <td>

@@ -42,9 +42,19 @@ class KaryawanAdminController extends Controller
             $query->where('kode_cabang', $request->kode_cabang);
         }
 
+        $user = auth('user')->user();
+        if ($user && $user->role === 'admin') {
+            $query->where('kode_cabang', $user->kode_cabang);
+        }
+
         $karyawan = $query->orderBy('nik', 'ASC')->paginate(10);
         $departemen = Departemen::orderBy('nama_dept')->get();
-        $cabang = Cabang::orderBy('nama_cabang')->get();
+        
+        if ($user && $user->role === 'admin') {
+            $cabang = Cabang::where('kode_cabang', $user->kode_cabang)->get();
+        } else {
+            $cabang = Cabang::orderBy('nama_cabang')->get();
+        }
 
         return view('admin.karyawan.index', compact('karyawan', 'departemen', 'cabang'));
     }
@@ -54,8 +64,15 @@ class KaryawanAdminController extends Controller
      */
     public function create()
     {
+        $user = auth('user')->user();
         $departemen = Departemen::orderBy('nama_dept')->get();
-        $cabang = Cabang::orderBy('nama_cabang')->get();
+        
+        if ($user && $user->role === 'admin') {
+            $cabang = Cabang::where('kode_cabang', $user->kode_cabang)->get();
+        } else {
+            $cabang = Cabang::orderBy('nama_cabang')->get();
+        }
+
         return view('admin.karyawan.create', compact('departemen', 'cabang'));
     }
 
@@ -97,6 +114,9 @@ class KaryawanAdminController extends Controller
         }
 
         try {
+            $user = auth('user')->user();
+            $kode_cabang = ($user && $user->role === 'admin') ? $user->kode_cabang : $request->kode_cabang;
+
             $data = [
                 'nik' => $request->nik,
                 'email' => $request->email,
@@ -105,7 +125,7 @@ class KaryawanAdminController extends Controller
                 'no_hp' => $request->no_hp,
                 'password' => Hash::make($request->password),
                 'kode_dept' => $request->kode_dept,
-                'kode_cabang' => $request->kode_cabang
+                'kode_cabang' => $kode_cabang
             ];
 
             // Handle foto upload
@@ -138,8 +158,20 @@ class KaryawanAdminController extends Controller
     public function edit($nik)
     {
         $karyawan = Karyawan::findOrFail($nik);
+        $user = auth('user')->user();
+
+        if ($user && $user->role === 'admin' && $karyawan->kode_cabang !== $user->kode_cabang) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $departemen = Departemen::orderBy('nama_dept')->get();
-        $cabang = Cabang::orderBy('nama_cabang')->get();
+        
+        if ($user && $user->role === 'admin') {
+            $cabang = Cabang::where('kode_cabang', $user->kode_cabang)->get();
+        } else {
+            $cabang = Cabang::orderBy('nama_cabang')->get();
+        }
+
         return view('admin.karyawan.edit', compact('karyawan', 'departemen', 'cabang'));
     }
 
@@ -178,6 +210,13 @@ class KaryawanAdminController extends Controller
 
         try {
             $karyawan = Karyawan::findOrFail($nik);
+            $user = auth('user')->user();
+
+            if ($user && $user->role === 'admin' && $karyawan->kode_cabang !== $user->kode_cabang) {
+                abort(403, 'Unauthorized action.');
+            }
+
+            $kode_cabang = ($user && $user->role === 'admin') ? $user->kode_cabang : $request->kode_cabang;
 
             $data = [
                 'email' => $request->email,
@@ -185,7 +224,7 @@ class KaryawanAdminController extends Controller
                 'jabatan' => $request->jabatan,
                 'no_hp' => $request->no_hp,
                 'kode_dept' => $request->kode_dept,
-                'kode_cabang' => $request->kode_cabang
+                'kode_cabang' => $kode_cabang
             ];
 
             // Update password if provided
@@ -229,6 +268,11 @@ class KaryawanAdminController extends Controller
     {
         try {
             $karyawan = Karyawan::findOrFail($nik);
+            $user = auth('user')->user();
+
+            if ($user && $user->role === 'admin' && $karyawan->kode_cabang !== $user->kode_cabang) {
+                abort(403, 'Unauthorized action.');
+            }
 
             // Delete foto if exists
             if ($karyawan->foto) {

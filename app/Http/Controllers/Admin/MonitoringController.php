@@ -24,7 +24,9 @@ class MonitoringController extends Controller
     {
         $tanggal = $request->tanggal;
 
-        $presensi = DB::table('presensi')
+        $user = auth('user')->user();
+
+        $query = DB::table('presensi')
             ->select(
                 'presensi.*',
                 'karyawan.nama_lengkap',
@@ -39,8 +41,13 @@ class MonitoringController extends Controller
             ->leftJoin('pengajuan_izin', 'presensi.kode_izin', '=', 'pengajuan_izin.kode_izin')
             ->join('karyawan', 'presensi.nik', '=', 'karyawan.nik')
             ->join('departemen', 'karyawan.kode_dept', '=', 'departemen.kode_dept')
-            ->where('tgl_presensi', $tanggal)
-            ->get();
+            ->where('tgl_presensi', $tanggal);
+
+        if ($user && $user->role === 'admin') {
+            $query->where('karyawan.kode_cabang', $user->kode_cabang);
+        }
+
+        $presensi = $query->get();
 
         return view('admin.monitoring.getpresensi', compact('presensi'));
     }
@@ -52,10 +59,17 @@ class MonitoringController extends Controller
     {
         $id = $request->id;
 
-        $presensi = DB::table('presensi')
+        $user = auth('user')->user();
+
+        $query = DB::table('presensi')
             ->join('karyawan', 'presensi.nik', '=', 'karyawan.nik')
-            ->where('presensi.id', $id)
-            ->first();
+            ->where('presensi.id', $id);
+
+        if ($user && $user->role === 'admin') {
+            $query->where('karyawan.kode_cabang', $user->kode_cabang);
+        }
+
+        $presensi = $query->first();
 
         return view('admin.monitoring.showmap', compact('presensi'));
     }
@@ -67,11 +81,18 @@ class MonitoringController extends Controller
     {
         $hariini = date('Y-m-d');
 
-        $presensi = DB::table('presensi')
+        $user = auth('user')->user();
+
+        $query = DB::table('presensi')
             ->select('presensi.*', 'karyawan.nama_lengkap', 'karyawan.foto')
             ->join('karyawan', 'presensi.nik', '=', 'karyawan.nik')
-            ->where('tgl_presensi', $hariini)
-            ->orderBy('jam_in', 'desc')
+            ->where('tgl_presensi', $hariini);
+
+        if ($user && $user->role === 'admin') {
+            $query->where('karyawan.kode_cabang', $user->kode_cabang);
+        }
+
+        $presensi = $query->orderBy('jam_in', 'desc')
             ->get();
 
         return response()->json(['data' => $presensi]);
@@ -97,12 +118,18 @@ class MonitoringController extends Controller
         ]);
 
         try {
+            $user = auth('user')->user();
+            $karyawan = DB::table('karyawan')->where('nik', $request->nik)->first();
+            
+            if ($user && $user->role === 'admin' && $karyawan && $karyawan->kode_cabang !== $user->kode_cabang) {
+                return redirect()->back()->with('error', 'Unauthorized action.');
+            }
+
             $presensi = DB::table('presensi')
                 ->where('nik', $request->nik)
                 ->where('tgl_presensi', $request->tanggal)
                 ->first();
 
-            $karyawan = DB::table('karyawan')->where('nik', $request->nik)->first();
             $jamKerja = null;
 
             if (!$presensi) {

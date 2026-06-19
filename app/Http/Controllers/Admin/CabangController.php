@@ -17,6 +17,11 @@ class CabangController extends Controller
     public function index(Request $request)
     {
         $query = Cabang::query();
+        $user = auth('user')->user();
+
+        if ($user && $user->role === 'admin') {
+            $query->where('kode_cabang', $user->kode_cabang);
+        }
 
         // Search functionality
         if ($request->has('search') && $request->search != '') {
@@ -38,6 +43,10 @@ class CabangController extends Controller
      */
     public function create()
     {
+        $user = auth('user')->user();
+        if ($user && $user->role === 'admin') {
+            abort(403, 'Unauthorized action.');
+        }
         return view('admin.cabang.create');
     }
 
@@ -46,6 +55,11 @@ class CabangController extends Controller
      */
     public function store(Request $request)
     {
+        $user = auth('user')->user();
+        if ($user && $user->role === 'admin') {
+            abort(403, 'Unauthorized action.');
+        }
+
         $validator = Validator::make($request->all(), [
             'kode_cabang' => 'required|string|max:10|unique:cabang,kode_cabang',
             'nama_cabang' => 'required|string|max:50',
@@ -90,6 +104,10 @@ class CabangController extends Controller
      */
     public function edit($kode_cabang)
     {
+        $user = auth('user')->user();
+        if ($user && $user->role === 'admin' && $kode_cabang !== $user->kode_cabang) {
+            abort(403, 'Unauthorized action.');
+        }
         $cabang = Cabang::findOrFail($kode_cabang);
         return view('admin.cabang.edit', compact('cabang'));
     }
@@ -99,6 +117,11 @@ class CabangController extends Controller
      */
     public function update(Request $request, $kode_cabang)
     {
+        $user = auth('user')->user();
+        if ($user && $user->role === 'admin' && $kode_cabang !== $user->kode_cabang) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $validator = Validator::make($request->all(), [
             'nama_cabang' => 'required|string|max:50',
             'lokasi_cabang' => 'required|string|max:255',
@@ -139,6 +162,11 @@ class CabangController extends Controller
      */
     public function destroy($kode_cabang)
     {
+        $user = auth('user')->user();
+        if ($user && $user->role === 'admin') {
+            abort(403, 'Unauthorized action.');
+        }
+
         try {
             $cabang = Cabang::findOrFail($kode_cabang);
 

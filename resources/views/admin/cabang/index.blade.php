@@ -165,11 +165,13 @@
                 <div class="cabang-header-sub">Kelola data lokasi dan radius absen cabang</div>
             </div>
         </div>
+        @if(auth('user')->user() && auth('user')->user()->role === 'superadmin')
         <div class="cabang-header-actions">
             <a href="{{ route('panel.cabang.create') }}" class="btn-hdr btn-hdr-primary">
                 <i class="mdi mdi-plus"></i> Tambah Cabang
             </a>
         </div>
+        @endif
     </div>
 
     {{-- ALERTS --}}
@@ -256,6 +258,7 @@
                                 <a href="{{ route('panel.cabang.edit', $item->kode_cabang) }}" class="btn-act btn-act-yellow" title="Edit">
                                     <i class="mdi mdi-pencil"></i>
                                 </a>
+                                @if(auth('user')->user() && auth('user')->user()->role === 'superadmin')
                                 <form action="{{ route('panel.cabang.destroy', $item->kode_cabang) }}" method="POST" style="display:inline;">
                                     @csrf
                                     @method('DELETE')
@@ -263,6 +266,7 @@
                                         <i class="mdi mdi-trash-can"></i>
                                     </button>
                                 </form>
+                                @endif
                             </div>
                         </td>
                     </tr>

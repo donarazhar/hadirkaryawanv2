@@ -16,7 +16,7 @@ class IzinSakitController extends Controller
             ->join('karyawan', 'pengajuan_izin.nik', '=', 'karyawan.nik');
 
         $user = \Illuminate\Support\Facades\Auth::guard('user')->user();
-        if ($user && $user->role == 'pimpinan') {
+        if ($user && in_array($user->role, ['admin', 'pimpinan'])) {
             $query->where('karyawan.kode_cabang', $user->kode_cabang);
         }
 

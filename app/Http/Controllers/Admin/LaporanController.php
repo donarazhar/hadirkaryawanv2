@@ -12,12 +12,24 @@ class LaporanController extends Controller
     public function index(Request $request)
     {
         $namabulan = ["", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-        $cabang = DB::table('cabang')->orderBy('kode_cabang')->get();
+        $user = auth('user')->user();
+
+        if ($user && $user->role === 'admin') {
+            $cabang = DB::table('cabang')->where('kode_cabang', $user->kode_cabang)->get();
+        } else {
+            $cabang = DB::table('cabang')->orderBy('kode_cabang')->get();
+        }
+        
         $departemen = DB::table('departemen')->orderBy('kode_dept')->get();
 
         $bulan = $request->bulan != null ? $request->bulan : date('m');
         $tahun = $request->tahun != null ? $request->tahun : date('Y');
+        
         $kode_cabang = $request->kode_cabang != null ? $request->kode_cabang : '';
+        if ($user && $user->role === 'admin') {
+            $kode_cabang = $user->kode_cabang;
+        }
+
         $kode_dept = $request->kode_dept != null ? $request->kode_dept : '';
 
         $query = DB::table('presensi')
@@ -42,9 +54,15 @@ class LaporanController extends Controller
 
     public function exportPdf(Request $request)
     {
+        $user = auth('user')->user();
         $bulan = $request->bulan != null ? $request->bulan : date('m');
         $tahun = $request->tahun != null ? $request->tahun : date('Y');
+        
         $kode_cabang = $request->kode_cabang != null ? $request->kode_cabang : '';
+        if ($user && $user->role === 'admin') {
+            $kode_cabang = $user->kode_cabang;
+        }
+
         $kode_dept = $request->kode_dept != null ? $request->kode_dept : '';
 
         $query = DB::table('presensi')
@@ -72,9 +90,15 @@ class LaporanController extends Controller
 
     public function exportExcel(Request $request)
     {
+        $user = auth('user')->user();
         $bulan = $request->bulan != null ? $request->bulan : date('m');
         $tahun = $request->tahun != null ? $request->tahun : date('Y');
+        
         $kode_cabang = $request->kode_cabang != null ? $request->kode_cabang : '';
+        if ($user && $user->role === 'admin') {
+            $kode_cabang = $user->kode_cabang;
+        }
+
         $kode_dept = $request->kode_dept != null ? $request->kode_dept : '';
 
         $query = DB::table('presensi')
@@ -99,7 +123,13 @@ class LaporanController extends Controller
 
     public function getKaryawan(Request $request)
     {
+        $user = auth('user')->user();
         $kode_cabang = $request->kode_cabang;
+        
+        if ($user && $user->role === 'admin') {
+            $kode_cabang = $user->kode_cabang;
+        }
+
         $kode_dept = $request->kode_dept;
 
         $query = DB::table('karyawan')->orderBy('nama_lengkap');
@@ -123,10 +153,21 @@ class LaporanController extends Controller
     public function edit(Request $request)
     {
         $id = $request->id;
-        $presensi = DB::table('presensi')
+        $user = auth('user')->user();
+        
+        $query = DB::table('presensi')
             ->join('karyawan', 'presensi.nik', '=', 'karyawan.nik')
-            ->where('presensi.id', $id)
-            ->first();
+            ->where('presensi.id', $id);
+
+        if ($user && $user->role === 'admin') {
+            $query->where('karyawan.kode_cabang', $user->kode_cabang);
+        }
+
+        $presensi = $query->first();
+
+        if (!$presensi) {
+            return redirect()->back()->with('error', 'Unauthorized action.');
+        }
 
         return view('admin.laporan.edit', compact('presensi'));
     }
@@ -134,6 +175,15 @@ class LaporanController extends Controller
     public function update(Request $request)
     {
         $id = $request->id;
+        $user = auth('user')->user();
+        $presensiCheck = DB::table('presensi')
+            ->join('karyawan', 'presensi.nik', '=', 'karyawan.nik')
+            ->where('presensi.id', $id)->first();
+
+        if ($user && $user->role === 'admin' && $presensiCheck && $presensiCheck->kode_cabang !== $user->kode_cabang) {
+            return redirect()->back()->with('error', 'Unauthorized action.');
+        }
+
         $jam_in = $request->jam_in;
         $jam_out = $request->jam_out;
         $status = $request->status;
@@ -155,6 +205,13 @@ class LaporanController extends Controller
     public function store(Request $request)
     {
         $nik = $request->nik;
+        
+        $user = auth('user')->user();
+        $karyawan = DB::table('karyawan')->where('nik', $nik)->first();
+        if ($user && $user->role === 'admin' && $karyawan && $karyawan->kode_cabang !== $user->kode_cabang) {
+            return redirect()->back()->with('error', 'Unauthorized action.');
+        }
+
         $tgl_presensi = $request->tgl_presensi;
         $jam_in = $request->jam_in;
         $jam_out = $request->jam_out;

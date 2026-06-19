@@ -12,7 +12,14 @@ class RekapController extends Controller
     public function index()
     {
         $namabulan = ["", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-        $cabang = DB::table('cabang')->orderBy('kode_cabang')->get();
+        $user = auth('user')->user();
+
+        if ($user && $user->role === 'admin') {
+            $cabang = DB::table('cabang')->where('kode_cabang', $user->kode_cabang)->get();
+        } else {
+            $cabang = DB::table('cabang')->orderBy('kode_cabang')->get();
+        }
+
         $departemen = DB::table('departemen')->orderBy('kode_dept')->get();
 
         return view('admin.rekap.index', compact('namabulan', 'cabang', 'departemen'));
@@ -20,7 +27,13 @@ class RekapController extends Controller
 
     public function getKaryawan(Request $request)
     {
+        $user = auth('user')->user();
         $kode_cabang = $request->kode_cabang;
+        
+        if ($user && $user->role === 'admin') {
+            $kode_cabang = $user->kode_cabang;
+        }
+
         $kode_dept = $request->kode_dept;
 
         $query = DB::table('karyawan')->orderBy('nama_lengkap');
@@ -48,11 +61,16 @@ class RekapController extends Controller
         $tahun = $request->tahun;
         $namabulan = ["", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
 
+        $user = auth('user')->user();
         $karyawan = DB::table('karyawan')
             ->join('departemen', 'karyawan.kode_dept', '=', 'departemen.kode_dept')
             ->join('cabang', 'karyawan.kode_cabang', '=', 'cabang.kode_cabang')
             ->where('nik', $nik)
             ->first();
+
+        if ($user && $user->role === 'admin' && $karyawan && $karyawan->kode_cabang !== $user->kode_cabang) {
+            abort(403, 'Unauthorized action.');
+        }
 
         // Ambil data presensi
         $presensi = DB::table('presensi')

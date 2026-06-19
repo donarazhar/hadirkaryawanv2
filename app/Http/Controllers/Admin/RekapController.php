@@ -48,7 +48,7 @@ class RekapController extends Controller
 
         $karyawan = $query->get();
 
-        echo "<option value=''>Pilih Karyawan</option>";
+        echo "<option value='ALL'>Semua Karyawan</option>";
         foreach ($karyawan as $k) {
             echo "<option value='$k->nik'>$k->nama_lengkap</option>";
         }
@@ -59,39 +59,64 @@ class RekapController extends Controller
         $nik = $request->nik;
         $bulan = $request->bulan;
         $tahun = $request->tahun;
+        $kode_cabang = $request->kode_cabang;
+        $kode_dept = $request->kode_dept;
         $namabulan = ["", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
 
         $user = auth('user')->user();
-        $karyawan = DB::table('karyawan')
+        
+        $karyawanQuery = DB::table('karyawan')
             ->join('departemen', 'karyawan.kode_dept', '=', 'departemen.kode_dept')
-            ->join('cabang', 'karyawan.kode_cabang', '=', 'cabang.kode_cabang')
-            ->where('nik', $nik)
-            ->first();
+            ->join('cabang', 'karyawan.kode_cabang', '=', 'cabang.kode_cabang');
 
-        if ($user && $user->role === 'admin' && $karyawan && $karyawan->kode_cabang !== $user->kode_cabang) {
+        if ($user && $user->role === 'admin') {
+            $karyawanQuery->where('karyawan.kode_cabang', $user->kode_cabang);
+        }
+
+        if ($nik === 'ALL') {
+            if (!empty($kode_cabang)) {
+                $karyawanQuery->where('karyawan.kode_cabang', $kode_cabang);
+            }
+            if (!empty($kode_dept)) {
+                $karyawanQuery->where('karyawan.kode_dept', $kode_dept);
+            }
+        } else {
+            $karyawanQuery->where('nik', $nik);
+        }
+        
+        $karyawans = $karyawanQuery->orderBy('karyawan.nama_lengkap')->get();
+
+        if ($nik !== 'ALL' && $user && $user->role === 'admin' && $karyawans->count() > 0 && $karyawans->first()->kode_cabang !== $user->kode_cabang) {
             abort(403, 'Unauthorized action.');
         }
 
-        // Ambil data presensi
-        $presensi = DB::table('presensi')
-            ->leftJoin('jam_kerja', 'presensi.kode_jam_kerja', '=', 'jam_kerja.kode_jam_kerja')
-            ->where('presensi.nik', $nik)
-            ->whereRaw('MONTH(tgl_presensi)="' . $bulan . '"')
-            ->whereRaw('YEAR(tgl_presensi)="' . $tahun . '"')
-            ->orderBy('tgl_presensi')
-            ->orderBy('jam_in')
-            ->get();
+        $rekapData = [];
+        
+        foreach ($karyawans as $karyawan) {
+            $presensi = DB::table('presensi')
+                ->leftJoin('jam_kerja', 'presensi.kode_jam_kerja', '=', 'jam_kerja.kode_jam_kerja')
+                ->where('presensi.nik', $karyawan->nik)
+                ->whereRaw('MONTH(tgl_presensi)="' . $bulan . '"')
+                ->whereRaw('YEAR(tgl_presensi)="' . $tahun . '"')
+                ->orderBy('tgl_presensi')
+                ->orderBy('jam_in')
+                ->get();
 
-        // Re-group by date for view (in case of multi-shift)
-        $rekap = [];
-        foreach ($presensi as $p) {
-            $tgl = $p->tgl_presensi;
-            if(!isset($rekap[$tgl])) {
-                $rekap[$tgl] = [];
+            $rekap = [];
+            foreach ($presensi as $p) {
+                $tgl = $p->tgl_presensi;
+                if(!isset($rekap[$tgl])) {
+                    $rekap[$tgl] = [];
+                }
+                $rekap[$tgl][] = $p;
             }
-            $rekap[$tgl][] = $p;
+            
+            $rekapData[] = [
+                'karyawan' => $karyawan,
+                'rekap' => $rekap
+            ];
         }
 
-        return view('admin.rekap.cetak', compact('bulan', 'tahun', 'namabulan', 'karyawan', 'rekap'));
+        return view('admin.rekap.cetak', compact('bulan', 'tahun', 'namabulan', 'rekapData'));
     }
 }

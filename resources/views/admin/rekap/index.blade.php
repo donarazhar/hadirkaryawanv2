@@ -392,7 +392,7 @@ $(document).ready(function () {
     });
 
     function loadKaryawan() {
-        $('#nik').html('<option value="">Memuat...</option>');
+        $('#nik').html('<option value="ALL">Memuat...</option>');
 
         $.ajax({
             type: 'POST',
@@ -407,7 +407,7 @@ $(document).ready(function () {
                 $('#nik').html(respond);
             },
             error: function () {
-                $('#nik').html('<option value="">Gagal memuat karyawan</option>');
+                $('#nik').html('<option value="ALL">Gagal memuat karyawan</option>');
             }
         });
     }

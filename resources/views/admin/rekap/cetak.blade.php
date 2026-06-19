@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Laporan Presensi - {{ $karyawan->nama_lengkap }}</title>
+    <title>Laporan Presensi</title>
     <style>
         body {
             font-family: Arial, Helvetica, sans-serif;
@@ -89,138 +89,153 @@
             .no-print {
                 display: none;
             }
+            .page-break {
+                page-break-after: always;
+            }
+            .page-break:last-child {
+                page-break-after: auto;
+            }
         }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h2>YPI AL-AZHAR</h2>
-        <p>LAPORAN PRESENSI KARYAWAN BULAN {{ strtoupper($namabulan[$bulan]) }} {{ $tahun }}</p>
-    </div>
+@foreach($rekapData as $data)
+    @php
+        $karyawan = $data['karyawan'];
+        $rekap = $data['rekap'];
+    @endphp
+    
+    <div class="page-break">
+        <div class="header">
+            <h2>YPI AL-AZHAR</h2>
+            <p>LAPORAN PRESENSI KARYAWAN BULAN {{ strtoupper($namabulan[$bulan]) }} {{ $tahun }}</p>
+        </div>
 
-    <table class="info-table">
-        <tr>
-            <td class="label">NIK</td>
-            <td>: {{ $karyawan->nik }}</td>
-            <td class="label">Departemen</td>
-            <td>: {{ $karyawan->nama_dept }}</td>
-        </tr>
-        <tr>
-            <td class="label">Nama Karyawan</td>
-            <td>: <strong>{{ $karyawan->nama_lengkap }}</strong></td>
-            <td class="label">Cabang</td>
-            <td>: {{ $karyawan->nama_cabang }}</td>
-        </tr>
-    </table>
-
-    <table class="data-table">
-        <thead>
+        <table class="info-table">
             <tr>
-                <th>No.</th>
-                <th>Tanggal</th>
-                <th>Shift / Jam Kerja</th>
-                <th>Jam Masuk</th>
-                <th>Foto In</th>
-                <th>Jam Pulang</th>
-                <th>Foto Out</th>
-                <th>Keterangan</th>
+                <td class="label">NIK</td>
+                <td>: {{ $karyawan->nik }}</td>
+                <td class="label">Departemen</td>
+                <td>: {{ $karyawan->nama_dept }}</td>
             </tr>
-        </thead>
-        <tbody>
-            @if (empty($rekap))
-                <tr>
-                    <td colspan="8" style="padding: 20px;">Tidak ada data presensi pada bulan ini.</td>
-                </tr>
-            @else
-                @php $no = 1; @endphp
-                @foreach ($rekap as $tgl => $presensiList)
-                    @foreach($presensiList as $index => $d)
-                        @php
-                            $foto_in = $d->foto_in;
-                            $foto_out = $d->foto_out;
-                            
-                            $jam_masuk_asli = $d->jam_masuk;
-                            $jam_in_absen = $d->jam_in;
-                            $telat = false;
-                            if ($jam_in_absen > $jam_masuk_asli && !empty($jam_in_absen)) {
-                                $telat = true;
-                            }
-                        @endphp
-                        <tr>
-                            <!-- Hanya tampilkan No dan Tanggal di row pertama untuk hari tersebut -->
-                            @if($index == 0)
-                                <td rowspan="{{ count($presensiList) }}">{{ $no++ }}</td>
-                                <td rowspan="{{ count($presensiList) }}">{{ date('d-m-Y', strtotime($tgl)) }}</td>
-                            @endif
-                            
-                            <td>
-                                {{ $d->nama_jam_kerja }}
-                                @if($d->shift_ke)
-                                    <br><small>(Shift {{ $d->shift_ke }})</small>
-                                @endif
-                            </td>
-                            
-                            <td style="{{ $telat ? 'color: red; font-weight: bold;' : '' }}">
-                                {{ $d->jam_in ? date('H:i', strtotime($d->jam_in)) : 'Belum Absen' }}
-                            </td>
-                            <td>
-                                @if($foto_in === 'face_api')
-                                    <span style="color: green; font-weight: bold;">Verified ✓</span>
-                                @elseif($foto_in)
-                                    <img src="{{ url(Storage::url('uploads/absensi/' . $foto_in)) }}" class="foto" alt="IN">
-                                @else
-                                    -
-                                @endif
-                            </td>
-                            
-                            <td>
-                                {{ $d->jam_out ? date('H:i', strtotime($d->jam_out)) : 'Belum Absen' }}
-                            </td>
-                            <td>
-                                @if($foto_out === 'face_api')
-                                    <span style="color: green; font-weight: bold;">Verified ✓</span>
-                                @elseif($foto_out)
-                                    <img src="{{ url(Storage::url('uploads/absensi/' . $foto_out)) }}" class="foto" alt="OUT">
-                                @else
-                                    -
-                                @endif
-                            </td>
-                            
-                            <td>
-                                @if ($d->status == 'i')
-                                    Izin
-                                @elseif($d->status == 's')
-                                    Sakit
-                                @elseif($telat)
-                                    Terlambat
-                                @else
-                                    Hadir
-                                @endif
-                            </td>
-                        </tr>
-                    @endforeach
-                @endforeach
-            @endif
-        </tbody>
-    </table>
-
-    <div class="footer">
-        <table class="footer-table">
             <tr>
-                <td>
-                    <p>Mengetahui,<br><strong>Pimpinan Cabang / Manajer</strong></p>
-                    <div class="signature-space"></div>
-                    <p>_______________________</p>
-                </td>
-                <td>
-                    <p>Dicetak pada: {{ date('d-m-Y H:i') }}<br><strong>HRD / Admin Presensi</strong></p>
-                    <div class="signature-space"></div>
-                    <p>_______________________</p>
-                </td>
+                <td class="label">Nama Karyawan</td>
+                <td>: <strong>{{ $karyawan->nama_lengkap }}</strong></td>
+                <td class="label">Cabang</td>
+                <td>: {{ $karyawan->nama_cabang }}</td>
             </tr>
         </table>
+
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>No.</th>
+                    <th>Tanggal</th>
+                    <th>Shift / Jam Kerja</th>
+                    <th>Jam Masuk</th>
+                    <th>Foto In</th>
+                    <th>Jam Pulang</th>
+                    <th>Foto Out</th>
+                    <th>Keterangan</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (empty($rekap))
+                    <tr>
+                        <td colspan="8" style="padding: 20px;">Tidak ada data presensi pada bulan ini.</td>
+                    </tr>
+                @else
+                    @php $no = 1; @endphp
+                    @foreach ($rekap as $tgl => $presensiList)
+                        @foreach($presensiList as $index => $d)
+                            @php
+                                $foto_in = $d->foto_in;
+                                $foto_out = $d->foto_out;
+                                
+                                $jam_masuk_asli = $d->jam_masuk;
+                                $jam_in_absen = $d->jam_in;
+                                $telat = false;
+                                if ($jam_in_absen > $jam_masuk_asli && !empty($jam_in_absen)) {
+                                    $telat = true;
+                                }
+                            @endphp
+                            <tr>
+                                <!-- Hanya tampilkan No dan Tanggal di row pertama untuk hari tersebut -->
+                                @if($index == 0)
+                                    <td rowspan="{{ count($presensiList) }}">{{ $no++ }}</td>
+                                    <td rowspan="{{ count($presensiList) }}">{{ date('d-m-Y', strtotime($tgl)) }}</td>
+                                @endif
+                                
+                                <td>
+                                    {{ $d->nama_jam_kerja }}
+                                    @if($d->shift_ke)
+                                        <br><small>(Shift {{ $d->shift_ke }})</small>
+                                    @endif
+                                </td>
+                                
+                                <td style="{{ $telat ? 'color: red; font-weight: bold;' : '' }}">
+                                    {{ $d->jam_in ? date('H:i', strtotime($d->jam_in)) : 'Belum Absen' }}
+                                </td>
+                                <td>
+                                    @if($foto_in === 'face_api')
+                                        <span style="color: green; font-weight: bold;">Verified ✓</span>
+                                    @elseif($foto_in)
+                                        <img src="{{ url(Storage::url('uploads/absensi/' . $foto_in)) }}" class="foto" alt="IN">
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                                
+                                <td>
+                                    {{ $d->jam_out ? date('H:i', strtotime($d->jam_out)) : 'Belum Absen' }}
+                                </td>
+                                <td>
+                                    @if($foto_out === 'face_api')
+                                        <span style="color: green; font-weight: bold;">Verified ✓</span>
+                                    @elseif($foto_out)
+                                        <img src="{{ url(Storage::url('uploads/absensi/' . $foto_out)) }}" class="foto" alt="OUT">
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                                
+                                <td>
+                                    @if ($d->status == 'i')
+                                        Izin
+                                    @elseif($d->status == 's')
+                                        Sakit
+                                    @elseif($telat)
+                                        Terlambat
+                                    @else
+                                        Hadir
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    @endforeach
+                @endif
+            </tbody>
+        </table>
+
+        <div class="footer">
+            <table class="footer-table">
+                <tr>
+                    <td>
+                        <p>Mengetahui,<br><strong>Pimpinan Cabang / Manajer</strong></p>
+                        <div class="signature-space"></div>
+                        <p>_______________________</p>
+                    </td>
+                    <td>
+                        <p>Dicetak pada: {{ date('d-m-Y H:i') }}<br><strong>HRD / Admin Presensi</strong></p>
+                        <div class="signature-space"></div>
+                        <p>_______________________</p>
+                    </td>
+                </tr>
+            </table>
+        </div>
     </div>
+@endforeach
 
     <!-- Auto Print Script -->
     <script>

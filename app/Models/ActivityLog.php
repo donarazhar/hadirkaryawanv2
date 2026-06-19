@@ -11,6 +11,9 @@ class ActivityLog extends Model
         'role',
         'action',
         'description',
-        'ip_address'
+        'ip_address',
+        'location',
+        'user_agent',
+        'kode_cabang'
     ];
 }

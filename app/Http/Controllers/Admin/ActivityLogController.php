@@ -9,7 +9,15 @@ class ActivityLogController extends Controller
 {
     public function index()
     {
-        $logs = \App\Models\ActivityLog::orderBy('created_at', 'desc')->paginate(20);
+        $user = auth('user')->user();
+        
+        $query = \App\Models\ActivityLog::orderBy('created_at', 'desc');
+
+        if ($user && $user->role === 'admin') {
+            $query->where('kode_cabang', $user->kode_cabang);
+        }
+
+        $logs = $query->paginate(20);
         return view('admin.activity_logs.index', compact('logs'));
     }
 }

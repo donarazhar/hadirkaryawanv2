@@ -655,6 +655,9 @@
                        class="sb-sub-item {{ Request::is('panel/user*') ? 'active' : '' }}">
                         <i class="mdi mdi-account-cog-outline"></i> Data User
                     </a>
+                    @endif
+                    
+                    @if(in_array(Auth::guard('user')->user()->role, ['superadmin', 'admin']))
                     <a href="{{ route('panel.activity-logs.index') }}"
                        class="sb-sub-item {{ Request::is('panel/activity-logs*') ? 'active' : '' }}">
                         <i class="mdi mdi-history"></i> Audit Trail

@@ -24,7 +24,10 @@ class LogHelper
                 'role' => $user->role,
                 'action' => $action,
                 'description' => $description,
-                'ip_address' => Request::ip()
+                'ip_address' => Request::ip(),
+                'location' => 'Unknown', // Could implement location lookup here if desired, or leave null/Unknown
+                'user_agent' => substr(Request::userAgent(), 0, 255),
+                'kode_cabang' => $user->kode_cabang ?? null
             ]);
         }
     }

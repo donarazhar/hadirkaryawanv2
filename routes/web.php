@@ -147,12 +147,12 @@ Route::prefix('panel')->name('panel.')->middleware('no-cache.panel')->group(func
             Route::resource('konfigurasi-jk-dept', KonfigurasiJkDeptController::class);
             Route::resource('cuti', CutiController::class)->except(['create', 'show', 'edit']);
             Route::resource('harilibur', HariLiburController::class)->except(['create', 'show', 'edit']);
+            Route::get('/activity-logs', [App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('activity-logs.index');
         });
 
         // Superadmin only
         Route::middleware('role:superadmin')->group(function () {
             Route::resource('user', UserController::class);
-            Route::get('/activity-logs', [App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('activity-logs.index');
         });
 
         // Monitoring

@@ -163,8 +163,8 @@
                         <th>Pelaku (User)</th>
                         <th>Tingkat Akses</th>
                         <th>Aksi</th>
-                        <th style="width: 300px;">Deskripsi Aktivitas</th>
-                        <th>Alamat IP</th>
+                        <th style="width: 250px;">Deskripsi Aktivitas</th>
+                        <th style="width: 200px;">Informasi Akses</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -208,7 +208,17 @@
                             <div class="desc-cell">{{ $log->description }}</div>
                         </td>
                         <td>
-                            <span class="ip-cell"><i class="mdi mdi-laptop"></i> {{ $log->ip_address }}</span>
+                            <div style="display: flex; flex-direction: column; gap: 4px;">
+                                <span class="ip-cell" title="IP Address"><i class="mdi mdi-laptop"></i> {{ $log->ip_address ?? 'Unknown IP' }}</span>
+                                @if($log->location)
+                                    <span style="font-size: 11px; color: var(--slate-600);"><i class="mdi mdi-map-marker"></i> {{ $log->location }}</span>
+                                @endif
+                                @if($log->user_agent)
+                                    <span style="font-size: 10px; color: var(--slate-400); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px;" title="{{ $log->user_agent }}">
+                                        <i class="mdi mdi-web"></i> {{ $log->user_agent }}
+                                    </span>
+                                @endif
+                            </div>
                         </td>
                     </tr>
                     @empty

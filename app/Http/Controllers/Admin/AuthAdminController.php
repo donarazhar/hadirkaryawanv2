@@ -51,6 +51,35 @@ class AuthAdminController extends Controller
                 'name' => $user->name
             ]);
 
+            // Catat Log Aktivitas
+            $ip = $request->ip();
+            $location = 'Unknown';
+            if ($ip !== '127.0.0.1' && $ip !== '::1') {
+                try {
+                    $ctx = stream_context_create(['http' => ['timeout' => 2]]);
+                    $response = @file_get_contents("http://ip-api.com/json/{$ip}", false, $ctx);
+                    if ($response) {
+                        $data = json_decode($response);
+                        if (isset($data->status) && $data->status === 'success') {
+                            $location = $data->city . ', ' . $data->regionName . ', ' . $data->country;
+                        }
+                    }
+                } catch (\Exception $e) {}
+            } else {
+                $location = 'Localhost';
+            }
+
+            \App\Models\ActivityLog::create([
+                'user_name' => $user->name,
+                'role' => $user->role,
+                'action' => 'Login',
+                'description' => ucfirst($user->role) . ' berhasil login ke panel.',
+                'ip_address' => $ip,
+                'location' => $location,
+                'user_agent' => substr($request->userAgent(), 0, 255),
+                'kode_cabang' => $user->kode_cabang ?? null
+            ]);
+
             return redirect()->intended(route('panel.dashboard'))
                 ->with('success', 'Selamat datang, ' . $user->name);
         }

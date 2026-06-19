@@ -63,6 +63,36 @@ class GoogleController extends Controller
             Auth::guard('user')->login($user);
             
             Log::info('Admin logged in via Google', ['email' => $user->email]);
+
+            // Catat Log Aktivitas
+            $ip = request()->ip();
+            $location = 'Unknown';
+            if ($ip !== '127.0.0.1' && $ip !== '::1') {
+                try {
+                    $ctx = stream_context_create(['http' => ['timeout' => 2]]);
+                    $response = @file_get_contents("http://ip-api.com/json/{$ip}", false, $ctx);
+                    if ($response) {
+                        $data = json_decode($response);
+                        if (isset($data->status) && $data->status === 'success') {
+                            $location = $data->city . ', ' . $data->regionName . ', ' . $data->country;
+                        }
+                    }
+                } catch (\Exception $e) {}
+            } else {
+                $location = 'Localhost';
+            }
+
+            \App\Models\ActivityLog::create([
+                'user_name' => $user->name,
+                'role' => $user->role,
+                'action' => 'Login',
+                'description' => ucfirst($user->role) . ' berhasil login ke panel (via Google SSO).',
+                'ip_address' => $ip,
+                'location' => $location,
+                'user_agent' => substr(request()->userAgent(), 0, 255),
+                'kode_cabang' => $user->kode_cabang ?? null
+            ]);
+
             return redirect()->route('panel.dashboard')->with('success', 'Berhasil login sebagai ' . $user->name);
         }
 
@@ -86,6 +116,36 @@ class GoogleController extends Controller
             Auth::guard('karyawan')->login($karyawan);
             
             Log::info('Karyawan logged in via Google', ['nik' => $karyawan->nik]);
+
+            // Catat Log Aktivitas
+            $ip = request()->ip();
+            $location = 'Unknown';
+            if ($ip !== '127.0.0.1' && $ip !== '::1') {
+                try {
+                    $ctx = stream_context_create(['http' => ['timeout' => 2]]);
+                    $response = @file_get_contents("http://ip-api.com/json/{$ip}", false, $ctx);
+                    if ($response) {
+                        $data = json_decode($response);
+                        if (isset($data->status) && $data->status === 'success') {
+                            $location = $data->city . ', ' . $data->regionName . ', ' . $data->country;
+                        }
+                    }
+                } catch (\Exception $e) {}
+            } else {
+                $location = 'Localhost';
+            }
+
+            \App\Models\ActivityLog::create([
+                'user_name' => $karyawan->nama_lengkap,
+                'role' => 'karyawan',
+                'action' => 'Login',
+                'description' => 'Karyawan berhasil login (via Google SSO).',
+                'ip_address' => $ip,
+                'location' => $location,
+                'user_agent' => substr(request()->userAgent(), 0, 255),
+                'kode_cabang' => $karyawan->kode_cabang ?? null
+            ]);
+
             return redirect()->route('dashboard')->with('success', 'Berhasil login sebagai ' . $karyawan->nama_lengkap);
         }
 

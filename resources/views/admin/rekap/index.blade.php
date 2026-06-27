@@ -288,20 +288,20 @@
 
                 <div class="fgroup">
                     <label>Cabang</label>
-                    <select name="kode_cabang" id="kode_cabang" class="filter-karyawan">
+                    <select name="branch_id" id="branch_id" class="filter-karyawan">
                         <option value="">Semua Cabang</option>
-                        @foreach($cabang as $c)
-                            <option value="{{ $c->kode_cabang }}">{{ $c->nama_cabang }}</option>
+                        @foreach($branches as $c)
+                            <option value="{{ $c->id }}">{{ $c->name }}</option>
                         @endforeach
                     </select>
                 </div>
 
                 <div class="fgroup">
-                    <label>Departemen</label>
-                    <select name="kode_dept" id="kode_dept" class="filter-karyawan">
-                        <option value="">Semua Departemen</option>
-                        @foreach($departemen as $d)
-                            <option value="{{ $d->kode_dept }}">{{ $d->nama_dept }}</option>
+                    <label>Unit</label>
+                    <select name="unit_id" id="unit_id" class="filter-karyawan">
+                        <option value="">Semua Unit</option>
+                        @foreach($units as $u)
+                            <option value="{{ $u->id }}">{{ $u->name }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -399,8 +399,8 @@ $(document).ready(function () {
             url: '/panel/rekap/getkaryawan',
             data: {
                 _token: "{{ csrf_token() }}",
-                kode_cabang: $('#kode_cabang').val(),
-                kode_dept:   $('#kode_dept').val()
+                branch_id: $('#branch_id').val(),
+                unit_id:   $('#unit_id').val()
             },
             cache: false,
             success: function (respond) {

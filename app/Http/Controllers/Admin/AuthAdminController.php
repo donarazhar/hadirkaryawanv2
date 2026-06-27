@@ -77,7 +77,7 @@ class AuthAdminController extends Controller
                 'ip_address' => $ip,
                 'location' => $location,
                 'user_agent' => substr($request->userAgent(), 0, 255),
-                'kode_cabang' => $user->kode_cabang ?? null
+                'branch_id' => $user->branch_id ?? null
             ]);
 
             return redirect()->intended(route('panel.dashboard'))

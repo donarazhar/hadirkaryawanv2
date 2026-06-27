@@ -29,9 +29,10 @@ class ProfileKaryawanController extends Controller
 
             // Get data karyawan lengkap dengan relasi
             $karyawan = DB::table('karyawan')
-                ->select('karyawan.*', 'departemen.nama_dept', 'cabang.nama_cabang')
-                ->leftJoin('departemen', 'karyawan.kode_dept', '=', 'departemen.kode_dept')
-                ->leftJoin('cabang', 'karyawan.kode_cabang', '=', 'cabang.kode_cabang')
+                ->select('karyawan.*', 'units.name as nama_dept', 'branches.name as nama_cabang')
+                ->leftJoin('organs', 'karyawan.organ_id', '=', 'organs.id')
+                ->leftJoin('units', 'organs.unit_id', '=', 'units.id')
+                ->leftJoin('branches', 'units.branch_id', '=', 'branches.id')
                 ->where('karyawan.nik', $nik)
                 ->first();
 
@@ -204,12 +205,13 @@ class ProfileKaryawanController extends Controller
                     'karyawan.jabatan',
                     'karyawan.no_hp',
                     'karyawan.foto',
-                    'departemen.nama_dept',
-                    'cabang.nama_cabang',
-                    'cabang.lokasi_cabang'
+                    'units.name as nama_dept',
+                    'branches.name as nama_cabang',
+                    'branches.lokasi_cabang'
                 )
-                ->leftJoin('departemen', 'karyawan.kode_dept', '=', 'departemen.kode_dept')
-                ->leftJoin('cabang', 'karyawan.kode_cabang', '=', 'cabang.kode_cabang')
+                ->leftJoin('organs', 'karyawan.organ_id', '=', 'organs.id')
+                ->leftJoin('units', 'organs.unit_id', '=', 'units.id')
+                ->leftJoin('branches', 'units.branch_id', '=', 'branches.id')
                 ->where('karyawan.nik', $nik)
                 ->first();
 

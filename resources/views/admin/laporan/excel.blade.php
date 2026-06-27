@@ -11,7 +11,7 @@
             <th>Tanggal</th>
             <th>NIK</th>
             <th>Nama Karyawan</th>
-            <th>Departemen</th>
+            <th>Unit</th>
             <th>Jam Masuk</th>
             <th>Jam Pulang</th>
             <th>Status</th>
@@ -25,7 +25,7 @@
             <td>{{ date('d-m-Y', strtotime($d->tgl_presensi)) }}</td>
             <td>'{{ $d->nik }}</td>
             <td>{{ $d->nama_lengkap }}</td>
-            <td>{{ $d->kode_dept }}</td>
+            <td>{{ $d->nama_dept }}</td>
             <td>{{ $d->jam_in }}</td>
             <td>{{ $d->jam_out }}</td>
             <td>

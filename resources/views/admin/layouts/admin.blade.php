@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>@yield('title') - YPI Al Azhar</title>
+    <title>@yield('title') - Al Azhar Presensi System</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
@@ -503,8 +503,8 @@
                 <img src="{{ asset('assets/img/logoypia.png') }}" alt="Logo">
             </div>
             <div class="sb-brand-text">
-                <div class="sb-app-name">Presensi<span>GPS</span></div>
-                <div class="sb-app-sub">YPI Al Azhar — Panel Admin</div>
+                <div class="sb-app-name">Al Azhar Presensi <span>System</span></div>
+                <div class="sb-app-sub">Al Azhar Presensi System</div>
             </div>
         </div>
 
@@ -601,7 +601,7 @@
             <div class="sb-section-label">Master Data</div>
             <div class="sb-group">
                 @php
-                    $masterOpen = Request::is('panel/cabang*') || Request::is('panel/departemen*') || Request::is('panel/harilibur*');
+                    $masterOpen = Request::is('panel/branch*') || Request::is('panel/unit*') || Request::is('panel/organ*') || Request::is('panel/harilibur*');
                 @endphp
                 <div class="sb-group-trigger {{ $masterOpen ? 'open' : '' }}"
                      onclick="toggleGroup('grpMaster', this)"
@@ -611,13 +611,17 @@
                     <i class="mdi mdi-chevron-down sb-chevron"></i>
                 </div>
                 <div class="sb-children {{ $masterOpen ? 'open' : '' }}" id="grpMaster">
-                    <a href="{{ route('panel.cabang.index') }}"
-                       class="sb-sub-item {{ Request::is('panel/cabang*') ? 'active' : '' }}">
-                        <i class="mdi mdi-office-building-outline"></i> Data Cabang
+                    <a href="{{ route('panel.branch.index') }}"
+                       class="sb-sub-item {{ Request::is('panel/branch*') ? 'active' : '' }}">
+                        <i class="mdi mdi-office-building-outline"></i> Cabang
                     </a>
-                    <a href="{{ route('panel.departemen.index') }}"
-                       class="sb-sub-item {{ Request::is('panel/departemen*') ? 'active' : '' }}">
-                        <i class="mdi mdi-file-tree"></i> Data Departemen
+                    <a href="{{ route('panel.unit.index') }}"
+                       class="sb-sub-item {{ Request::is('panel/unit*') ? 'active' : '' }}">
+                        <i class="mdi mdi-domain"></i> Data Unit
+                    </a>
+                    <a href="{{ route('panel.organ.index') }}"
+                       class="sb-sub-item {{ Request::is('panel/organ*') ? 'active' : '' }}">
+                        <i class="mdi mdi-account-tie"></i> Data Organ
                     </a>
                     <a href="{{ route('panel.harilibur.index') }}"
                        class="sb-sub-item {{ Request::is('panel/harilibur*') ? 'active' : '' }}">
@@ -632,7 +636,7 @@
             <div class="sb-section-label">Konfigurasi</div>
             <div class="sb-group">
                 @php
-                    $konfOpen = Request::is('panel/jamkerja*') || Request::is('panel/konfigurasi-jk-dept*') || Request::is('panel/user*') || Request::is('panel/activity-logs*');
+                    $konfOpen = Request::is('panel/jamkerja*') || Request::is('panel/konfigurasi-jk-unit*') || Request::is('panel/user*') || Request::is('panel/activity-logs*');
                 @endphp
                 <div class="sb-group-trigger {{ $konfOpen ? 'open' : '' }}"
                      onclick="toggleGroup('grpKonf', this)"
@@ -646,8 +650,8 @@
                        class="sb-sub-item {{ Request::is('panel/jamkerja*') ? 'active' : '' }}">
                         <i class="mdi mdi-clock-outline"></i> Jam Kerja
                     </a>
-                    <a href="{{ route('panel.konfigurasi-jk-dept.index') }}"
-                       class="sb-sub-item {{ Request::is('panel/konfigurasi-jk-dept*') ? 'active' : '' }}">
+                    <a href="{{ route('panel.konfigurasi-jk-unit.index') }}"
+                       class="sb-sub-item {{ Request::is('panel/konfigurasi-jk-unit*') ? 'active' : '' }}">
                         <i class="mdi mdi-cog-sync-outline"></i> Jam Kerja Dept.
                     </a>
                     @if(Auth::guard('user')->user()->role == 'superadmin')

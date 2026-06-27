@@ -16,8 +16,10 @@ class DashboardKaryawanController extends Controller
         $hariini = date("Y-m-d");
         $bulanini = date("m") * 1;
         $tahunini = date("Y");
-        $nik = Auth::guard('karyawan')->user()->nik;
-        $kode_cabang = Auth::guard('karyawan')->user()->kode_cabang;
+        $karyawan_auth = Auth::guard('karyawan')->user();
+        $karyawan = \App\Models\Karyawan::with('organ.unit')->where('nik', $karyawan_auth->nik)->first();
+        $nik = $karyawan->nik;
+        $branch_id = $karyawan->organ->unit->branch_id ?? null;
 
         // Presensi hari ini dengan join ke jam_kerja untuk mendapatkan jam_masuk (Mendukung Multi-Shift)
         $presensihariini = DB::table('presensi')
@@ -70,6 +72,8 @@ class DashboardKaryawanController extends Controller
         // Leaderboard presensi cabang hari ini
         $leaderboard = DB::table('presensi')
             ->join('karyawan', 'presensi.nik', '=', 'karyawan.nik')
+            ->join('organs', 'karyawan.organ_id', '=', 'organs.id')
+            ->join('units', 'organs.unit_id', '=', 'units.id')
             ->select(
                 'presensi.*',
                 'karyawan.nama_lengkap',
@@ -77,7 +81,7 @@ class DashboardKaryawanController extends Controller
                 'karyawan.foto'
             )
             ->where('presensi.tgl_presensi', $hariini)
-            ->where('karyawan.kode_cabang', $kode_cabang)
+            ->where('units.branch_id', $branch_id)
             ->orderBy('presensi.jam_in', 'asc')
             ->get();
 
@@ -85,6 +89,8 @@ class DashboardKaryawanController extends Controller
         $riwayattim = DB::table('presensi')
             ->join('karyawan', 'presensi.nik', '=', 'karyawan.nik')
             ->leftJoin('jam_kerja', 'presensi.kode_jam_kerja', '=', 'jam_kerja.kode_jam_kerja')
+            ->join('organs', 'karyawan.organ_id', '=', 'organs.id')
+            ->join('units', 'organs.unit_id', '=', 'units.id')
             ->select(
                 'presensi.*',
                 'karyawan.nama_lengkap',
@@ -92,7 +98,7 @@ class DashboardKaryawanController extends Controller
                 'karyawan.foto',
                 'jam_kerja.jam_masuk'
             )
-            ->where('karyawan.kode_cabang', $kode_cabang)
+            ->where('units.branch_id', $branch_id)
             ->where('presensi.tgl_presensi', $hariini) // HANYA HARI INI
             ->where('presensi.nik', '!=', $nik) // Exclude user yang login
             ->orderBy('presensi.jam_in', 'asc')

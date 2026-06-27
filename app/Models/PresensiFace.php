@@ -49,7 +49,7 @@ class PresensiFace extends Model
     public function karyawan(): BelongsTo
     {
         return $this->belongsTo(Karyawan::class, 'nik', 'nik')
-            ->with(['cabang', 'departemen']);
+            ->with(['organ.unit.branch']);
     }
 
     /**
@@ -62,8 +62,9 @@ class PresensiFace extends Model
                 // Get jam kerja from karyawan
                 $query->select('kode_jam_kerja')
                     ->from('karyawan')
-                    ->join('konfigurasi_jk_dept', 'karyawan.kode_dept', '=', 'konfigurasi_jk_dept.kode_dept')
-                    ->join('konfigurasi_jk_dept_detail', 'konfigurasi_jk_dept.kode_jk_dept', '=', 'konfigurasi_jk_dept_detail.kode_jk_dept')
+                    ->join('organs', 'karyawan.organ_id', '=', 'organs.id')
+                    ->join('konfigurasi_jk_unit', 'organs.unit_id', '=', 'konfigurasi_jk_unit.unit_id')
+                    ->join('konfigurasi_jk_unit_detail', 'konfigurasi_jk_unit.kode_jk_unit', '=', 'konfigurasi_jk_unit_detail.kode_jk_unit')
                     ->where('karyawan.nik', $this->nik)
                     ->limit(1);
             });
@@ -233,7 +234,7 @@ class PresensiFace extends Model
     {
         return $query->with([
             'karyawan' => function ($q) {
-                $q->with(['cabang', 'departemen']);
+                $q->with(['organ.unit.branch']);
             }
         ]);
     }

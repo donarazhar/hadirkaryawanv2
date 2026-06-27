@@ -534,20 +534,20 @@
                         <input type="text" name="search" placeholder="NIK, Nama, atau Jabatan..." value="{{ request('search') }}">
                     </div>
                     <div class="fg">
-                        <label>Departemen</label>
-                        <select name="kode_dept">
-                            <option value="">Semua Departemen</option>
-                            @foreach($departemen as $dept)
-                                <option value="{{ $dept->kode_dept }}" {{ request('kode_dept') == $dept->kode_dept ? 'selected' : '' }}>{{ $dept->nama_dept }}</option>
+                        <label>Unit</label>
+                        <select name="unit_id">
+                            <option value="">Semua Unit</option>
+                            @foreach($units as $u)
+                                <option value="{{ $u->id }}" {{ request('unit_id') == $u->id ? 'selected' : '' }}>{{ $u->name }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="fg">
-                        <label>Cabang</label>
-                        <select name="kode_cabang">
-                            <option value="">Semua Cabang</option>
-                            @foreach($cabang as $cbg)
-                                <option value="{{ $cbg->kode_cabang }}" {{ request('kode_cabang') == $cbg->kode_cabang ? 'selected' : '' }}>{{ $cbg->nama_cabang }}</option>
+                        <label>Organisasi</label>
+                        <select name="organ_id">
+                            <option value="">Semua Organisasi</option>
+                            @foreach($organs as $o)
+                                <option value="{{ $o->id }}" {{ request('organ_id') == $o->id ? 'selected' : '' }}>{{ $o->name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -606,11 +606,11 @@
                             </div>
                         </td>
                         <td>
-                            @if($item->cabang)
-                                <div class="place-cabang">{{ $item->cabang->nama_cabang }}</div>
+                            @if($item->organ && $item->organ->unit && $item->organ->unit->branch)
+                                <div class="place-cabang">{{ $item->organ->unit->branch->name }}</div>
                             @endif
-                            @if($item->departemen)
-                                <div class="place-dept">{{ $item->departemen->nama_dept }}</div>
+                            @if($item->organ)
+                                <div class="place-dept">{{ $item->organ->name }} ({{ $item->organ->unit->name ?? '' }})</div>
                             @else
                                 <div class="place-dept">—</div>
                             @endif

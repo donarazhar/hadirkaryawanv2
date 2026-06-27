@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('activity_logs', function (Blueprint $table) {
             $table->string('location')->nullable()->after('ip_address');
             $table->string('user_agent')->nullable()->after('location');
-            $table->string('kode_cabang')->nullable()->after('user_agent');
+            $table->unsignedBigInteger('branch_id')->nullable()->after('user_agent');
         });
     }
 
@@ -24,7 +24,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('activity_logs', function (Blueprint $table) {
-            $table->dropColumn(['location', 'user_agent', 'kode_cabang']);
+            $table->dropColumn(['location', 'user_agent', 'branch_id']);
         });
     }
 };

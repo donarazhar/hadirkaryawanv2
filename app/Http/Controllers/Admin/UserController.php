@@ -3,8 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Cabang;
-use App\Models\Departemen;
+use App\Models\Branch;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -18,7 +17,7 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $query = User::with(['cabang', 'departemen']);
+        $query = User::with(['branch']);
 
         if ($request->has('search') && $request->search != '') {
             $search = $request->search;
@@ -39,10 +38,9 @@ class UserController extends Controller
      */
     public function create()
     {
-        $cabang = Cabang::orderBy('nama_cabang', 'ASC')->get();
-        $departemen = Departemen::orderBy('nama_dept', 'ASC')->get();
+        $branches = Branch::orderBy('name', 'ASC')->get();
         $karyawan = \App\Models\Karyawan::orderBy('nama_lengkap', 'ASC')->get();
-        return view('admin.user.create', compact('cabang', 'departemen', 'karyawan'));
+        return view('admin.user.create', compact('branches', 'karyawan'));
     }
 
     /**
@@ -55,8 +53,7 @@ class UserController extends Controller
             'email' => 'required|email|max:255|unique:users,email',
             'password' => $request->role === 'superadmin' ? 'required|min:6' : 'nullable',
             'role' => ['required', Rule::in(['superadmin', 'admin', 'pimpinan'])],
-            'kode_cabang' => 'nullable|string|exists:cabang,kode_cabang',
-            'kode_dept' => 'nullable|string|exists:departemen,kode_dept',
+            'branch_id' => 'nullable|integer|exists:branches,id',
         ], [
             'name.required' => 'Nama wajib diisi',
             'email.required' => 'Email wajib diisi',
@@ -67,11 +64,8 @@ class UserController extends Controller
         ]);
 
         $validator->after(function ($validator) use ($request) {
-            if (in_array($request->role, ['admin', 'pimpinan']) && empty($request->kode_cabang)) {
-                $validator->errors()->add('kode_cabang', 'Cabang wajib dipilih untuk role Admin dan Pimpinan.');
-            }
-            if ($request->role === 'pimpinan' && empty($request->kode_dept)) {
-                $validator->errors()->add('kode_dept', 'Departemen wajib dipilih untuk role Pimpinan.');
+            if (in_array($request->role, ['admin', 'pimpinan']) && empty($request->branch_id)) {
+                $validator->errors()->add('branch_id', 'Cabang wajib dipilih untuk role Admin dan Pimpinan.');
             }
         });
 
@@ -94,8 +88,7 @@ class UserController extends Controller
                 'nik_karyawan' => $request->nik_karyawan ?? null,
                 'password' => $password,
                 'role' => $request->role,
-                'kode_cabang' => $request->role === 'superadmin' ? null : $request->kode_cabang,
-                'kode_dept' => $request->role === 'pimpinan' ? $request->kode_dept : null,
+                'branch_id' => $request->role === 'superadmin' ? null : $request->branch_id,
             ]);
 
             return redirect()->route('panel.user.index')->with(['success' => 'Data User berhasil ditambahkan']);
@@ -110,10 +103,9 @@ class UserController extends Controller
     public function edit($id)
     {
         $user = User::findOrFail($id);
-        $cabang = Cabang::orderBy('nama_cabang', 'ASC')->get();
-        $departemen = Departemen::orderBy('nama_dept', 'ASC')->get();
+        $branches = Branch::orderBy('name', 'ASC')->get();
         $karyawan = \App\Models\Karyawan::orderBy('nama_lengkap', 'ASC')->get();
-        return view('admin.user.edit', compact('user', 'cabang', 'departemen', 'karyawan'));
+        return view('admin.user.edit', compact('user', 'branches', 'karyawan'));
     }
 
     /**
@@ -128,8 +120,7 @@ class UserController extends Controller
             'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'password' => 'nullable|min:6',
             'role' => ['required', Rule::in(['superadmin', 'admin', 'pimpinan'])],
-            'kode_cabang' => 'nullable|string|exists:cabang,kode_cabang',
-            'kode_dept' => 'nullable|string|exists:departemen,kode_dept',
+            'branch_id' => 'nullable|integer|exists:branches,id',
         ], [
             'name.required' => 'Nama wajib diisi',
             'email.required' => 'Email wajib diisi',
@@ -139,11 +130,8 @@ class UserController extends Controller
         ]);
 
         $validator->after(function ($validator) use ($request) {
-            if (in_array($request->role, ['admin', 'pimpinan']) && empty($request->kode_cabang)) {
-                $validator->errors()->add('kode_cabang', 'Cabang wajib dipilih untuk role Admin dan Pimpinan.');
-            }
-            if ($request->role === 'pimpinan' && empty($request->kode_dept)) {
-                $validator->errors()->add('kode_dept', 'Departemen wajib dipilih untuk role Pimpinan.');
+            if (in_array($request->role, ['admin', 'pimpinan']) && empty($request->branch_id)) {
+                $validator->errors()->add('branch_id', 'Cabang wajib dipilih untuk role Admin dan Pimpinan.');
             }
         });
 
@@ -157,8 +145,7 @@ class UserController extends Controller
                 'email' => $request->email,
                 'nik_karyawan' => $request->nik_karyawan ?? null,
                 'role' => $request->role,
-                'kode_cabang' => $request->role === 'superadmin' ? null : $request->kode_cabang,
-                'kode_dept' => $request->role === 'pimpinan' ? $request->kode_dept : null,
+                'branch_id' => $request->role === 'superadmin' ? null : $request->branch_id,
             ];
 
             if ($request->role !== 'superadmin' && !empty($request->nik_karyawan)) {

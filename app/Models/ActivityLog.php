@@ -14,6 +14,6 @@ class ActivityLog extends Model
         'ip_address',
         'location',
         'user_agent',
-        'kode_cabang'
+        'branch_id'
     ];
 }

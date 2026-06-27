@@ -19,8 +19,7 @@ return new class extends Migration
             $table->string('password');
             $table->string('remember_token', 255)->nullable();
             $table->string('foto', 30)->nullable();
-            $table->char('kode_dept', 10)->nullable();
-            $table->char('kode_cabang', 10)->nullable();
+            $table->foreignId('organ_id')->nullable()->constrained('organs')->onDelete('set null');
             $table->timestamps();
         });
     }

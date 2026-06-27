@@ -90,7 +90,7 @@ class GoogleController extends Controller
                 'ip_address' => $ip,
                 'location' => $location,
                 'user_agent' => substr(request()->userAgent(), 0, 255),
-                'kode_cabang' => $user->kode_cabang ?? null
+                'branch_id' => $user->branch_id ?? null
             ]);
 
             return redirect()->route('panel.dashboard')->with('success', 'Berhasil login sebagai ' . $user->name);
@@ -143,7 +143,7 @@ class GoogleController extends Controller
                 'ip_address' => $ip,
                 'location' => $location,
                 'user_agent' => substr(request()->userAgent(), 0, 255),
-                'kode_cabang' => $karyawan->kode_cabang ?? null
+                'branch_id' => $karyawan->organ->unit->branch_id ?? null
             ]);
 
             return redirect()->route('dashboard')->with('success', 'Berhasil login sebagai ' . $karyawan->nama_lengkap);

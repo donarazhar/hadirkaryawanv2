@@ -497,12 +497,13 @@ class IzinKaryawanController extends Controller
 
             // Ambil data karyawan + relasi departemen & cabang
             $karyawan = DB::table('karyawan')
-                ->leftJoin('departemen', 'karyawan.kode_dept', '=', 'departemen.kode_dept')
-                ->leftJoin('cabang', 'karyawan.kode_cabang', '=', 'cabang.kode_cabang')
+                ->leftJoin('organs', 'karyawan.organ_id', '=', 'organs.id')
+                ->leftJoin('units', 'organs.unit_id', '=', 'units.id')
+                ->leftJoin('branches', 'units.branch_id', '=', 'branches.id')
                 ->select(
                     'karyawan.*',
-                    'departemen.nama_dept',
-                    'cabang.nama_cabang'
+                    'units.name as nama_dept',
+                    'branches.name as nama_cabang'
                 )
                 ->where('karyawan.nik', $nik)
                 ->first();
@@ -527,10 +528,15 @@ class IzinKaryawanController extends Controller
         $pimpinanData = $karyawan->getPimpinanDetail();
 
         // Ambil NIK karyawan di bawah pimpinan ini
-        $bawahanNiks = \App\Models\Karyawan::where('kode_dept', $pimpinanData->kode_dept)
-            ->where('kode_cabang', $pimpinanData->kode_cabang)
-            ->where('nik', '!=', $karyawan->nik)
-            ->pluck('nik');
+        $bawahanNiks = \App\Models\Karyawan::whereHas('organ', function($q) use ($pimpinanData) {
+            $q->whereHas('unit', function($q2) use ($pimpinanData) {
+                if ($pimpinanData && $pimpinanData->branch_id) {
+                    $q2->where('branch_id', $pimpinanData->branch_id);
+                }
+            });
+        })
+        ->where('nik', '!=', $karyawan->nik)
+        ->pluck('nik');
 
         $query = DB::table('pengajuan_izin')
             ->join('karyawan', 'pengajuan_izin.nik', '=', 'karyawan.nik')

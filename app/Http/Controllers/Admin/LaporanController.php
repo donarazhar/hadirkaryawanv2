@@ -6,6 +6,11 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
+use App\Models\Branch;
+use App\Models\Unit;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\LaporanPresensiExport;
 
 class LaporanController extends Controller
 {
@@ -15,41 +20,43 @@ class LaporanController extends Controller
         $user = auth('user')->user();
 
         if ($user && $user->role === 'admin') {
-            $cabang = DB::table('cabang')->where('kode_cabang', $user->kode_cabang)->get();
+            $branches = Branch::where('id', $user->branch_id)->get();
+            $units = Unit::where('branch_id', $user->branch_id)->orderBy('name')->get();
         } else {
-            $cabang = DB::table('cabang')->orderBy('kode_cabang')->get();
+            $branches = Branch::orderBy('name')->get();
+            $units = Unit::orderBy('name')->get();
         }
-        
-        $departemen = DB::table('departemen')->orderBy('kode_dept')->get();
 
         $bulan = $request->bulan != null ? $request->bulan : date('m');
         $tahun = $request->tahun != null ? $request->tahun : date('Y');
         
-        $kode_cabang = $request->kode_cabang != null ? $request->kode_cabang : '';
+        $branch_id = $request->branch_id != null ? $request->branch_id : '';
         if ($user && $user->role === 'admin') {
-            $kode_cabang = $user->kode_cabang;
+            $branch_id = $user->branch_id;
         }
 
-        $kode_dept = $request->kode_dept != null ? $request->kode_dept : '';
+        $unit_id = $request->unit_id != null ? $request->unit_id : '';
 
         $query = DB::table('presensi')
-            ->select('presensi.*', 'karyawan.nama_lengkap', 'karyawan.kode_dept', 'jam_kerja.nama_jam_kerja')
+            ->select('presensi.*', 'karyawan.nama_lengkap', 'units.name as nama_dept', 'jam_kerja.nama_jam_kerja')
             ->join('karyawan', 'presensi.nik', '=', 'karyawan.nik')
+            ->join('organs', 'karyawan.organ_id', '=', 'organs.id')
+            ->join('units', 'organs.unit_id', '=', 'units.id')
             ->leftJoin('jam_kerja', 'presensi.kode_jam_kerja', '=', 'jam_kerja.kode_jam_kerja')
             ->whereRaw('MONTH(tgl_presensi)="' . $bulan . '"')
             ->whereRaw('YEAR(tgl_presensi)="' . $tahun . '"');
 
-        if (!empty($kode_cabang)) {
-            $query->where('karyawan.kode_cabang', $kode_cabang);
+        if (!empty($branch_id)) {
+            $query->where('units.branch_id', $branch_id);
         }
         
-        if (!empty($kode_dept)) {
-            $query->where('karyawan.kode_dept', $kode_dept);
+        if (!empty($unit_id)) {
+            $query->where('units.id', $unit_id);
         }
 
         $presensi = $query->orderBy('tgl_presensi', 'desc')->orderBy('karyawan.nama_lengkap')->get();
 
-        return view('admin.laporan.index', compact('namabulan', 'cabang', 'departemen', 'bulan', 'tahun', 'kode_cabang', 'kode_dept', 'presensi'));
+        return view('admin.laporan.index', compact('namabulan', 'branches', 'units', 'bulan', 'tahun', 'branch_id', 'unit_id', 'presensi'));
     }
 
     public function exportPdf(Request $request)
@@ -58,33 +65,35 @@ class LaporanController extends Controller
         $bulan = $request->bulan != null ? $request->bulan : date('m');
         $tahun = $request->tahun != null ? $request->tahun : date('Y');
         
-        $kode_cabang = $request->kode_cabang != null ? $request->kode_cabang : '';
+        $branch_id = $request->branch_id != null ? $request->branch_id : '';
         if ($user && $user->role === 'admin') {
-            $kode_cabang = $user->kode_cabang;
+            $branch_id = $user->branch_id;
         }
 
-        $kode_dept = $request->kode_dept != null ? $request->kode_dept : '';
+        $unit_id = $request->unit_id != null ? $request->unit_id : '';
 
         $query = DB::table('presensi')
-            ->select('presensi.*', 'karyawan.nama_lengkap', 'karyawan.kode_dept', 'jam_kerja.nama_jam_kerja')
+            ->select('presensi.*', 'karyawan.nama_lengkap', 'jam_kerja.nama_jam_kerja')
             ->join('karyawan', 'presensi.nik', '=', 'karyawan.nik')
+            ->join('organs', 'karyawan.organ_id', '=', 'organs.id')
+            ->join('units', 'organs.unit_id', '=', 'units.id')
             ->leftJoin('jam_kerja', 'presensi.kode_jam_kerja', '=', 'jam_kerja.kode_jam_kerja')
             ->whereRaw('MONTH(tgl_presensi)="' . $bulan . '"')
             ->whereRaw('YEAR(tgl_presensi)="' . $tahun . '"');
 
-        if (!empty($kode_cabang)) {
-            $query->where('karyawan.kode_cabang', $kode_cabang);
+        if (!empty($branch_id)) {
+            $query->where('units.branch_id', $branch_id);
         }
         
-        if (!empty($kode_dept)) {
-            $query->where('karyawan.kode_dept', $kode_dept);
+        if (!empty($unit_id)) {
+            $query->where('units.id', $unit_id);
         }
 
         $presensi = $query->orderBy('tgl_presensi', 'desc')->orderBy('karyawan.nama_lengkap')->get();
         $namabulan = ["", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
         $namabulan = $namabulan[(int)$bulan];
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.excel', compact('presensi', 'namabulan', 'tahun'));
+        $pdf = Pdf::loadView('admin.laporan.excel', compact('presensi', 'namabulan', 'tahun'));
         return $pdf->download("Laporan_Presensi_{$namabulan}_{$tahun}.pdf");
     }
 
@@ -94,52 +103,58 @@ class LaporanController extends Controller
         $bulan = $request->bulan != null ? $request->bulan : date('m');
         $tahun = $request->tahun != null ? $request->tahun : date('Y');
         
-        $kode_cabang = $request->kode_cabang != null ? $request->kode_cabang : '';
+        $branch_id = $request->branch_id != null ? $request->branch_id : '';
         if ($user && $user->role === 'admin') {
-            $kode_cabang = $user->kode_cabang;
+            $branch_id = $user->branch_id;
         }
 
-        $kode_dept = $request->kode_dept != null ? $request->kode_dept : '';
+        $unit_id = $request->unit_id != null ? $request->unit_id : '';
 
         $query = DB::table('presensi')
-            ->select('presensi.*', 'karyawan.nama_lengkap', 'karyawan.kode_dept', 'jam_kerja.nama_jam_kerja')
+            ->select('presensi.*', 'karyawan.nama_lengkap', 'jam_kerja.nama_jam_kerja')
             ->join('karyawan', 'presensi.nik', '=', 'karyawan.nik')
+            ->join('organs', 'karyawan.organ_id', '=', 'organs.id')
+            ->join('units', 'organs.unit_id', '=', 'units.id')
             ->leftJoin('jam_kerja', 'presensi.kode_jam_kerja', '=', 'jam_kerja.kode_jam_kerja')
             ->whereRaw('MONTH(tgl_presensi)="' . $bulan . '"')
             ->whereRaw('YEAR(tgl_presensi)="' . $tahun . '"');
 
-        if (!empty($kode_cabang)) {
-            $query->where('karyawan.kode_cabang', $kode_cabang);
+        if (!empty($branch_id)) {
+            $query->where('units.branch_id', $branch_id);
         }
         
-        if (!empty($kode_dept)) {
-            $query->where('karyawan.kode_dept', $kode_dept);
+        if (!empty($unit_id)) {
+            $query->where('units.id', $unit_id);
         }
 
         $presensi = $query->orderBy('tgl_presensi', 'desc')->orderBy('karyawan.nama_lengkap')->get();
 
-        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\LaporanPresensiExport($presensi, (int)$bulan, $tahun), "Laporan_Presensi_{$bulan}_{$tahun}.xlsx");
+        return Excel::download(new LaporanPresensiExport($presensi, (int)$bulan, $tahun), "Laporan_Presensi_{$bulan}_{$tahun}.xlsx");
     }
 
     public function getKaryawan(Request $request)
     {
         $user = auth('user')->user();
-        $kode_cabang = $request->kode_cabang;
+        $branch_id = $request->branch_id;
         
         if ($user && $user->role === 'admin') {
-            $kode_cabang = $user->kode_cabang;
+            $branch_id = $user->branch_id;
         }
 
-        $kode_dept = $request->kode_dept;
+        $unit_id = $request->unit_id;
 
-        $query = DB::table('karyawan')->orderBy('nama_lengkap');
+        $query = DB::table('karyawan')
+            ->join('organs', 'karyawan.organ_id', '=', 'organs.id')
+            ->join('units', 'organs.unit_id', '=', 'units.id')
+            ->select('karyawan.*')
+            ->orderBy('nama_lengkap');
         
-        if (!empty($kode_cabang)) {
-            $query->where('kode_cabang', $kode_cabang);
+        if (!empty($branch_id)) {
+            $query->where('units.branch_id', $branch_id);
         }
         
-        if (!empty($kode_dept)) {
-            $query->where('kode_dept', $kode_dept);
+        if (!empty($unit_id)) {
+            $query->where('units.id', $unit_id);
         }
 
         $karyawan = $query->get();
@@ -157,10 +172,13 @@ class LaporanController extends Controller
         
         $query = DB::table('presensi')
             ->join('karyawan', 'presensi.nik', '=', 'karyawan.nik')
+            ->join('organs', 'karyawan.organ_id', '=', 'organs.id')
+            ->join('units', 'organs.unit_id', '=', 'units.id')
+            ->select('presensi.*', 'units.branch_id')
             ->where('presensi.id', $id);
 
         if ($user && $user->role === 'admin') {
-            $query->where('karyawan.kode_cabang', $user->kode_cabang);
+            $query->where('units.branch_id', $user->branch_id);
         }
 
         $presensi = $query->first();
@@ -178,9 +196,12 @@ class LaporanController extends Controller
         $user = auth('user')->user();
         $presensiCheck = DB::table('presensi')
             ->join('karyawan', 'presensi.nik', '=', 'karyawan.nik')
+            ->join('organs', 'karyawan.organ_id', '=', 'organs.id')
+            ->join('units', 'organs.unit_id', '=', 'units.id')
+            ->select('presensi.*', 'units.branch_id')
             ->where('presensi.id', $id)->first();
 
-        if ($user && $user->role === 'admin' && $presensiCheck && $presensiCheck->kode_cabang !== $user->kode_cabang) {
+        if ($user && $user->role === 'admin' && $presensiCheck && $presensiCheck->branch_id !== $user->branch_id) {
             return redirect()->back()->with('error', 'Unauthorized action.');
         }
 
@@ -207,8 +228,13 @@ class LaporanController extends Controller
         $nik = $request->nik;
         
         $user = auth('user')->user();
-        $karyawan = DB::table('karyawan')->where('nik', $nik)->first();
-        if ($user && $user->role === 'admin' && $karyawan && $karyawan->kode_cabang !== $user->kode_cabang) {
+        $karyawan = DB::table('karyawan')
+            ->join('organs', 'karyawan.organ_id', '=', 'organs.id')
+            ->join('units', 'organs.unit_id', '=', 'units.id')
+            ->select('karyawan.*', 'units.branch_id')
+            ->where('nik', $nik)->first();
+
+        if ($user && $user->role === 'admin' && $karyawan && $karyawan->branch_id !== $user->branch_id) {
             return redirect()->back()->with('error', 'Unauthorized action.');
         }
 

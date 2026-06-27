@@ -14,7 +14,7 @@ class ActivityLogController extends Controller
         $query = \App\Models\ActivityLog::orderBy('created_at', 'desc');
 
         if ($user && $user->role === 'admin') {
-            $query->where('kode_cabang', $user->kode_cabang);
+            $query->where('branch_id', $user->branch_id);
         }
 
         $logs = $query->paginate(20);

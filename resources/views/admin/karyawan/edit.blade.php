@@ -537,35 +537,19 @@
                             <i class="mdi mdi-office-building"></i> Penempatan
                         </div>
                         <div class="form-grid-2">
-                            <div class="fgroup">
-                                <label>Departemen <span class="req">*</span></label>
-                                <select name="kode_dept" id="kode_dept" required
-                                    class="{{ $errors->has('kode_dept') ? 'is-invalid' : '' }}">
-                                    <option value="">-- Pilih Departemen --</option>
-                                    @foreach($departemen as $dept)
-                                        <option value="{{ $dept->kode_dept }}"
-                                            {{ old('kode_dept', $karyawan->kode_dept) == $dept->kode_dept ? 'selected' : '' }}>
-                                            {{ $dept->nama_dept }}
+                            <div class="fgroup" style="grid-column: span 2;">
+                                <label>Organisasi / Divisi <span class="req">*</span></label>
+                                <select name="organ_id" id="organ_id" required
+                                    class="{{ $errors->has('organ_id') ? 'is-invalid' : '' }}">
+                                    <option value="">-- Pilih Organisasi --</option>
+                                    @foreach($organs as $organ)
+                                        <option value="{{ $organ->id }}"
+                                            {{ old('organ_id', $karyawan->organ_id) == $organ->id ? 'selected' : '' }}>
+                                            {{ $organ->name }} (Unit: {{ $organ->unit->name }} - Cabang: {{ $organ->unit->branch->name }})
                                         </option>
                                     @endforeach
                                 </select>
-                                @error('kode_dept')
-                                    <div class="field-error"><i class="mdi mdi-alert-circle"></i> {{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="fgroup">
-                                <label>Cabang <span class="req">*</span></label>
-                                <select name="kode_cabang" id="kode_cabang" required
-                                    class="{{ $errors->has('kode_cabang') ? 'is-invalid' : '' }}">
-                                    <option value="">-- Pilih Cabang --</option>
-                                    @foreach($cabang as $cbg)
-                                        <option value="{{ $cbg->kode_cabang }}"
-                                            {{ old('kode_cabang', $karyawan->kode_cabang) == $cbg->kode_cabang ? 'selected' : '' }}>
-                                            {{ $cbg->nama_cabang }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('kode_cabang')
+                                @error('organ_id')
                                     <div class="field-error"><i class="mdi mdi-alert-circle"></i> {{ $message }}</div>
                                 @enderror
                             </div>
@@ -675,15 +659,22 @@
                 <div class="pd-item">
                     <i class="mdi mdi-file-tree text-success"></i>
                     <div>
-                        <strong>Departemen:</strong><br>
-                        {{ $karyawan->departemen->nama_dept ?? 'N/A' }}
+                        <strong>Organisasi:</strong><br>
+                        {{ $karyawan->organ->name ?? 'N/A' }}
                     </div>
                 </div>
                 <div class="pd-item">
-                    <i class="mdi mdi-office-building text-info"></i>
+                    <i class="mdi mdi-shield-account-outline text-info"></i>
+                    <div>
+                        <strong>Unit:</strong><br>
+                        {{ $karyawan->organ->unit->name ?? 'N/A' }}
+                    </div>
+                </div>
+                <div class="pd-item">
+                    <i class="mdi mdi-office-building text-primary"></i>
                     <div>
                         <strong>Cabang:</strong><br>
-                        {{ $karyawan->cabang->nama_cabang ?? 'N/A' }}
+                        {{ $karyawan->organ->unit->branch->name ?? 'N/A' }}
                     </div>
                 </div>
             </div>

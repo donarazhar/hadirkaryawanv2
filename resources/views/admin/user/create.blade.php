@@ -199,43 +199,27 @@
                             <select name="nik_karyawan" id="karyawan-select" class="form-select">
                                 <option value="">-- Pilih Karyawan --</option>
                                 @foreach($karyawan as $k)
-                                    <option value="{{ $k->nik }}" data-nama="{{ $k->nama_lengkap }}" data-email="{{ $k->email }}" data-cabang="{{ $k->kode_cabang }}" data-dept="{{ $k->kode_dept }}">
+                                    <option value="{{ $k->nik }}" data-nama="{{ $k->nama_lengkap }}" data-email="{{ $k->email }}">
                                         {{ $k->nik }} - {{ $k->nama_lengkap }}
                                     </option>
                                 @endforeach
                             </select>
-                            <div class="form-hint"><i class="mdi mdi-information-outline"></i> Nama Lengkap, Email, Cabang dan Departemen akan terisi otomatis berdasarkan karyawan yang dipilih.</div>
+                            <div class="form-hint"><i class="mdi mdi-information-outline"></i> Nama Lengkap dan Email akan terisi otomatis berdasarkan karyawan yang dipilih.</div>
                         </div>
 
                         <div class="fg-row" style="margin-bottom:20px;">
                             <div class="fg" id="cabang-container" style="display:none; margin-bottom:0;">
                                 <label>Pilih Cabang <span class="req">*</span></label>
-                                <select name="kode_cabang" id="cabang-select" class="form-select @error('kode_cabang') is-invalid @enderror">
+                                <select name="branch_id" id="cabang-select" class="form-select @error('branch_id') is-invalid @enderror">
                                     <option value="">-- Pilih Cabang --</option>
-                                    @foreach($cabang as $item)
-                                        <option value="{{ $item->kode_cabang }}" {{ old('kode_cabang') == $item->kode_cabang ? 'selected' : '' }}>
-                                            {{ $item->kode_cabang }} - {{ $item->nama_cabang }}
+                                    @foreach($branches as $item)
+                                        <option value="{{ $item->id }}" {{ old('branch_id') == $item->id ? 'selected' : '' }}>
+                                            {{ $item->name }}
                                         </option>
                                     @endforeach
                                 </select>
                                 <div class="form-hint"><i class="mdi mdi-information-outline"></i> Lokasi penugasan Admin/Pimpinan.</div>
-                                @error('kode_cabang')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div class="fg" id="dept-container" style="display:none; margin-bottom:0;">
-                                <label>Pilih Departemen <span class="req">*</span></label>
-                                <select name="kode_dept" id="dept-select" class="form-select @error('kode_dept') is-invalid @enderror">
-                                    <option value="">-- Pilih Departemen --</option>
-                                    @foreach($departemen as $item)
-                                        <option value="{{ $item->kode_dept }}" {{ old('kode_dept') == $item->kode_dept ? 'selected' : '' }}>
-                                            {{ $item->kode_dept }} - {{ $item->nama_dept }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                <div class="form-hint"><i class="mdi mdi-information-outline"></i> Departemen yang dikepalai Pimpinan.</div>
-                                @error('kode_dept')
+                                @error('branch_id')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
@@ -336,8 +320,6 @@
         const karyawanSelect = $('#karyawan-select');
         const cabangContainer = $('#cabang-container');
         const cabangSelect = $('#cabang-select');
-        const deptContainer = $('#dept-container');
-        const deptSelect = $('#dept-select');
         const nameInput = $('#name-input');
         const emailInput = $('#email-input');
         const passwordContainer = document.getElementById('password-container');
@@ -352,17 +334,9 @@
                 passwordInput.removeAttribute('required');
                 passwordInput.value = '';
                 
-                if(role === 'admin') {
+                if(role === 'admin' || role === 'pimpinan') {
                     cabangContainer.slideDown(200);
                     cabangSelect.prop('required', true);
-                    deptContainer.slideUp(200);
-                    deptSelect.prop('required', false);
-                    deptSelect.val('');
-                } else if(role === 'pimpinan') {
-                    cabangContainer.slideDown(200);
-                    cabangSelect.prop('required', true);
-                    deptContainer.slideDown(200);
-                    deptSelect.prop('required', true);
                 }
             } else {
                 karyawanContainer.slideUp(200);
@@ -373,10 +347,6 @@
                 cabangContainer.slideUp(200);
                 cabangSelect.prop('required', false);
                 cabangSelect.val('');
-                
-                deptContainer.slideUp(200);
-                deptSelect.prop('required', false);
-                deptSelect.val('');
                 
                 // Clear auto-filled inputs for superadmin
                 nameInput.val('');
@@ -400,14 +370,6 @@
                 
                 if(selected.data('email')) {
                     emailInput.val(selected.data('email'));
-                }
-                
-                if(selected.data('cabang')) {
-                    cabangSelect.val(selected.data('cabang'));
-                }
-                
-                if(selected.data('dept')) {
-                    deptSelect.val(selected.data('dept'));
                 }
             }
         });

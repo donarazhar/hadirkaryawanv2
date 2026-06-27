@@ -307,8 +307,8 @@
         </div>
         <div class="face-header-actions">
             <form action="{{ route('panel.face-verification.export') }}" method="GET" class="d-inline">
-                @if(request('kode_cabang')) <input type="hidden" name="kode_cabang" value="{{ request('kode_cabang') }}"> @endif
-                @if(request('kode_dept')) <input type="hidden" name="kode_dept" value="{{ request('kode_dept') }}"> @endif
+                @if(request('branch_id')) <input type="hidden" name="branch_id" value="{{ request('branch_id') }}"> @endif
+                @if(request('unit_id')) <input type="hidden" name="unit_id" value="{{ request('unit_id') }}"> @endif
                 @if(request('status')) <input type="hidden" name="status" value="{{ request('status') }}"> @endif
                 <button type="submit" class="btn-hdr btn-hdr-green">
                     <i class="mdi mdi-file-excel"></i> Export Excel
@@ -376,19 +376,19 @@
                 <div class="filter-grid">
                     <div class="fg">
                         <label>Cabang</label>
-                        <select name="kode_cabang">
+                        <select name="branch_id">
                             <option value="">Semua Cabang</option>
-                            @foreach($cabang as $c)
-                                <option value="{{ $c->kode_cabang }}" {{ request('kode_cabang') == $c->kode_cabang ? 'selected' : '' }}>{{ $c->nama_cabang }}</option>
+                            @foreach($branches as $c)
+                                <option value="{{ $c->id }}" {{ request('branch_id') == $c->id ? 'selected' : '' }}>{{ $c->name }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="fg">
-                        <label>Departemen</label>
-                        <select name="kode_dept">
-                            <option value="">Semua Departemen</option>
-                            @foreach($departemen as $d)
-                                <option value="{{ $d->kode_dept }}" {{ request('kode_dept') == $d->kode_dept ? 'selected' : '' }}>{{ $d->nama_dept }}</option>
+                        <label>Unit</label>
+                        <select name="unit_id">
+                            <option value="">Semua Unit</option>
+                            @foreach($units as $d)
+                                <option value="{{ $d->id }}" {{ request('unit_id') == $d->id ? 'selected' : '' }}>{{ $d->name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -456,8 +456,8 @@
                             </div>
                         </td>
                         <td>
-                            <div class="plc-cabang">{{ $k->cabang->nama_cabang ?? '-' }}</div>
-                            <div class="plc-dept">{{ $k->departemen->nama_dept ?? '-' }}</div>
+                            <div class="plc-cabang">{{ $k->organ->unit->branch->name ?? '-' }}</div>
+                            <div class="plc-dept">{{ $k->organ->unit->name ?? '-' }}</div>
                             <div class="plc-jabatan">{{ $k->jabatan }}</div>
                         </td>
                         <td>

@@ -38,16 +38,17 @@ class PresensiFaceDetailedExport implements WithMultipleSheets
 
         // ✅ Get karyawan based on filters
         $karyawanQuery = DB::table('karyawan as k')
-            ->leftJoin('departemen as d', 'k.kode_dept', '=', 'd.kode_dept')
-            ->leftJoin('cabang as c', 'k.kode_cabang', '=', 'c.kode_cabang')
+            ->leftJoin('organs as o', 'k.organ_id', '=', 'o.id')
+            ->leftJoin('units as u', 'o.unit_id', '=', 'u.id')
+            ->leftJoin('branches as b', 'u.branch_id', '=', 'b.id')
             ->select(
                 'k.nik',
                 'k.nama_lengkap',
                 'k.jabatan',
-                'k.kode_dept',
-                'k.kode_cabang',
-                'd.nama_dept',
-                'c.nama_cabang'
+                'u.id as unit_id',
+                'b.id as branch_id',
+                'u.name as nama_dept',
+                'b.name as nama_cabang'
             );
 
         // ✅ PRIORITY 1: Filter by specific NIK list (if provided)
@@ -60,12 +61,12 @@ class PresensiFaceDetailedExport implements WithMultipleSheets
             ]);
         } else {
             // ✅ PRIORITY 2: Apply cabang/dept filters only if no specific NIK selected
-            if (!empty($this->filters['kode_cabang'])) {
-                $karyawanQuery->where('k.kode_cabang', $this->filters['kode_cabang']);
+            if (!empty($this->filters['branch_id'])) {
+                $karyawanQuery->where('b.id', $this->filters['branch_id']);
             }
 
-            if (!empty($this->filters['kode_dept'])) {
-                $karyawanQuery->where('k.kode_dept', $this->filters['kode_dept']);
+            if (!empty($this->filters['unit_id'])) {
+                $karyawanQuery->where('u.id', $this->filters['unit_id']);
             }
         }
 
@@ -139,7 +140,7 @@ class PresensiFaceSummarySheet implements FromCollection, WithHeadings, WithTitl
             $totalRegular = $presensiQuery->whereNull('shift_ke')->count();
 
             // Get jam kerja config
-            $jamKerjaConfig = $this->getJamKerjaConfig($karyawan->kode_dept, $karyawan->kode_cabang);
+            $jamKerjaConfig = $this->getJamKerjaConfig($karyawan->unit_id, $karyawan->branch_id);
 
             $data->push([
                 $karyawan->nik,
@@ -216,13 +217,13 @@ class PresensiFaceSummarySheet implements FromCollection, WithHeadings, WithTitl
         ];
     }
 
-    private function getJamKerjaConfig($kode_dept, $kode_cabang)
+    private function getJamKerjaConfig($unit_id, $branch_id)
     {
-        $config = DB::table('konfigurasi_jk_dept as kjd')
-            ->join('konfigurasi_jk_dept_detail as kjdd', 'kjd.kode_jk_dept', '=', 'kjdd.kode_jk_dept')
+        $config = DB::table('konfigurasi_jk_unit as kjd')
+            ->join('konfigurasi_jk_unit_detail as kjdd', 'kjd.kode_jk_unit', '=', 'kjdd.kode_jk_unit')
             ->join('jam_kerja as jk', 'kjdd.kode_jam_kerja', '=', 'jk.kode_jam_kerja')
-            ->where('kjd.kode_dept', $kode_dept)
-            ->where('kjd.kode_cabang', $kode_cabang)
+            ->where('kjd.unit_id', $unit_id)
+            ->where('kjd.branch_id', $branch_id)
             ->select('jk.kode_jam_kerja', 'jk.nama_jam_kerja', 'jk.tipe_jam_kerja', 'jk.total_shift')
             ->first();
 
@@ -425,11 +426,11 @@ class PresensiFaceEmployeeSheet implements FromCollection, WithHeadings, WithTit
 
     private function getJamKerjaConfig()
     {
-        $config = DB::table('konfigurasi_jk_dept as kjd')
-            ->join('konfigurasi_jk_dept_detail as kjdd', 'kjd.kode_jk_dept', '=', 'kjdd.kode_jk_dept')
+        $config = DB::table('konfigurasi_jk_unit as kjd')
+            ->join('konfigurasi_jk_unit_detail as kjdd', 'kjd.kode_jk_unit', '=', 'kjdd.kode_jk_unit')
             ->join('jam_kerja as jk', 'kjdd.kode_jam_kerja', '=', 'jk.kode_jam_kerja')
-            ->where('kjd.kode_dept', $this->karyawan->kode_dept)
-            ->where('kjd.kode_cabang', $this->karyawan->kode_cabang)
+            ->where('kjd.unit_id', $this->karyawan->unit_id)
+            ->where('kjd.branch_id', $this->karyawan->branch_id)
             ->select('jk.kode_jam_kerja', 'jk.nama_jam_kerja', 'jk.tipe_jam_kerja', 'jk.total_shift')
             ->first();
 

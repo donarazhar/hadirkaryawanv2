@@ -487,33 +487,18 @@
                             <i class="mdi mdi-office-building"></i> Penempatan
                         </div>
                         <div class="form-grid-2">
-                            <div class="fgroup">
-                                <label>Departemen <span class="req">*</span></label>
-                                <select name="kode_dept" id="kode_dept" required
-                                    class="{{ $errors->has('kode_dept') ? 'is-invalid' : '' }}">
-                                    <option value="">-- Pilih Departemen --</option>
-                                    @foreach($departemen as $dept)
-                                        <option value="{{ $dept->kode_dept }}" {{ old('kode_dept') == $dept->kode_dept ? 'selected' : '' }}>
-                                            {{ $dept->nama_dept }}
+                            <div class="fgroup" style="grid-column: span 2;">
+                                <label>Organisasi / Divisi <span class="req">*</span></label>
+                                <select name="organ_id" id="organ_id" required
+                                    class="{{ $errors->has('organ_id') ? 'is-invalid' : '' }}">
+                                    <option value="">-- Pilih Organisasi --</option>
+                                    @foreach($organs as $organ)
+                                        <option value="{{ $organ->id }}" {{ old('organ_id') == $organ->id ? 'selected' : '' }}>
+                                            {{ $organ->name }} (Unit: {{ $organ->unit->name }} - Cabang: {{ $organ->unit->branch->name }})
                                         </option>
                                     @endforeach
                                 </select>
-                                @error('kode_dept')
-                                    <div class="field-error"><i class="mdi mdi-alert-circle"></i> {{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="fgroup">
-                                <label>Cabang <span class="req">*</span></label>
-                                <select name="kode_cabang" id="kode_cabang" required
-                                    class="{{ $errors->has('kode_cabang') ? 'is-invalid' : '' }}">
-                                    <option value="">-- Pilih Cabang --</option>
-                                    @foreach($cabang as $cbg)
-                                        <option value="{{ $cbg->kode_cabang }}" {{ old('kode_cabang') == $cbg->kode_cabang ? 'selected' : '' }}>
-                                            {{ $cbg->nama_cabang }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('kode_cabang')
+                                @error('organ_id')
                                     <div class="field-error"><i class="mdi mdi-alert-circle"></i> {{ $message }}</div>
                                 @enderror
                             </div>
@@ -607,7 +592,7 @@
                 </div>
                 <div class="info-item">
                     <i class="mdi mdi-office-building"></i>
-                    Departemen dan Cabang harus dipilih
+                    Organisasi penempatan harus dipilih
                 </div>
                 <div class="info-item">
                     <i class="mdi mdi-lock"></i>

@@ -536,19 +536,19 @@
                     </div>
                     <div class="fg">
                         <label>Cabang</label>
-                        <select name="kode_cabang" id="kode_cabang">
+                        <select name="branch_id" id="branch_id">
                             <option value="">Semua Cabang</option>
-                            @foreach($cabang as $c)
-                                <option value="{{ $c->kode_cabang }}" {{ $kode_cabang == $c->kode_cabang ? 'selected' : '' }}>{{ $c->nama_cabang }}</option>
+                            @foreach($branches as $c)
+                                <option value="{{ $c->id }}" {{ $branch_id == $c->id ? 'selected' : '' }}>{{ $c->name }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="fg">
-                        <label>Departemen</label>
-                        <select name="kode_dept" id="kode_dept">
-                            <option value="">Semua Departemen</option>
-                            @foreach($departemen as $d)
-                                <option value="{{ $d->kode_dept }}" {{ $kode_dept == $d->kode_dept ? 'selected' : '' }}>{{ $d->nama_dept }}</option>
+                        <label>Unit</label>
+                        <select name="unit_id" id="unit_id">
+                            <option value="">Semua Unit</option>
+                            @foreach($units as $d)
+                                <option value="{{ $d->id }}" {{ $unit_id == $d->id ? 'selected' : '' }}>{{ $d->name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -713,17 +713,17 @@
                             <label>Cabang (Filter)</label>
                             <select id="create_cabang" class="filter-karyawan-create">
                                 <option value="">Semua Cabang</option>
-                                @foreach($cabang as $c)
-                                    <option value="{{ $c->kode_cabang }}">{{ $c->nama_cabang }}</option>
+                                @foreach($branches as $c)
+                                    <option value="{{ $c->id }}">{{ $c->name }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="fgroup">
-                            <label>Departemen (Filter)</label>
+                            <label>Unit (Filter)</label>
                             <select id="create_dept" class="filter-karyawan-create">
-                                <option value="">Semua Departemen</option>
-                                @foreach($departemen as $d)
-                                    <option value="{{ $d->kode_dept }}">{{ $d->nama_dept }}</option>
+                                <option value="">Semua Unit</option>
+                                @foreach($units as $d)
+                                    <option value="{{ $d->id }}">{{ $d->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -810,8 +810,8 @@ $(document).ready(function () {
             url: '/panel/laporan/getkaryawan',
             data: {
                 _token: "{{ csrf_token() }}",
-                kode_cabang: $('#create_cabang').val(),
-                kode_dept: $('#create_dept').val()
+                branch_id: $('#create_cabang').val(),
+                unit_id: $('#create_dept').val()
             },
             cache: false,
             success: function (respond) {

@@ -59,16 +59,15 @@ class PresensiKaryawanController extends Controller
     /**
      * Get jam kerja karyawan berdasarkan cabang dan departemen
      */
-    private function getJamKerja($kode_cabang, $kode_dept, $namahari)
+    private function getJamKerja($branch_id, $unit_id, $namahari)
     {
-        // Jam kerja departemen di cabang tertentu
-        $jamkerja = DB::table('konfigurasi_jk_dept_detail')
+        $jamkerja = DB::table('konfigurasi_jk_unit_detail')
             ->select('jam_kerja.*')
-            ->join('konfigurasi_jk_dept', 'konfigurasi_jk_dept_detail.kode_jk_dept', '=', 'konfigurasi_jk_dept.kode_jk_dept')
-            ->join('jam_kerja', 'konfigurasi_jk_dept_detail.kode_jam_kerja', '=', 'jam_kerja.kode_jam_kerja')
-            ->where('konfigurasi_jk_dept.kode_cabang', $kode_cabang)
-            ->where('konfigurasi_jk_dept.kode_dept', $kode_dept)
-            ->where('konfigurasi_jk_dept_detail.hari', $namahari)
+            ->join('konfigurasi_jk_unit', 'konfigurasi_jk_unit_detail.kode_jk_unit', '=', 'konfigurasi_jk_unit.kode_jk_unit')
+            ->join('jam_kerja', 'konfigurasi_jk_unit_detail.kode_jam_kerja', '=', 'jam_kerja.kode_jam_kerja')
+            ->where('konfigurasi_jk_unit.branch_id', $branch_id)
+            ->where('konfigurasi_jk_unit.unit_id', $unit_id)
+            ->where('konfigurasi_jk_unit_detail.hari', $namahari)
             ->first();
 
         return $jamkerja;
@@ -80,10 +79,12 @@ class PresensiKaryawanController extends Controller
     public function create()
     {
         try {
-            $nik = Auth::guard('karyawan')->user()->nik;
-            $kode_dept = Auth::guard('karyawan')->user()->kode_dept;
-            $kode_cabang = Auth::guard('karyawan')->user()->kode_cabang;
-            $nama_lengkap = Auth::guard('karyawan')->user()->nama_lengkap;
+            $karyawan_auth = Auth::guard('karyawan')->user();
+            $karyawan = \App\Models\Karyawan::with('organ.unit.branch')->where('nik', $karyawan_auth->nik)->first();
+            $nik = $karyawan->nik;
+            $unit_id = $karyawan->unit_id;
+            $branch_id = $karyawan->branch_id;
+            $nama_lengkap = $karyawan->nama_lengkap;
 
             $hariini = Carbon::now('Asia/Jakarta')->format('Y-m-d');
             $jamsekarang = Carbon::now('Asia/Jakarta')->format('H:i');
@@ -100,8 +101,8 @@ class PresensiKaryawanController extends Controller
 
             Log::info('Presensi Create Access', [
                 'nik' => $nik,
-                'kode_cabang' => $kode_cabang,
-                'kode_dept' => $kode_dept,
+                'branch_id' => $branch_id,
+                'unit_id' => $unit_id,
                 'tanggal' => $hariini,
                 'jam' => $jamsekarang
             ]);
@@ -133,24 +134,24 @@ class PresensiKaryawanController extends Controller
             $cek = $presensi_hari_ini ? 1 : 0;
 
             // Get lokasi kantor
-            $lok_kantor = DB::table('cabang')
-                ->where('kode_cabang', $kode_cabang)
+            $lok_kantor = DB::table('branches')
+                ->where('id', $branch_id)
                 ->first();
 
             if (!$lok_kantor) {
-                Log::error('Cabang not found', ['kode_cabang' => $kode_cabang]);
+                Log::error('Cabang not found', ['branch_id' => $branch_id]);
                 return redirect('/dashboard')->with('error', 'Data cabang tidak ditemukan. Hubungi admin.');
             }
 
             // Get jam kerja berdasarkan cabang dan departemen
-            $jamkerja = $this->getJamKerja($kode_cabang, $kode_dept, $namahari);
+            $jamkerja = $this->getJamKerja($branch_id, $unit_id, $namahari);
 
             // Jika masih tidak ada jam kerja
             if ($jamkerja == null) {
                 Log::warning('Jam kerja tidak ditemukan', [
                     'nik' => $nik,
-                    'cabang' => $kode_cabang,
-                    'dept' => $kode_dept,
+                    'cabang' => $branch_id,
+                    'dept' => $unit_id,
                     'hari' => $namahari
                 ]);
 
@@ -226,10 +227,12 @@ class PresensiKaryawanController extends Controller
     public function store(Request $request)
     {
         try {
-            $nik = Auth::guard('karyawan')->user()->nik;
-            $nama_lengkap = Auth::guard('karyawan')->user()->nama_lengkap;
-            $kode_dept = Auth::guard('karyawan')->user()->kode_dept;
-            $kode_cabang = Auth::guard('karyawan')->user()->kode_cabang;
+            $karyawan_auth = Auth::guard('karyawan')->user();
+            $karyawan = \App\Models\Karyawan::with('organ.unit.branch')->where('nik', $karyawan_auth->nik)->first();
+            $nik = $karyawan->nik;
+            $nama_lengkap = $karyawan->nama_lengkap;
+            $unit_id = $karyawan->unit_id;
+            $branch_id = $karyawan->branch_id;
 
             $hariini = Carbon::now('Asia/Jakarta')->format('Y-m-d');
             $jam = Carbon::now('Asia/Jakarta')->format('H:i:s');
@@ -247,8 +250,8 @@ class PresensiKaryawanController extends Controller
 
             Log::info('Presensi Store Started', [
                 'nik' => $nik,
-                'kode_cabang' => $kode_cabang,
-                'kode_dept' => $kode_dept,
+                'branch_id' => $branch_id,
+                'unit_id' => $unit_id,
                 'tanggal' => $hariini,
                 'jam' => $jam,
                 'is_offline_sync' => $is_offline_sync
@@ -291,12 +294,12 @@ class PresensiKaryawanController extends Controller
             $longitudeuser = trim($lokasiuser[1]);
 
             // Geofencing — hanya periksa cabang milik karyawan sendiri
-            $lok_kantor = DB::table('cabang')->where('kode_cabang', $kode_cabang)->first();
+            $lok_kantor = DB::table('branches')->where('id', $branch_id)->first();
 
             if (!$lok_kantor) {
                 Log::error('Cabang karyawan tidak ditemukan', [
                     'nik'         => $nik,
-                    'kode_cabang' => $kode_cabang
+                    'branch_id' => $branch_id
                 ]);
                 return response("error|Data cabang Anda tidak ditemukan. Hubungi admin.|system", 200);
             }
@@ -305,7 +308,7 @@ class PresensiKaryawanController extends Controller
             if (count($lok_split) < 2) {
                 Log::error('Format lokasi cabang tidak valid', [
                     'nik'          => $nik,
-                    'kode_cabang'  => $kode_cabang,
+                    'branch_id'  => $branch_id,
                     'lokasi_cabang'=> $lok_kantor->lokasi_cabang
                 ]);
                 return response("error|Data lokasi cabang tidak valid. Hubungi admin.|system", 200);
@@ -318,8 +321,8 @@ class PresensiKaryawanController extends Controller
 
             Log::info('Geofencing check', [
                 'nik'          => $nik,
-                'kode_cabang'  => $kode_cabang,
-                'nama_cabang'  => $lok_kantor->nama_cabang,
+                'branch_id'  => $branch_id,
+                'nama_cabang'  => $lok_kantor->name,
                 'jarak_meter'  => $radius,
                 'radius_izin'  => $lok_kantor->radius_cabang
             ]);
@@ -327,22 +330,22 @@ class PresensiKaryawanController extends Controller
             if ($radius > $lok_kantor->radius_cabang) {
                 Log::warning('Outside branch radius', [
                     'nik'         => $nik,
-                    'kode_cabang' => $kode_cabang,
+                    'branch_id' => $branch_id,
                     'jarak'       => $radius,
                     'radius_izin' => $lok_kantor->radius_cabang
                 ]);
-                return response("error|Anda berada di luar radius kantor {$lok_kantor->nama_cabang} ({$radius}m dari {$lok_kantor->radius_cabang}m yang diizinkan).|radius", 200);
+                return response("error|Anda berada di luar radius kantor {$lok_kantor->name} ({$radius}m dari {$lok_kantor->radius_cabang}m yang diizinkan).|radius", 200);
             }
 
             // Get jam kerja berdasarkan cabang dan departemen
             $namahari = $this->getHari(date("D", strtotime($tgl_presensi)));
-            $jamkerja = $this->getJamKerja($kode_cabang, $kode_dept, $namahari);
+            $jamkerja = $this->getJamKerja($branch_id, $unit_id, $namahari);
 
             if (!$jamkerja) {
                 Log::error('Jam kerja not found', [
                     'nik' => $nik,
-                    'cabang' => $kode_cabang,
-                    'dept' => $kode_dept,
+                    'cabang' => $branch_id,
+                    'dept' => $unit_id,
                     'hari' => $namahari
                 ]);
                 return response("error|Jam kerja tidak ditemukan untuk hari ini|system", 200);
@@ -620,10 +623,12 @@ class PresensiKaryawanController extends Controller
     public function qrScan()
     {
         $hariini = date("Y-m-d");
-        $nik = Auth::guard('karyawan')->user()->nik;
+        $karyawan_auth = Auth::guard('karyawan')->user();
+        $karyawan = \App\Models\Karyawan::with('organ.unit.branch')->where('nik', $karyawan_auth->nik)->first();
+        $nik = $karyawan->nik;
         
         $cek = DB::table('presensi')->where('tgl_presensi', $hariini)->where('nik', $nik)->count();
-        $lok_kantor = DB::table('cabang')->where('kode_cabang', Auth::guard('karyawan')->user()->kode_cabang)->first();
+        $lok_kantor = DB::table('branches')->where('id', $karyawan->branch_id)->first();
         
         return view('karyawan.presensi.qr-scan', compact('cek', 'lok_kantor'));
     }
@@ -635,14 +640,15 @@ class PresensiKaryawanController extends Controller
             $nik = Auth::guard('karyawan')->user()->nik;
 
             // Dapatkan cabang karyawan saat ini
-            $karyawan = \App\Models\Karyawan::with('cabang')->where('nik', $nik)->first();
+            $karyawan = \App\Models\Karyawan::with('organ.unit.branch')->where('nik', $nik)->first();
 
             // Validasi apakah QR yang di-scan cocok dengan token cabang karyawan
-            if (!$karyawan->cabang || $qr_code !== $karyawan->cabang->qr_token) {
+            $branch = $karyawan->organ->unit->branch ?? null;
+            if (!$branch || $qr_code !== $branch->qr_token) {
                 Log::warning('QR Code mismatch', [
                     'nik' => $nik,
                     'scanned_qr' => $qr_code,
-                    'expected_token' => $karyawan->cabang ? $karyawan->cabang->qr_token : 'null'
+                    'expected_token' => $branch ? $branch->qr_token : 'null'
                 ]);
                 return response()->json([
                     'success' => false,
@@ -670,7 +676,7 @@ class PresensiKaryawanController extends Controller
             } else {
                 // Masuk (default jam kerja)
                 $namahari = $this->getHari(date("D", strtotime($tgl_presensi)));
-                $jamkerja = $this->getJamKerja($karyawan->kode_cabang, $karyawan->kode_dept, $namahari);
+                $jamkerja = $this->getJamKerja($karyawan->branch_id, $karyawan->unit_id, $namahari);
 
                 if(!$jamkerja) {
                      $jamkerja = DB::table('jam_kerja')->first(); // fallback

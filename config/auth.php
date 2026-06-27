@@ -12,6 +12,11 @@ return [
             'provider' => 'users',
         ],
 
+        'api' => [
+            'driver' => 'passport',
+            'provider' => 'karyawans',
+        ],
+
         // Guard untuk karyawan
         'karyawan' => [
             'driver' => 'session',

@@ -34,8 +34,7 @@ class KaryawanImport implements ToModel, WithHeadingRow
             'jabatan'      => $row['jabatan'],
             'no_hp'        => $row['no_hp'],
             'email'        => $row['email'] ?? null,
-            'kode_dept'    => $row['kode_dept'],
-            'kode_cabang'  => $row['kode_cabang'],
+            'organ_id'     => $row['organ_id'] ?? null,
             'password'     => Hash::make($row['nik']), // Default password adalah NIK
         ]);
     }

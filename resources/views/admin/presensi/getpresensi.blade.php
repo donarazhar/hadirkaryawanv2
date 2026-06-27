@@ -301,7 +301,7 @@ return $jml_jam . ':' . round($sisamenit2);
                 <td class="nik-cell text-center">{{ $d->nik }}</td>
                 <td class="nama-cell">{{ $d->nama_lengkap }}</td>
                 <td class="text-center">
-                    <span class="badge-modern badge-dept">{{ $d->kode_dept }}</span>
+                    <span class="badge-modern badge-dept">{{ $d->nama_dept }}</span>
                 </td>
                 <td class="jadwal-cell">
                     <strong>{{ $d->nama_jam_kerja }}</strong>
@@ -375,7 +375,7 @@ return $jml_jam . ':' . round($sisamenit2);
                 <td class="nik-cell text-center">{{ $d->nik }}</td>
                 <td class="nama-cell">{{ $d->nama_lengkap }}</td>
                 <td class="text-center">
-                    <span class="badge-modern badge-dept">{{ $d->kode_dept }}</span>
+                    <span class="badge-modern badge-dept">{{ $d->nama_dept }}</span>
                 </td>
                 <td colspan="5" class="text-center" style="color: #94a3b8; font-style: italic;">
                     Tidak ada data kehadiran

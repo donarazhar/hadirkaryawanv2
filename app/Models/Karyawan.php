@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
-use App\Models\Cabang;
-use App\Models\Departemen;
+use App\Models\Branch;
+use App\Models\Unit;
+use App\Models\Organ;
 use App\Models\PengajuanIzin;
 use App\Models\Presensi;
 use App\Models\JamKerja;
-use App\Models\KonfigurasiJkDept;
-use App\Models\KonfigurasiJkDeptDetail;
+use App\Models\KonfigurasiJkUnit;
+use App\Models\KonfigurasiJkUnitDetail;
 use App\Models\FaceData;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -16,13 +17,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Passport\HasApiTokens;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class Karyawan extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
     protected $table = 'karyawan';
     protected $primaryKey = 'nik';
@@ -38,9 +40,8 @@ class Karyawan extends Authenticatable
         'no_hp',
         'password',
         'foto',
-        'kode_dept',
-        'kode_cabang',
-        'google_id'
+        'google_id',
+        'organ_id'
     ];
 
     protected $hidden = [
@@ -57,19 +58,21 @@ class Karyawan extends Authenticatable
     // ========================================
 
     /**
-     * Get departemen
+     * Get organ
      */
-    public function departemen(): BelongsTo
+    public function organ(): BelongsTo
     {
-        return $this->belongsTo(Departemen::class, 'kode_dept', 'kode_dept');
+        return $this->belongsTo(Organ::class, 'organ_id');
     }
 
-    /**
-     * Get cabang
-     */
-    public function cabang(): BelongsTo
+    public function getBranchIdAttribute()
     {
-        return $this->belongsTo(Cabang::class, 'kode_cabang', 'kode_cabang');
+        return $this->organ->unit->branch_id ?? null;
+    }
+
+    public function getUnitIdAttribute()
+    {
+        return $this->organ->unit_id ?? null;
     }
 
     /**
@@ -136,43 +139,21 @@ class Karyawan extends Authenticatable
     // ========================================
 
     /**
-     * Get konfigurasi jam kerja departemen untuk karyawan ini
+     * Get konfigurasi jam kerja departemen (unit) untuk karyawan ini
      */
-    public function konfigurasiJkDept()
+    public function KonfigurasiJkUnit()
     {
-        return $this->hasOneThrough(
-            KonfigurasiJkDept::class,
-            Departemen::class,
-            'kode_dept', // Foreign key di departemen
-            'kode_dept', // Foreign key di konfigurasi_jk_dept
-            'kode_dept', // Local key di karyawan
-            'kode_dept'  // Local key di departemen
-        )->where('konfigurasi_jk_dept.kode_cabang', $this->kode_cabang);
+        // Custom relation since it's 3 levels deep (Karyawan -> Organ -> Unit -> Konfigurasi)
+        return KonfigurasiJkUnit::where('unit_id', $this->unit_id)
+                                ->where('branch_id', $this->branch_id)
+                                ->first();
     }
 
-    /**
-     * ✅ Get jam kerja untuk karyawan ini (MAIN RELATIONSHIP)
-     * IMPROVED: Menggunakan accessor pattern
-     */
     public function jamKerja()
     {
-        // Get hari saat ini
-        $namaHari = $this->getNamaHariIni();
-
-        return $this->hasOneThrough(
-            JamKerja::class,                    // Target model
-            KonfigurasiJkDeptDetail::class,     // Intermediate model
-            'kode_jk_dept',                     // Foreign key on intermediate (konfigurasi_jk_dept_detail)
-            'kode_jam_kerja',                   // Foreign key on target (jam_kerja)
-            'kode_dept',                        // Local key on this model (karyawan)
-            'kode_jam_kerja'                    // Local key on intermediate
-        )
-            ->join('konfigurasi_jk_dept', function ($join) {
-                $join->on('konfigurasi_jk_dept_detail.kode_jk_dept', '=', 'konfigurasi_jk_dept.kode_jk_dept')
-                    ->where('konfigurasi_jk_dept.kode_cabang', '=', $this->kode_cabang)
-                    ->where('konfigurasi_jk_dept.kode_dept', '=', $this->kode_dept);
-            })
-            ->where('konfigurasi_jk_dept_detail.hari', $namaHari);
+        // Relation not fully supported via Eloquent for this depth, 
+        // fallback to getJamKerjaHariIni() for most uses.
+        return null;
     }
 
     // ========================================
@@ -189,17 +170,17 @@ class Karyawan extends Authenticatable
 
         Log::info('Getting Jam Kerja', [
             'nik' => $this->nik,
-            'kode_dept' => $this->kode_dept,
-            'kode_cabang' => $this->kode_cabang,
+            'unit_id' => $this->unit_id,
+            'branch_id' => $this->branch_id,
             'hari' => $hari
         ]);
 
         // Query kompleks untuk mendapatkan jam kerja
-        $jam_kerja = DB::table('konfigurasi_jk_dept as kjd')
-            ->join('konfigurasi_jk_dept_detail as kjdd', 'kjd.kode_jk_dept', '=', 'kjdd.kode_jk_dept')
+        $jam_kerja = DB::table('konfigurasi_jk_unit as kjd')
+            ->join('konfigurasi_jk_unit_detail as kjdd', 'kjd.kode_jk_unit', '=', 'kjdd.kode_jk_unit')
             ->join('jam_kerja as jk', 'kjdd.kode_jam_kerja', '=', 'jk.kode_jam_kerja')
-            ->where('kjd.kode_dept', $this->kode_dept)
-            ->where('kjd.kode_cabang', $this->kode_cabang)
+            ->where('kjd.unit_id', $this->unit_id)
+            ->where('kjd.branch_id', $this->branch_id)
             ->where('kjdd.hari', $hari)
             ->select('jk.*')
             ->first();
@@ -214,8 +195,8 @@ class Karyawan extends Authenticatable
         } else {
             Log::warning('Jam Kerja Not Found', [
                 'nik' => $this->nik,
-                'kode_dept' => $this->kode_dept,
-                'kode_cabang' => $this->kode_cabang,
+                'unit_id' => $this->unit_id,
+                'branch_id' => $this->branch_id,
                 'hari' => $hari
             ]);
         }
@@ -228,11 +209,11 @@ class Karyawan extends Authenticatable
      */
     public function getJamKerjaByHari($hari)
     {
-        $jam_kerja = DB::table('konfigurasi_jk_dept as kjd')
-            ->join('konfigurasi_jk_dept_detail as kjdd', 'kjd.kode_jk_dept', '=', 'kjdd.kode_jk_dept')
+        $jam_kerja = DB::table('konfigurasi_jk_unit as kjd')
+            ->join('konfigurasi_jk_unit_detail as kjdd', 'kjd.kode_jk_unit', '=', 'kjdd.kode_jk_unit')
             ->join('jam_kerja as jk', 'kjdd.kode_jam_kerja', '=', 'jk.kode_jam_kerja')
-            ->where('kjd.kode_dept', $this->kode_dept)
-            ->where('kjd.kode_cabang', $this->kode_cabang)
+            ->where('kjd.unit_id', $this->unit_id)
+            ->where('kjd.branch_id', $this->branch_id)
             ->where('kjdd.hari', $hari)
             ->select('jk.*')
             ->first();
@@ -417,10 +398,10 @@ class Karyawan extends Authenticatable
         return [
             'nik' => $this->nik,
             'nama_lengkap' => $this->nama_lengkap,
-            'kode_dept' => $this->kode_dept,
-            'nama_dept' => $this->departemen->nama_dept ?? 'N/A',
-            'kode_cabang' => $this->kode_cabang,
-            'nama_cabang' => $this->cabang->nama_cabang ?? 'N/A',
+            'unit_id' => $this->unit_id,
+            'nama_unit' => $this->organ->unit->name ?? 'N/A',
+            'branch_id' => $this->branch_id,
+            'nama_branch' => $this->organ->unit->branch->name ?? 'N/A',
             'hari' => $this->getNamaHariIni(),
             'jam_kerja' => $jam_kerja ? [
                 'kode_jam_kerja' => $jam_kerja->kode_jam_kerja,

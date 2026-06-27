@@ -18,11 +18,9 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->enum('role', ['superadmin', 'admin', 'pimpinan'])->default('admin');
-            $table->char('kode_cabang', 10)->nullable();
+            $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('set null');
             $table->rememberToken();
             $table->timestamps();
-
-            $table->foreign('kode_cabang')->references('kode_cabang')->on('cabang')->onDelete('set null');
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

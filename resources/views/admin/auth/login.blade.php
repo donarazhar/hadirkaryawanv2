@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Administrator Panel — PresensiGPS YPI Al Azhar. Kelola data presensi dan konfigurasi sistem.">
-    <title>Admin Panel — PresensiGPS</title>
+    <meta name="description" content="Administrator Panel — Al Azhar Presensi System. Kelola data presensi dan konfigurasi sistem.">
+    <title>Admin Panel — Al Azhar Presensi System</title>
     <link rel="icon" type="image/png" href="{{ asset('assets/img/logoypia.png') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
@@ -481,7 +481,7 @@
         <div class="brand-top">
             <div class="brand-logo">
                 <img src="{{ asset('assets/img/logoypia.png') }}" class="brand-logo-img" alt="Logo">
-                <div class="brand-logo-name">Presensi<span>GPS</span></div>
+                <div class="brand-logo-name">Al Azhar Presensi <span>System</span></div>
             </div>
 
             <div class="brand-headline">
@@ -502,7 +502,7 @@
         </div>
 
         <div class="brand-bottom">
-            <div class="brand-version">&copy; {{ date('Y') }} YPI Al Azhar — PresensiGPS v2.0</div>
+            <div class="brand-version">&copy; {{ date('Y') }} YPI Al Azhar — Al Azhar Presensi System</div>
         </div>
     </div>
 
@@ -516,7 +516,7 @@
                     <img src="{{ asset('assets/img/logoypia.png') }}" alt="Logo">
                 </div>
                 <div class="mobile-logo-title">Admin <span>Panel</span></div>
-                <div class="mobile-logo-sub">PresensiGPS — YPI Al Azhar</div>
+                <div class="mobile-logo-sub">Al Azhar Presensi System</div>
                 <span class="role-badge">Administrator</span>
             </div>
 
@@ -609,7 +609,7 @@
             </form>
 
             <div class="form-footer">
-                &copy; {{ date('Y') }} <strong style="color:var(--slate-600);">YPI Al Azhar</strong> — PresensiGPS.<br>
+                &copy; {{ date('Y') }} <strong style="color:var(--slate-600);">YPI Al Azhar</strong> — Al Azhar Presensi System.<br>
                 Akses khusus administrator yang terotorisasi.
             </div>
 

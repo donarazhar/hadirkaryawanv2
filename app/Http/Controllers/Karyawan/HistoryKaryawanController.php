@@ -234,8 +234,10 @@ class HistoryKaryawanController extends Controller
 
             // Get data karyawan
             $karyawan = DB::table('karyawan')
-                ->join('departemen', 'karyawan.kode_dept', '=', 'departemen.kode_dept')
-                ->join('cabang', 'karyawan.kode_cabang', '=', 'cabang.kode_cabang')
+                ->join('organs', 'karyawan.organ_id', '=', 'organs.id')
+                ->join('units', 'organs.unit_id', '=', 'units.id')
+                ->join('branches', 'units.branch_id', '=', 'branches.id')
+                ->select('karyawan.*', 'units.name as nama_dept', 'branches.name as nama_cabang')
                 ->where('nik', $nik)
                 ->first();
 

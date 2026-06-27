@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Passport\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use Notifiable;
+    use HasApiTokens, Notifiable;
 
     protected $fillable = [
         'name',
@@ -15,8 +16,7 @@ class User extends Authenticatable
         'nik_karyawan',
         'password',
         'role',
-        'kode_cabang',
-        'kode_dept',
+        'branch_id',
         'google_id',
     ];
 
@@ -31,14 +31,9 @@ class User extends Authenticatable
     ];
 
     // Relationship
-    public function cabang()
+    public function branch()
     {
-        return $this->belongsTo(Cabang::class, 'kode_cabang', 'kode_cabang');
-    }
-
-    public function departemen()
-    {
-        return $this->belongsTo(Departemen::class, 'kode_dept', 'kode_dept');
+        return $this->belongsTo(Branch::class, 'branch_id');
     }
 
     // Check if user is superadmin

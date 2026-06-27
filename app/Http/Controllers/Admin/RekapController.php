@@ -4,7 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-
+use App\Models\Branch;
+use App\Models\Unit;
 use Illuminate\Support\Facades\DB;
 
 class RekapController extends Controller
@@ -15,35 +16,39 @@ class RekapController extends Controller
         $user = auth('user')->user();
 
         if ($user && $user->role === 'admin') {
-            $cabang = DB::table('cabang')->where('kode_cabang', $user->kode_cabang)->get();
+            $branches = Branch::where('id', $user->branch_id)->get();
+            $units = Unit::where('branch_id', $user->branch_id)->orderBy('name')->get();
         } else {
-            $cabang = DB::table('cabang')->orderBy('kode_cabang')->get();
+            $branches = Branch::orderBy('name')->get();
+            $units = Unit::orderBy('name')->get();
         }
 
-        $departemen = DB::table('departemen')->orderBy('kode_dept')->get();
-
-        return view('admin.rekap.index', compact('namabulan', 'cabang', 'departemen'));
+        return view('admin.rekap.index', compact('namabulan', 'branches', 'units'));
     }
 
     public function getKaryawan(Request $request)
     {
         $user = auth('user')->user();
-        $kode_cabang = $request->kode_cabang;
+        $branch_id = $request->branch_id;
         
         if ($user && $user->role === 'admin') {
-            $kode_cabang = $user->kode_cabang;
+            $branch_id = $user->branch_id;
         }
 
-        $kode_dept = $request->kode_dept;
+        $unit_id = $request->unit_id;
 
-        $query = DB::table('karyawan')->orderBy('nama_lengkap');
+        $query = DB::table('karyawan')
+            ->join('organs', 'karyawan.organ_id', '=', 'organs.id')
+            ->join('units', 'organs.unit_id', '=', 'units.id')
+            ->select('karyawan.*')
+            ->orderBy('karyawan.nama_lengkap');
         
-        if (!empty($kode_cabang)) {
-            $query->where('kode_cabang', $kode_cabang);
+        if (!empty($branch_id)) {
+            $query->where('units.branch_id', $branch_id);
         }
         
-        if (!empty($kode_dept)) {
-            $query->where('kode_dept', $kode_dept);
+        if (!empty($unit_id)) {
+            $query->where('units.id', $unit_id);
         }
 
         $karyawan = $query->get();
@@ -59,35 +64,43 @@ class RekapController extends Controller
         $nik = $request->nik;
         $bulan = $request->bulan;
         $tahun = $request->tahun;
-        $kode_cabang = $request->kode_cabang;
-        $kode_dept = $request->kode_dept;
+        $branch_id = $request->branch_id;
+        $unit_id = $request->unit_id;
         $namabulan = ["", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
 
         $user = auth('user')->user();
         
-        $karyawanQuery = DB::table('karyawan')
-            ->join('departemen', 'karyawan.kode_dept', '=', 'departemen.kode_dept')
-            ->join('cabang', 'karyawan.kode_cabang', '=', 'cabang.kode_cabang');
+        $karyawanQuery = \App\Models\Karyawan::with(['organ.unit.branch']);
 
         if ($user && $user->role === 'admin') {
-            $karyawanQuery->where('karyawan.kode_cabang', $user->kode_cabang);
+            $karyawanQuery->whereHas('organ.unit', function($q) use ($user) {
+                $q->where('branch_id', $user->branch_id);
+            });
         }
 
         if ($nik === 'ALL') {
-            if (!empty($kode_cabang)) {
-                $karyawanQuery->where('karyawan.kode_cabang', $kode_cabang);
+            if (!empty($branch_id)) {
+                $karyawanQuery->whereHas('organ.unit', function($q) use ($branch_id) {
+                    $q->where('branch_id', $branch_id);
+                });
             }
-            if (!empty($kode_dept)) {
-                $karyawanQuery->where('karyawan.kode_dept', $kode_dept);
+            if (!empty($unit_id)) {
+                $karyawanQuery->whereHas('organ.unit', function($q) use ($unit_id) {
+                    $q->where('id', $unit_id);
+                });
             }
         } else {
             $karyawanQuery->where('nik', $nik);
         }
         
-        $karyawans = $karyawanQuery->orderBy('karyawan.nama_lengkap')->get();
+        $karyawans = $karyawanQuery->orderBy('nama_lengkap')->get();
 
-        if ($nik !== 'ALL' && $user && $user->role === 'admin' && $karyawans->count() > 0 && $karyawans->first()->kode_cabang !== $user->kode_cabang) {
-            abort(403, 'Unauthorized action.');
+        if ($nik !== 'ALL' && $user && $user->role === 'admin' && $karyawans->count() > 0) {
+            foreach ($karyawans as $k) {
+                if ($k->organ && $k->organ->unit && $k->organ->unit->branch_id !== $user->branch_id) {
+                    abort(403, 'Unauthorized action.');
+                }
+            }
         }
 
         $rekapData = [];

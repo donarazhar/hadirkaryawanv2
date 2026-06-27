@@ -78,7 +78,7 @@ class AuthController extends Controller
                 'ip_address' => $ip,
                 'location' => $location,
                 'user_agent' => substr($request->userAgent(), 0, 255),
-                'kode_cabang' => $user->kode_cabang
+                'branch_id' => $user->organ->unit->branch_id ?? null
             ]);
 
             // Redirect to intended URL or dashboard

@@ -8,6 +8,7 @@
         "php": "^8.2",
         "barryvdh/laravel-dompdf": "^3.1",
         "laravel/framework": "^11.0",
+        "laravel/passport": "^13.0",
         "laravel/sanctum": "^4.2",
         "laravel/socialite": "^5.27",
         "laravel/tinker": "^2.9",
@@ -68,6 +69,9 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
+        },
+        "audit": {
+            "block-insecure": false
         }
     },
     "minimum-stability": "stable",

@@ -3,15 +3,15 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Karyawan;
-use App\Models\Departemen;
-use App\Models\Cabang;
+use App\Models\Branch;
+use App\Models\Unit;
+use App\Models\Organ;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\Controller;
-
 
 class KaryawanAdminController extends Controller
 {
@@ -20,7 +20,7 @@ class KaryawanAdminController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Karyawan::with(['departemen', 'cabang']);
+        $query = Karyawan::with(['organ.unit.branch']);
 
         // Search functionality
         if ($request->has('search') && $request->search != '') {
@@ -32,31 +32,44 @@ class KaryawanAdminController extends Controller
             });
         }
 
-        // Filter by departemen
-        if ($request->has('kode_dept') && $request->kode_dept != '') {
-            $query->where('kode_dept', $request->kode_dept);
+        // Filter by organ
+        if ($request->has('organ_id') && $request->organ_id != '') {
+            $query->where('organ_id', $request->organ_id);
         }
 
-        // Filter by cabang
-        if ($request->has('kode_cabang') && $request->kode_cabang != '') {
-            $query->where('kode_cabang', $request->kode_cabang);
+        // Filter by unit
+        if ($request->has('unit_id') && $request->unit_id != '') {
+            $query->whereHas('organ', function($q) use ($request) {
+                $q->where('unit_id', $request->unit_id);
+            });
+        }
+
+        // Filter by branch
+        if ($request->has('branch_id') && $request->branch_id != '') {
+            $query->whereHas('organ.unit', function($q) use ($request) {
+                $q->where('branch_id', $request->branch_id);
+            });
         }
 
         $user = auth('user')->user();
         if ($user && $user->role === 'admin') {
-            $query->where('kode_cabang', $user->kode_cabang);
+            $query->whereHas('organ.unit', function($q) use ($user) {
+                $q->where('branch_id', $user->branch_id);
+            });
         }
 
         $karyawan = $query->orderBy('nik', 'ASC')->paginate(10);
-        $departemen = Departemen::orderBy('nama_dept')->get();
+        $organs = Organ::with('unit.branch')->orderBy('name')->get();
         
         if ($user && $user->role === 'admin') {
-            $cabang = Cabang::where('kode_cabang', $user->kode_cabang)->get();
+            $branches = Branch::where('id', $user->branch_id)->get();
+            $units = Unit::where('branch_id', $user->branch_id)->orderBy('name')->get();
         } else {
-            $cabang = Cabang::orderBy('nama_cabang')->get();
+            $branches = Branch::orderBy('name')->get();
+            $units = Unit::orderBy('name')->get();
         }
 
-        return view('admin.karyawan.index', compact('karyawan', 'departemen', 'cabang'));
+        return view('admin.karyawan.index', compact('karyawan', 'organs', 'units', 'branches'));
     }
 
     /**
@@ -65,15 +78,16 @@ class KaryawanAdminController extends Controller
     public function create()
     {
         $user = auth('user')->user();
-        $departemen = Departemen::orderBy('nama_dept')->get();
         
         if ($user && $user->role === 'admin') {
-            $cabang = Cabang::where('kode_cabang', $user->kode_cabang)->get();
+            $organs = Organ::whereHas('unit', function($q) use ($user) {
+                $q->where('branch_id', $user->branch_id);
+            })->with('unit.branch')->orderBy('name')->get();
         } else {
-            $cabang = Cabang::orderBy('nama_cabang')->get();
+            $organs = Organ::with('unit.branch')->orderBy('name')->get();
         }
 
-        return view('admin.karyawan.create', compact('departemen', 'cabang'));
+        return view('admin.karyawan.create', compact('organs'));
     }
 
     /**
@@ -88,8 +102,7 @@ class KaryawanAdminController extends Controller
             'jabatan' => 'required|string|max:20',
             'no_hp' => 'required|string|max:15',
             'password' => 'required|string|min:4',
-            'kode_dept' => 'required|exists:departemen,kode_dept',
-            'kode_cabang' => 'required|exists:cabang,kode_cabang',
+            'organ_id' => 'required|exists:organs,id',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
         ], [
             'nik.required' => 'NIK wajib diisi',
@@ -100,8 +113,7 @@ class KaryawanAdminController extends Controller
             'jabatan.required' => 'Jabatan wajib diisi',
             'no_hp.required' => 'No HP wajib diisi',
             'password.required' => 'Password wajib diisi',
-            'kode_dept.required' => 'Departemen wajib dipilih',
-            'kode_cabang.required' => 'Cabang wajib dipilih',
+            'organ_id.required' => 'Posisi (Organ) wajib dipilih',
             'foto.image' => 'File harus berupa gambar',
             'foto.mimes' => 'Format gambar harus jpeg, png, atau jpg',
             'foto.max' => 'Ukuran gambar maksimal 2MB'
@@ -114,9 +126,6 @@ class KaryawanAdminController extends Controller
         }
 
         try {
-            $user = auth('user')->user();
-            $kode_cabang = ($user && $user->role === 'admin') ? $user->kode_cabang : $request->kode_cabang;
-
             $data = [
                 'nik' => $request->nik,
                 'email' => $request->email,
@@ -124,8 +133,7 @@ class KaryawanAdminController extends Controller
                 'jabatan' => $request->jabatan,
                 'no_hp' => $request->no_hp,
                 'password' => Hash::make($request->password),
-                'kode_dept' => $request->kode_dept,
-                'kode_cabang' => $kode_cabang
+                'organ_id' => $request->organ_id
             ];
 
             // Handle foto upload
@@ -157,22 +165,22 @@ class KaryawanAdminController extends Controller
      */
     public function edit($nik)
     {
-        $karyawan = Karyawan::findOrFail($nik);
+        $karyawan = Karyawan::with('organ.unit')->findOrFail($nik);
         $user = auth('user')->user();
 
-        if ($user && $user->role === 'admin' && $karyawan->kode_cabang !== $user->kode_cabang) {
+        if ($user && $user->role === 'admin' && $karyawan->branch_id !== $user->branch_id) {
             abort(403, 'Unauthorized action.');
         }
 
-        $departemen = Departemen::orderBy('nama_dept')->get();
-        
         if ($user && $user->role === 'admin') {
-            $cabang = Cabang::where('kode_cabang', $user->kode_cabang)->get();
+            $organs = Organ::whereHas('unit', function($q) use ($user) {
+                $q->where('branch_id', $user->branch_id);
+            })->with('unit.branch')->orderBy('name')->get();
         } else {
-            $cabang = Cabang::orderBy('nama_cabang')->get();
+            $organs = Organ::with('unit.branch')->orderBy('name')->get();
         }
 
-        return view('admin.karyawan.edit', compact('karyawan', 'departemen', 'cabang'));
+        return view('admin.karyawan.edit', compact('karyawan', 'organs'));
     }
 
     /**
@@ -186,8 +194,7 @@ class KaryawanAdminController extends Controller
             'jabatan' => 'required|string|max:20',
             'no_hp' => 'required|string|max:15',
             'password' => 'nullable|string|min:4',
-            'kode_dept' => 'required|exists:departemen,kode_dept',
-            'kode_cabang' => 'required|exists:cabang,kode_cabang',
+            'organ_id' => 'required|exists:organs,id',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
         ], [
             'email.email' => 'Format email tidak valid',
@@ -195,8 +202,7 @@ class KaryawanAdminController extends Controller
             'nama_lengkap.required' => 'Nama Lengkap wajib diisi',
             'jabatan.required' => 'Jabatan wajib diisi',
             'no_hp.required' => 'No HP wajib diisi',
-            'kode_dept.required' => 'Departemen wajib dipilih',
-            'kode_cabang.required' => 'Cabang wajib dipilih',
+            'organ_id.required' => 'Posisi (Organ) wajib dipilih',
             'foto.image' => 'File harus berupa gambar',
             'foto.mimes' => 'Format gambar harus jpeg, png, atau jpg',
             'foto.max' => 'Ukuran gambar maksimal 2MB'
@@ -212,19 +218,16 @@ class KaryawanAdminController extends Controller
             $karyawan = Karyawan::findOrFail($nik);
             $user = auth('user')->user();
 
-            if ($user && $user->role === 'admin' && $karyawan->kode_cabang !== $user->kode_cabang) {
+            if ($user && $user->role === 'admin' && $karyawan->branch_id !== $user->branch_id) {
                 abort(403, 'Unauthorized action.');
             }
-
-            $kode_cabang = ($user && $user->role === 'admin') ? $user->kode_cabang : $request->kode_cabang;
 
             $data = [
                 'email' => $request->email,
                 'nama_lengkap' => $request->nama_lengkap,
                 'jabatan' => $request->jabatan,
                 'no_hp' => $request->no_hp,
-                'kode_dept' => $request->kode_dept,
-                'kode_cabang' => $kode_cabang
+                'organ_id' => $request->organ_id
             ];
 
             // Update password if provided
@@ -270,7 +273,7 @@ class KaryawanAdminController extends Controller
             $karyawan = Karyawan::findOrFail($nik);
             $user = auth('user')->user();
 
-            if ($user && $user->role === 'admin' && $karyawan->kode_cabang !== $user->kode_cabang) {
+            if ($user && $user->role === 'admin' && $karyawan->branch_id !== $user->branch_id) {
                 abort(403, 'Unauthorized action.');
             }
 
@@ -327,8 +330,6 @@ class KaryawanAdminController extends Controller
      */
     public function downloadTemplate()
     {
-        // Path ke template (kita akan menyediakannya atau generate secara dinamis)
-        // Karena generate lebih cepat, mari buat temporary csv/excel
         $headers = [
             'Cache-Control'       => 'must-revalidate, post-check=0, pre-check=0',
             'Content-type'        => 'text/csv',
@@ -338,8 +339,8 @@ class KaryawanAdminController extends Controller
         ];
 
         $list = [
-            ['nik', 'nama_lengkap', 'jabatan', 'no_hp', 'email', 'kode_dept', 'kode_cabang'],
-            ['1234567890', 'Jhon Doe', 'Staff', '08123456789', 'jhon@example.com', 'IT', 'JKT'],
+            ['nik', 'nama_lengkap', 'jabatan', 'no_hp', 'email', 'organ_id'],
+            ['1234567890', 'Jhon Doe', 'Staff', '08123456789', 'jhon@example.com', '1'],
         ];
 
         $callback = function() use ($list) {

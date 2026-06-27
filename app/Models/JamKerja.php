@@ -38,11 +38,11 @@ class JamKerja extends Model
     }
 
     /**
-     * Relationship: JamKerja has many KonfigurasiJkDeptDetail
+     * Relationship: JamKerja has many KonfigurasiJkUnitDetail
      */
-    public function konfigurasiJkDeptDetail()
+    public function KonfigurasiJkUnitDetail()
     {
-        return $this->hasMany(KonfigurasiJkDeptDetail::class, 'kode_jam_kerja', 'kode_jam_kerja');
+        return $this->hasMany(KonfigurasiJkUnitDetail::class, 'kode_jam_kerja', 'kode_jam_kerja');
     }
 
     /**

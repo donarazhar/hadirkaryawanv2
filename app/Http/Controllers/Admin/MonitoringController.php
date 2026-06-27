@@ -30,8 +30,7 @@ class MonitoringController extends Controller
             ->select(
                 'presensi.*',
                 'karyawan.nama_lengkap',
-                'karyawan.kode_dept',
-                'departemen.nama_dept',
+                'units.name as nama_dept',
                 'jam_kerja.nama_jam_kerja',
                 'jam_kerja.jam_masuk',
                 'jam_kerja.jam_pulang',
@@ -40,11 +39,12 @@ class MonitoringController extends Controller
             ->leftJoin('jam_kerja', 'presensi.kode_jam_kerja', '=', 'jam_kerja.kode_jam_kerja')
             ->leftJoin('pengajuan_izin', 'presensi.kode_izin', '=', 'pengajuan_izin.kode_izin')
             ->join('karyawan', 'presensi.nik', '=', 'karyawan.nik')
-            ->join('departemen', 'karyawan.kode_dept', '=', 'departemen.kode_dept')
+            ->join('organs', 'karyawan.organ_id', '=', 'organs.id')
+            ->join('units', 'organs.unit_id', '=', 'units.id')
             ->where('tgl_presensi', $tanggal);
 
         if ($user && $user->role === 'admin') {
-            $query->where('karyawan.kode_cabang', $user->kode_cabang);
+            $query->where('units.branch_id', $user->branch_id);
         }
 
         $presensi = $query->get();
@@ -63,10 +63,12 @@ class MonitoringController extends Controller
 
         $query = DB::table('presensi')
             ->join('karyawan', 'presensi.nik', '=', 'karyawan.nik')
+            ->join('organs', 'karyawan.organ_id', '=', 'organs.id')
+            ->join('units', 'organs.unit_id', '=', 'units.id')
             ->where('presensi.id', $id);
 
         if ($user && $user->role === 'admin') {
-            $query->where('karyawan.kode_cabang', $user->kode_cabang);
+            $query->where('units.branch_id', $user->branch_id);
         }
 
         $presensi = $query->first();
@@ -86,10 +88,12 @@ class MonitoringController extends Controller
         $query = DB::table('presensi')
             ->select('presensi.*', 'karyawan.nama_lengkap', 'karyawan.foto')
             ->join('karyawan', 'presensi.nik', '=', 'karyawan.nik')
+            ->join('organs', 'karyawan.organ_id', '=', 'organs.id')
+            ->join('units', 'organs.unit_id', '=', 'units.id')
             ->where('tgl_presensi', $hariini);
 
         if ($user && $user->role === 'admin') {
-            $query->where('karyawan.kode_cabang', $user->kode_cabang);
+            $query->where('units.branch_id', $user->branch_id);
         }
 
         $presensi = $query->orderBy('jam_in', 'desc')
@@ -119,9 +123,13 @@ class MonitoringController extends Controller
 
         try {
             $user = auth('user')->user();
-            $karyawan = DB::table('karyawan')->where('nik', $request->nik)->first();
+            $karyawan = DB::table('karyawan')
+                ->join('organs', 'karyawan.organ_id', '=', 'organs.id')
+                ->join('units', 'organs.unit_id', '=', 'units.id')
+                ->select('karyawan.*', 'units.branch_id', 'units.id as unit_id')
+                ->where('nik', $request->nik)->first();
             
-            if ($user && $user->role === 'admin' && $karyawan && $karyawan->kode_cabang !== $user->kode_cabang) {
+            if ($user && $user->role === 'admin' && $karyawan && $karyawan->branch_id !== $user->branch_id) {
                 return redirect()->back()->with('error', 'Unauthorized action.');
             }
 
@@ -130,28 +138,41 @@ class MonitoringController extends Controller
                 ->where('tgl_presensi', $request->tanggal)
                 ->first();
 
-            $jamKerja = null;
+            $kode_jam_kerja = null;
 
             if (!$presensi) {
                 // Buat presensi baru (misal karena lupa absen)
                 // Cari jam kerja karyawan hari ini
                 $nama_hari = \Carbon\Carbon::parse($request->tanggal)->translatedFormat('l');
-                $jamKerja = DB::table('konfigurasi_jam_kerja')
-                    ->join('jam_kerja', 'konfigurasi_jam_kerja.kode_jam_kerja', '=', 'jam_kerja.kode_jam_kerja')
+                
+                // 1. Cek konfigurasi individu
+                $jamKerjaIndividu = DB::table('konfigurasi_jam_kerja')
                     ->where('nik', $request->nik)
                     ->where('hari', $nama_hari)
                     ->first();
 
-                if (!$jamKerja) {
-                    $jamKerja = DB::table('konfigurasi_jam_kerja_dept')
-                        ->join('jam_kerja', 'konfigurasi_jam_kerja_dept.kode_jam_kerja', '=', 'jam_kerja.kode_jam_kerja')
-                        ->where('kode_dept', $karyawan->kode_dept)
-                        ->where('kode_cabang', $karyawan->kode_cabang)
-                        ->where('hari', $nama_hari)
-                        ->first();
-                }
+                if ($jamKerjaIndividu) {
+                    $kode_jam_kerja = $jamKerjaIndividu->kode_jam_kerja;
+                } else {
+                    // 2. Cek konfigurasi unit
+                    if ($karyawan) {
+                        $konfigurasiUnit = DB::table('konfigurasi_jk_unit')
+                            ->where('branch_id', $karyawan->branch_id)
+                            ->where('unit_id', $karyawan->unit_id)
+                            ->first();
 
-                $kode_jam_kerja = $jamKerja ? $jamKerja->kode_jam_kerja : null;
+                        if ($konfigurasiUnit) {
+                            $detail = DB::table('konfigurasi_jk_unit_detail')
+                                ->where('kode_jk_unit', $konfigurasiUnit->kode_jk_unit)
+                                ->where('hari', $nama_hari)
+                                ->first();
+                                
+                            if ($detail) {
+                                $kode_jam_kerja = $detail->kode_jam_kerja;
+                            }
+                        }
+                    }
+                }
 
                 DB::table('presensi')->insert([
                     'nik' => $request->nik,

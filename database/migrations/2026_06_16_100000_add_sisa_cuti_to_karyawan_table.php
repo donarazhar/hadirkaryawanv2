@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::table('karyawan', function (Blueprint $table) {
             // Sisa cuti tahunan (default 12 hari per tahun)
-            $table->tinyInteger('sisa_cuti')->unsigned()->default(12)->after('kode_cabang');
+            $table->tinyInteger('sisa_cuti')->unsigned()->default(12)->after('organ_id');
         });
     }
 

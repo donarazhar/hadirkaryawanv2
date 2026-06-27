@@ -2,21 +2,22 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\AuthAdminController;
-use App\Http\Controllers\Admin\CabangController;
+use App\Http\Controllers\Admin\BranchController;
 use App\Http\Controllers\Admin\CutiController;
 use App\Http\Controllers\Admin\DashboardAdminController;
-use App\Http\Controllers\Admin\DepartemenController;
 use App\Http\Controllers\Admin\FaceVerificationController;
 use App\Http\Controllers\Admin\IzinSakitController;
 use App\Http\Controllers\Admin\JamKerjaController;
 use App\Http\Controllers\Admin\KaryawanAdminController;
-use App\Http\Controllers\Admin\KonfigurasiJkDeptController;
+use App\Http\Controllers\Admin\KonfigurasiJkUnitController;
 use App\Http\Controllers\Admin\LaporanController;
 use App\Http\Controllers\Admin\MonitoringController;
 use App\Http\Controllers\Admin\HariLiburController;
 use App\Http\Controllers\Admin\PresensiFaceAdminController;
 use App\Http\Controllers\Admin\RekapController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\UnitController;
+use App\Http\Controllers\Admin\OrganController;
 use App\Http\Controllers\Karyawan\DashboardKaryawanController;
 use App\Http\Controllers\Karyawan\FaceEnrollmentController;
 use App\Http\Controllers\Karyawan\HistoryKaryawanController;
@@ -137,14 +138,15 @@ Route::prefix('panel')->name('panel.')->middleware('no-cache.panel')->group(func
 
         // Master Data - admin & superadmin
         Route::middleware('role:superadmin,admin')->group(function () {
-            Route::get('cabang/{kode_cabang}/qr', [App\Http\Controllers\Admin\CabangController::class, 'cetakQr'])->name('cabang.cetakQr');
-            Route::resource('cabang', CabangController::class);
-            Route::resource('departemen', DepartemenController::class);
+            Route::get('branch/{branch_id}/qr', [BranchController::class, 'cetakQr'])->name('branch.cetakQr');
+            Route::resource('branch', BranchController::class)->except(['show']);
+            Route::resource('unit', UnitController::class)->except(['show']);
+            Route::resource('organ', OrganController::class)->except(['show']);
             Route::resource('jamkerja', JamKerjaController::class);
             Route::post('karyawan/import', [App\Http\Controllers\Admin\KaryawanAdminController::class, 'importExcel'])->name('karyawan.import');
             Route::get('karyawan/download-template', [App\Http\Controllers\Admin\KaryawanAdminController::class, 'downloadTemplate'])->name('karyawan.downloadTemplate');
             Route::resource('karyawan', KaryawanAdminController::class);
-            Route::resource('konfigurasi-jk-dept', KonfigurasiJkDeptController::class);
+            Route::resource('konfigurasi-jk-unit', KonfigurasiJkUnitController::class);
             Route::resource('cuti', CutiController::class)->except(['create', 'show', 'edit']);
             Route::resource('harilibur', HariLiburController::class)->except(['create', 'show', 'edit']);
             Route::get('/activity-logs', [App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('activity-logs.index');

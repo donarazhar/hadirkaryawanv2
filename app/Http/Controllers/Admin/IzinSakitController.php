@@ -11,13 +11,15 @@ class IzinSakitController extends Controller
 {
     public function index(Request $request)
     {
-        $query = PengajuanIzin::with('karyawan.departemen')
+        $query = PengajuanIzin::with('karyawan.organ.unit')
             ->select('pengajuan_izin.*')
-            ->join('karyawan', 'pengajuan_izin.nik', '=', 'karyawan.nik');
+            ->join('karyawan', 'pengajuan_izin.nik', '=', 'karyawan.nik')
+            ->join('organs', 'karyawan.organ_id', '=', 'organs.id')
+            ->join('units', 'organs.unit_id', '=', 'units.id');
 
         $user = \Illuminate\Support\Facades\Auth::guard('user')->user();
         if ($user && in_array($user->role, ['admin', 'pimpinan'])) {
-            $query->where('karyawan.kode_cabang', $user->kode_cabang);
+            $query->where('units.branch_id', $user->branch_id);
         }
 
         // Filter Tanggal

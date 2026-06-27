@@ -5,8 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\FaceData;
 use App\Models\Karyawan;
-use App\Models\Cabang;
-use App\Models\Departemen;
+use App\Models\Branch;
+use App\Models\Unit;
+use App\Models\Organ;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -21,21 +22,23 @@ class FaceVerificationController extends Controller
     {
         try {
             $user = auth('user')->user();
-            $query = Karyawan::with(['departemen', 'cabang', 'faceData'])
-                ->select('karyawan.*');
+            $query = Karyawan::with(['organ.unit.branch', 'faceData'])
+                ->select('karyawan.*')
+                ->leftJoin('organs', 'karyawan.organ_id', '=', 'organs.id')
+                ->leftJoin('units', 'organs.unit_id', '=', 'units.id');
 
             if ($user && $user->role === 'admin') {
-                $query->where('kode_cabang', $user->kode_cabang);
+                $query->where('units.branch_id', $user->branch_id);
             }
 
-            // Filter by cabang
-            if ($request->filled('kode_cabang')) {
-                $query->where('kode_cabang', $request->kode_cabang);
+            // Filter by branch
+            if ($request->filled('branch_id')) {
+                $query->where('units.branch_id', $request->branch_id);
             }
 
-            // Filter by departemen
-            if ($request->filled('kode_dept')) {
-                $query->where('kode_dept', $request->kode_dept);
+            // Filter by unit
+            if ($request->filled('unit_id')) {
+                $query->where('units.id', $request->unit_id);
             }
 
             // Filter by enrollment status
@@ -57,25 +60,26 @@ class FaceVerificationController extends Controller
             if ($request->filled('search')) {
                 $search = $request->search;
                 $query->where(function ($q) use ($search) {
-                    $q->where('nik', 'like', '%' . $search . '%')
-                        ->orWhere('nama_lengkap', 'like', '%' . $search . '%');
+                    $q->where('karyawan.nik', 'like', '%' . $search . '%')
+                        ->orWhere('karyawan.nama_lengkap', 'like', '%' . $search . '%');
                 });
             }
 
-            $karyawan = $query->orderBy('nama_lengkap', 'ASC')->paginate(20);
+            $karyawan = $query->orderBy('karyawan.nama_lengkap', 'ASC')->paginate(20);
 
             // Get filter data
             if ($user && $user->role === 'admin') {
-                $cabang = Cabang::where('kode_cabang', $user->kode_cabang)->get();
+                $branches = Branch::where('id', $user->branch_id)->get();
+                $units = Unit::where('branch_id', $user->branch_id)->orderBy('name')->get();
             } else {
-                $cabang = Cabang::orderBy('nama_cabang')->get();
+                $branches = Branch::orderBy('name')->get();
+                $units = Unit::orderBy('name')->get();
             }
-            $departemen = Departemen::orderBy('nama_dept')->get();
 
             // Get statistics
             $stats = $this->getStatistics();
 
-            return view('admin.face-verification.index', compact('karyawan', 'cabang', 'departemen', 'stats'));
+            return view('admin.face-verification.index', compact('karyawan', 'branches', 'units', 'stats'));
         } catch (\Exception $e) {
             Log::error('FaceVerification@index Error: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Terjadi kesalahan saat memuat data');
@@ -89,10 +93,12 @@ class FaceVerificationController extends Controller
     {
         try {
             $user = auth('user')->user();
-            $karyawanQuery = Karyawan::with(['departemen', 'cabang', 'faceData']);
+            $karyawanQuery = Karyawan::with(['organ.unit.branch', 'faceData']);
             
             if ($user && $user->role === 'admin') {
-                $karyawanQuery->where('kode_cabang', $user->kode_cabang);
+                $karyawanQuery->whereHas('organ.unit', function($q) use ($user) {
+                    $q->where('branch_id', $user->branch_id);
+                });
             }
             
             $karyawan = $karyawanQuery->findOrFail($nik);
@@ -119,8 +125,8 @@ class FaceVerificationController extends Controller
     {
         try {
             $user = auth('user')->user();
-            $karyawan = Karyawan::where('nik', $nik)->first();
-            if ($user && $user->role === 'admin' && $karyawan && $karyawan->kode_cabang !== $user->kode_cabang) {
+            $karyawan = Karyawan::with('organ.unit')->where('nik', $nik)->first();
+            if ($user && $user->role === 'admin' && $karyawan && $karyawan->branch_id !== $user->branch_id) {
                 return redirect()->back()->with('error', 'Unauthorized action.');
             }
 
@@ -148,8 +154,8 @@ class FaceVerificationController extends Controller
     {
         try {
             $user = auth('user')->user();
-            $karyawan = Karyawan::where('nik', $nik)->first();
-            if ($user && $user->role === 'admin' && $karyawan && $karyawan->kode_cabang !== $user->kode_cabang) {
+            $karyawan = Karyawan::with('organ.unit')->where('nik', $nik)->first();
+            if ($user && $user->role === 'admin' && $karyawan && $karyawan->branch_id !== $user->branch_id) {
                 return redirect()->back()->with('error', 'Unauthorized action.');
             }
 
@@ -179,8 +185,8 @@ class FaceVerificationController extends Controller
             DB::beginTransaction();
 
             $user = auth('user')->user();
-            $karyawan = Karyawan::where('nik', $nik)->first();
-            if ($user && $user->role === 'admin' && $karyawan && $karyawan->kode_cabang !== $user->kode_cabang) {
+            $karyawan = Karyawan::with('organ.unit')->where('nik', $nik)->first();
+            if ($user && $user->role === 'admin' && $karyawan && $karyawan->branch_id !== $user->branch_id) {
                 return redirect()->back()->with('error', 'Unauthorized action.');
             }
 
@@ -223,7 +229,11 @@ class FaceVerificationController extends Controller
 
             $user = auth('user')->user();
             if ($user && $user->role === 'admin') {
-                $invalid = Karyawan::whereIn('nik', $request->nik_list)->where('kode_cabang', '!=', $user->kode_cabang)->count();
+                $invalid = Karyawan::whereIn('nik', $request->nik_list)
+                    ->join('organs', 'karyawan.organ_id', '=', 'organs.id')
+                    ->join('units', 'organs.unit_id', '=', 'units.id')
+                    ->where('units.branch_id', '!=', $user->branch_id)
+                    ->count();
                 if ($invalid > 0) {
                     return response()->json(['success' => false, 'message' => 'Unauthorized action.'], 403);
                 }
@@ -263,7 +273,11 @@ class FaceVerificationController extends Controller
 
             $user = auth('user')->user();
             if ($user && $user->role === 'admin') {
-                $invalid = Karyawan::whereIn('nik', $request->nik_list)->where('kode_cabang', '!=', $user->kode_cabang)->count();
+                $invalid = Karyawan::whereIn('nik', $request->nik_list)
+                    ->join('organs', 'karyawan.organ_id', '=', 'organs.id')
+                    ->join('units', 'organs.unit_id', '=', 'units.id')
+                    ->where('units.branch_id', '!=', $user->branch_id)
+                    ->count();
                 if ($invalid > 0) {
                     return response()->json(['success' => false, 'message' => 'Unauthorized action.'], 403);
                 }
@@ -297,20 +311,22 @@ class FaceVerificationController extends Controller
     {
         try {
             $user = auth('user')->user();
-            $query = Karyawan::with(['departemen', 'cabang', 'faceData'])
-                ->select('karyawan.*');
+            $query = Karyawan::with(['organ.unit.branch', 'faceData'])
+                ->select('karyawan.*')
+                ->leftJoin('organs', 'karyawan.organ_id', '=', 'organs.id')
+                ->leftJoin('units', 'organs.unit_id', '=', 'units.id');
 
             if ($user && $user->role === 'admin') {
-                $query->where('kode_cabang', $user->kode_cabang);
+                $query->where('units.branch_id', $user->branch_id);
             }
 
             // Apply same filters as index
-            if ($request->filled('kode_cabang')) {
-                $query->where('kode_cabang', $request->kode_cabang);
+            if ($request->filled('branch_id')) {
+                $query->where('units.branch_id', $request->branch_id);
             }
 
-            if ($request->filled('kode_dept')) {
-                $query->where('kode_dept', $request->kode_dept);
+            if ($request->filled('unit_id')) {
+                $query->where('units.id', $request->unit_id);
             }
 
             if ($request->filled('status')) {
@@ -327,7 +343,7 @@ class FaceVerificationController extends Controller
                 }
             }
 
-            $karyawan = $query->orderBy('nama_lengkap', 'ASC')->get();
+            $karyawan = $query->orderBy('karyawan.nama_lengkap', 'ASC')->get();
 
             $filename = 'Laporan_Verifikasi_Wajah_' . date('d-m-Y') . '.xls';
 
@@ -348,24 +364,27 @@ class FaceVerificationController extends Controller
     {
         $user = auth('user')->user();
 
-        $karyawanQuery = Karyawan::query();
+        $karyawanQuery = Karyawan::query()
+            ->join('organs', 'karyawan.organ_id', '=', 'organs.id')
+            ->join('units', 'organs.unit_id', '=', 'units.id');
+
         if ($user && $user->role === 'admin') {
-            $karyawanQuery->where('kode_cabang', $user->kode_cabang);
+            $karyawanQuery->where('units.branch_id', $user->branch_id);
         }
         $totalKaryawan = $karyawanQuery->count();
 
         $enrolledQuery = FaceData::where('status', 'active');
         if ($user && $user->role === 'admin') {
-            $enrolledQuery->whereHas('karyawan', function($q) use ($user) {
-                $q->where('kode_cabang', $user->kode_cabang);
+            $enrolledQuery->whereHas('karyawan.organ.unit', function($q) use ($user) {
+                $q->where('branch_id', $user->branch_id);
             });
         }
         $enrolled = $enrolledQuery->count();
 
         $inactiveQuery = FaceData::where('status', 'inactive');
         if ($user && $user->role === 'admin') {
-            $inactiveQuery->whereHas('karyawan', function($q) use ($user) {
-                $q->where('kode_cabang', $user->kode_cabang);
+            $inactiveQuery->whereHas('karyawan.organ.unit', function($q) use ($user) {
+                $q->where('branch_id', $user->branch_id);
             });
         }
         $inactive = $inactiveQuery->count();
@@ -413,8 +432,8 @@ class FaceVerificationController extends Controller
     {
         try {
             $user = auth('user')->user();
-            $karyawan = Karyawan::where('nik', $nik)->first();
-            if ($user && $user->role === 'admin' && $karyawan && $karyawan->kode_cabang !== $user->kode_cabang) {
+            $karyawan = Karyawan::with('organ.unit')->where('nik', $nik)->first();
+            if ($user && $user->role === 'admin' && $karyawan && $karyawan->branch_id !== $user->branch_id) {
                 abort(403, 'Unauthorized action.');
             }
 

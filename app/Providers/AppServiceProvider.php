@@ -21,7 +21,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Force URL to use APP_URL from .env to prevent localhost:8000 redirect issues behind proxies
-        if (config('app.url')) {
+        if (config('app.env') !== 'local' && config('app.url')) {
             \Illuminate\Support\Facades\URL::forceRootUrl(config('app.url'));
         }
         

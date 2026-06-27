@@ -3,26 +3,15 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-// Endpoint ini menggunakan guard 'api-user' yang berbasis model User (bukan Karyawan)
-// karena OAuth token diterbitkan untuk User yang login via web guard
-Route::middleware('auth:api-user')->get('/user', function (Request $request) {
-    $user = $request->user(); // Ini adalah model User
-
-    // Lookup Karyawan terkait melalui nik_karyawan
-    $karyawan = \App\Models\Karyawan::with(['organ.unit.branch'])
-        ->where('nik', $user->nik_karyawan)
-        ->first();
+// Passport dikonfigurasi menggunakan guard 'karyawan', sehingga token diterbitkan untuk model Karyawan
+Route::middleware('auth:api')->get('/user', function (Request $request) {
+    $karyawan = $request->user(); // Ini adalah model Karyawan
 
     if (!$karyawan) {
-        return response()->json([
-            'id'           => $user->id,
-            'nik_karyawan' => $user->nik_karyawan,
-            'name'         => $user->name,
-            'email'        => $user->email,
-            'cabang'       => null,
-            'organ'        => null,
-        ]);
+        return response()->json(['message' => 'Unauthenticated.'], 401);
     }
+
+    $karyawan->load(['organ.unit.branch']);
 
     $organ  = $karyawan->organ;
     $unit   = $organ?->unit;
@@ -32,7 +21,7 @@ Route::middleware('auth:api-user')->get('/user', function (Request $request) {
         'id'           => $karyawan->nik,
         'nik_karyawan' => $karyawan->nik,
         'name'         => $karyawan->nama_lengkap,
-        'email'        => $user->email ?? ($karyawan->nik . '@alazhar.com'),
+        'email'        => $karyawan->email ?? ($karyawan->nik . '@alazhar.com'),
         'cabang'       => $branch ? [
             'id'   => $branch->id,
             'name' => $branch->name,
@@ -51,4 +40,5 @@ Route::middleware('auth:api-user')->get('/user', function (Request $request) {
         ] : null,
     ]);
 });
+
 

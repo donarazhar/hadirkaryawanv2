@@ -27,6 +27,9 @@ class AppServiceProvider extends ServiceProvider
 
         // Auto-approve SSO requests for internal apps
         \Laravel\Passport\Passport::useClientModel(\App\Models\Client::class);
+
+        // Register Passport authorization view (required to resolve AuthorizationViewResponse)
+        \Laravel\Passport\Passport::authorizationView('passport.authorize');
         
         // Register Blade Components
         Blade::component('components.bottom-nav', 'bottom-nav');

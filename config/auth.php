@@ -17,6 +17,12 @@ return [
             'provider' => 'karyawans',
         ],
 
+        // Guard untuk OAuth token yang diterbitkan via web login (User model)
+        'api-user' => [
+            'driver' => 'passport',
+            'provider' => 'users',
+        ],
+
         // Guard untuk karyawan
         'karyawan' => [
             'driver' => 'session',

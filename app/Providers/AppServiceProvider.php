@@ -24,6 +24,9 @@ class AppServiceProvider extends ServiceProvider
         if (config('app.env') !== 'local' && config('app.url')) {
             \Illuminate\Support\Facades\URL::forceRootUrl(config('app.url'));
         }
+
+        // Auto-approve SSO requests for internal apps
+        \Laravel\Passport\Passport::useClientModel(\App\Models\Client::class);
         
         // Register Blade Components
         Blade::component('components.bottom-nav', 'bottom-nav');

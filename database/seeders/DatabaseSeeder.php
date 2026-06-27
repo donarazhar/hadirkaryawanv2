@@ -75,6 +75,7 @@ class DatabaseSeeder extends Seeder
 
             // 6. Seed master data (Branches, Units, Organs)
             $this->call(MasterDataSeeder::class);
+            $this->call(PdfKaryawanSeeder::class);
             $this->command->info("\n🎉 Seeding selesai! Anda bisa login dengan:");
             $this->command->info("Email: donarazhar@gmail.com");
             $this->command->info("Password: password123");

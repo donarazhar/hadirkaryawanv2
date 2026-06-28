@@ -22,10 +22,21 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
+        html {
+            background-color: #E2E8F0; /* Darker background for desktop */
+        }
+        
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background: #F8FAFC;
             padding-bottom: 80px;
+            
+            /* Center mobile view on desktop */
+            margin: 0 auto;
+            max-width: 480px;
+            min-height: 100vh;
+            box-shadow: 0 0 24px rgba(0,0,0,0.05);
+            position: relative;
         }
 
         @supports (padding: max(0px)) {
@@ -44,6 +55,8 @@
             bottom: 0;
             left: 0;
             right: 0;
+            margin: 0 auto;
+            max-width: 480px;
             z-index: 999;
             animation: navRise 0.4s cubic-bezier(0.34, 1.2, 0.64, 1) both;
         }

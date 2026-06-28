@@ -676,10 +676,23 @@
         {{-- Sidebar Footer: user + logout --}}
         <div class="sb-footer">
             <div class="sb-user">
-                <div class="sb-user-avatar"><i class="mdi mdi-account"></i></div>
+                <div class="sb-user-avatar">
+                    @if(Auth::guard('user')->user()->karyawan && Auth::guard('user')->user()->karyawan->foto)
+                        <img src="{{ asset('storage/uploads/karyawan/' . Auth::guard('user')->user()->karyawan->foto) }}" alt="Foto" style="width: 100%; height: 100%; border-radius: 8px; object-fit: cover;">
+                    @else
+                        <i class="mdi mdi-account"></i>
+                    @endif
+                </div>
                 <div class="sb-user-info">
                     <div class="sb-user-name">{{ Auth::guard('user')->user()->name }}</div>
-                    <div class="sb-user-role">{{ ucfirst(Auth::guard('user')->user()->role) }}</div>
+                    <div class="sb-user-role">
+                        {{ ucfirst(Auth::guard('user')->user()->role) }}
+                        @if(Auth::guard('user')->user()->branch)
+                            - {{ Auth::guard('user')->user()->branch->name }}
+                        @else
+                            - (Semua Cabang)
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>
@@ -697,10 +710,23 @@
             </div>
             <div class="topbar-right">
                 <div class="topbar-user">
-                    <div class="topbar-avatar"><i class="mdi mdi-account"></i></div>
+                    <div class="topbar-avatar">
+                        @if(Auth::guard('user')->user()->karyawan && Auth::guard('user')->user()->karyawan->foto)
+                            <img src="{{ asset('storage/uploads/karyawan/' . Auth::guard('user')->user()->karyawan->foto) }}" alt="Foto" style="width: 100%; height: 100%; border-radius: 9px; object-fit: cover;">
+                        @else
+                            <i class="mdi mdi-account"></i>
+                        @endif
+                    </div>
                     <div>
                         <div class="topbar-name">{{ Auth::guard('user')->user()->name }}</div>
-                        <div class="topbar-role">{{ ucfirst(Auth::guard('user')->user()->role) }}</div>
+                        <div class="topbar-role">
+                            {{ ucfirst(Auth::guard('user')->user()->role) }}
+                            @if(Auth::guard('user')->user()->branch)
+                                - {{ Auth::guard('user')->user()->branch->name }}
+                            @else
+                                - (Semua Cabang)
+                            @endif
+                        </div>
                     </div>
                 </div>
                 <form action="{{ route('panel.logout') }}" method="POST">

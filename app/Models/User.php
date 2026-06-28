@@ -36,6 +36,11 @@ class User extends Authenticatable
         return $this->belongsTo(Branch::class, 'branch_id');
     }
 
+    public function karyawan()
+    {
+        return $this->belongsTo(Karyawan::class, 'nik_karyawan', 'nik');
+    }
+
     // Check if user is superadmin
     public function isSuperAdmin()
     {

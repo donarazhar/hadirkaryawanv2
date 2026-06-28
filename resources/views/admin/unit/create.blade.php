@@ -25,7 +25,7 @@
 
                     <div class="mb-3">
                         <label class="form-label">Kode Unit</label>
-                        <input type="text" name="code" class="form-control" placeholder="Contoh: KEP, SEK, dll">
+                        <input type="text" name="code" class="form-control" value="{{ $autoCode ?? '' }}" readonly>
                     </div>
 
                     <div class="mb-3">

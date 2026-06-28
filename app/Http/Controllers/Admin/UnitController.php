@@ -26,7 +26,11 @@ class UnitController extends Controller
     public function create()
     {
         $branches = Branch::all();
-        return view('admin.unit.create', compact('branches'));
+        $lastUnit = Unit::latest('id')->first();
+        $nextNumber = $lastUnit ? $lastUnit->id + 1 : 1;
+        $autoCode = 'UNT-' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+        
+        return view('admin.unit.create', compact('branches', 'autoCode'));
     }
 
     public function store(Request $request)

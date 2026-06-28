@@ -462,14 +462,20 @@
                 </a>
                 
                 @php
-                    // Cek apakah user yang login juga terdaftar sebagai Admin di tabel users
                     $userEmail = Auth::guard('karyawan')->user()->email ?? '';
-                    $isAdmin = \App\Models\User::where('email', $userEmail)->exists() || $userEmail === 'donarazhar@gmail.com';
+                    
+                    // Cek admin di PresensiGPS
+                    $isAdminPresensi = \App\Models\User::where('email', $userEmail)->exists() || $userEmail === 'donarazhar@gmail.com';
+                    
+                    // Cek akses di Persuratan (Database terpisah tapi 1 server)
+                    $isUserPersuratan = \Illuminate\Support\Facades\DB::table('persuratan.users')->where('email', $userEmail)->exists() || $userEmail === 'donarazhar@gmail.com';
                 @endphp
                 
-                @if($isAdmin)
+                @if($isAdminPresensi || $isUserPersuratan)
                 <div class="menu-section-title">Aplikasi Terhubung</div>
+                @endif
                 
+                @if($isAdminPresensi)
                 <a href="{{ route('karyawan.switch-to-admin') }}" class="menu-item">
                     <div class="menu-icon-box" style="background: #FEF2F2; color: #DC2626;">
                         <ion-icon name="settings"></ion-icon>
@@ -480,7 +486,9 @@
                     </div>
                     <ion-icon name="open-outline" style="color: #9CA3AF;"></ion-icon>
                 </a>
+                @endif
                 
+                @if($isUserPersuratan)
                 <a href="http://localhost:8001/auth/presensi" target="_blank" class="menu-item">
                     <div class="menu-icon-box" style="background: #ECFEFF; color: #0891B2;">
                         <ion-icon name="mail"></ion-icon>

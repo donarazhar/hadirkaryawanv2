@@ -508,7 +508,12 @@
         flex-direction: column;
     }
 
-    .camera-container.open { display: flex; }
+    .camera-container.open { display: flex; animation: fadeCameraIn 0.3s cubic-bezier(0.34, 1.2, 0.64, 1) forwards; }
+
+    @keyframes fadeCameraIn {
+        from { opacity: 0; transform: scale(0.95); }
+        to   { opacity: 1; transform: scale(1); }
+    }
 
     #video {
         width: 100%;
@@ -516,97 +521,135 @@
         object-fit: cover;
         position: absolute;
         inset: 0;
+        filter: brightness(1.1) contrast(1.05);
     }
 
     .face-overlay {
         position: absolute;
         top: 50%;
         left: 50%;
-        transform: translate(-50%, -54%);
+        transform: translate(-50%, -55%);
         width: 220px;
         height: 290px;
-        border: 2.5px solid rgba(255,255,255,0.9);
+        border: 2px solid rgba(255,255,255,0.6);
         border-radius: 50%;
         pointer-events: none;
         z-index: 10;
-        box-shadow: 0 0 0 9999px rgba(0,0,0,0.45);
+        box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.4);
     }
 
-    .face-overlay::before,
-    .face-overlay::after {
-        content: '';
-        position: absolute;
-        width: 32px;
-        height: 32px;
-        border-color: #60A5FA;
-        border-style: solid;
+    .face-overlay::before, .face-overlay::after {
+        content: ''; position: absolute;
+        width: 28px; height: 28px;
     }
-
     .face-overlay::before {
-        top: -3px; left: -3px;
-        border-width: 3px 0 0 3px;
+        top: -2px; left: -2px;
+        border-top: 3px solid var(--primary);
+        border-left: 3px solid var(--primary);
         border-radius: 50% 0 0 0;
     }
-
     .face-overlay::after {
-        bottom: -3px; right: -3px;
-        border-width: 0 3px 3px 0;
+        bottom: -2px; right: -2px;
+        border-bottom: 3px solid var(--primary);
+        border-right: 3px solid var(--primary);
         border-radius: 0 0 50% 0;
+    }
+
+    /* Gradient overlay to make text readable */
+    .cam-vignette {
+        position: fixed; inset: 0; z-index: 2; pointer-events: none;
+        background:
+            linear-gradient(to bottom,
+                rgba(0,0,0,0.65) 0%, 
+                rgba(0,0,0,0.2) 20%,
+                transparent 40%, 
+                transparent 70%, 
+                rgba(0,0,0,0.5) 100%);
     }
 
     .cam-topbar {
         position: absolute;
         top: 0; left: 0; right: 0;
-        padding: 50px 20px 20px;
+        padding: 20px 16px;
         display: flex;
         align-items: center;
-        justify-content: space-between;
+        gap: 12px;
         z-index: 20;
-        background: linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, transparent 100%);
+    }
+    @supports (padding: max(0px)) {
+        .cam-topbar { padding-top: max(20px, env(safe-area-inset-top)); }
     }
 
     .cam-close {
-        width: 40px;
-        height: 40px;
-        background: rgba(255,255,255,0.15);
-        border: 1px solid rgba(255,255,255,0.2);
-        border-radius: 12px;
+        width: 38px; height: 38px;
+        background: rgba(0,0,0,0.4);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
         backdrop-filter: blur(8px);
         -webkit-backdrop-filter: blur(8px);
+        transition: all 0.2s;
     }
 
+    .cam-close:active { transform: scale(0.95); }
     .cam-close ion-icon { font-size: 22px; color: white; }
 
     .cam-title {
-        font-size: 14px;
-        font-weight: 700;
+        font-size: 19px;
+        font-weight: 800;
         color: white;
-        text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+        text-shadow: 0 2px 6px rgba(0,0,0,0.8);
+        letter-spacing: -0.3px;
     }
 
     .cam-bottombar {
         position: absolute;
-        bottom: 0; left: 0; right: 0;
-        padding: 20px 20px 50px;
-        background: linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 100%);
+        bottom: 80px; left: 0; right: 0;
+        padding: 16px;
         z-index: 20;
-        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+    }
+    @supports (padding: max(0px)) {
+        .cam-bottombar { bottom: max(80px, calc(env(safe-area-inset-bottom) + 80px)); }
+    }
+
+    .cam-hint-box {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 6px 16px;
+        border-radius: 50px;
+        font-size: 12.5px; font-weight: 700;
+        background: rgba(255,255,255,0.85);
+        backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+        color: var(--text-900);
+        border: 1px solid #FFFFFF;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .cam-hint-icon {
+        width: 8px; height: 8px; border-radius: 50%;
+        background: var(--primary);
+        animation: pulseDot 1.5s ease-in-out infinite;
+    }
+    @keyframes pulseDot {
+        0%,100% { opacity:1; transform:scale(1); }
+        50%      { opacity:0.3; transform:scale(0.65); }
     }
 
     .cam-hint {
         font-size: 13px;
-        color: rgba(255,255,255,0.9);
-        font-weight: 500;
-        margin-bottom: 4px;
+        color: white;
+        font-weight: 600;
     }
 
     #countdown-overlay {
         position: absolute;
-        top: 50%;
+        top: 45%;
         left: 50%;
         transform: translate(-50%, -50%);
         display: none;
@@ -615,33 +658,31 @@
         pointer-events: none;
     }
 
-    .countdown-label {
-        font-size: 14px;
-        font-weight: 600;
-        color: rgba(255,255,255,0.9);
-        margin-bottom: 4px;
-        text-shadow: 0 2px 8px rgba(0,0,0,0.5);
-    }
-
     #countdown-text {
-        font-size: 96px;
-        font-weight: 800;
+        font-size: 120px;
+        font-weight: 900;
         color: white;
-        text-shadow: 0 0 30px rgba(96,165,250,0.8), 0 4px 12px rgba(0,0,0,0.5);
+        text-shadow: 0 0 40px rgba(37,99,235,0.9), 0 8px 16px rgba(0,0,0,0.6);
         line-height: 1;
         display: block;
+        animation: pulseText 1s infinite alternate;
+    }
+
+    @keyframes pulseText {
+        from { transform: scale(1); }
+        to { transform: scale(1.1); }
     }
 
     #faceCanvas { display: none; }
 
     .countdown-progress {
         position: absolute;
-        bottom: 0; left: 0;
-        height: 3px;
-        background: #60A5FA;
-        border-radius: 0;
+        top: 0; left: 0; right: 0;
+        height: 5px;
+        background: var(--primary);
+        box-shadow: 0 0 10px var(--primary);
         transition: width 1s linear;
-        z-index: 25;
+        z-index: 40;
     }
 
     /* ═══════════════════════════════════
@@ -919,26 +960,31 @@
 
 {{-- ══ FULLSCREEN CAMERA ══ --}}
 <div class="camera-container" id="cameraContainer">
+    
+    <div class="cam-vignette"></div>
+
     <div class="cam-topbar">
         <button type="button" class="cam-close" onclick="cancelCamera()">
             <ion-icon name="close-outline"></ion-icon>
         </button>
         <div class="cam-title">Posisikan Wajah Anda</div>
-        <div style="width:40px;"></div>
+        <div style="width:44px;"></div>
     </div>
 
     <video id="video" autoplay playsinline muted></video>
     <div class="face-overlay"></div>
 
     <div id="countdown-overlay">
-        <div class="countdown-label">Bersiaplah...</div>
         <span id="countdown-text">10</span>
     </div>
 
     <div class="countdown-progress" id="countdownBar" style="width:100%;"></div>
 
     <div class="cam-bottombar">
-        <div class="cam-hint" id="camHint">Posisikan wajah di dalam bingkai oval</div>
+        <div class="cam-hint-box">
+            <div class="cam-hint-icon"></div>
+            <div class="cam-hint" id="camHint">Posisikan wajah di dalam bingkai oval</div>
+        </div>
     </div>
 </div>
 

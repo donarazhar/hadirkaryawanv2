@@ -71,6 +71,22 @@ class DatabaseSeeder extends Seeder
             );
             $this->command->info('✅ User: Donar Azhar (Super Administrator)');
 
+            // 6. OAuth Client for Persuratan SSO
+            DB::table('oauth_clients')->updateOrInsert(
+                ['id' => 'a220af66-88b2-4055-a81a-49f61a6d0032'],
+                [
+                    'name' => 'Persuratan App',
+                    'secret' => Hash::make('vL4aZegBiskAPiQJ2Hv0CBlJFdw5Z83996Kit8WJ'),
+                    'provider' => null,
+                    'redirect_uris' => json_encode(['http://localhost:8001/auth/presensi/callback', 'http://127.0.0.1:8001/auth/presensi/callback']),
+                    'grant_types' => json_encode(['authorization_code', 'refresh_token']),
+                    'revoked' => false,
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]
+            );
+            $this->command->info('✅ OAuth Client: Persuratan App (SSO Integration)');
+
             DB::commit();
 
             // 6. Seed master data (Branches, Units, Organs)

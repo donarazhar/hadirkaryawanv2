@@ -217,7 +217,7 @@
                             <div class="fg">
                                 <label>Kode Jam Kerja <span class="req">*</span></label>
                                 <input type="text" name="kode_jam_kerja" class="form-control @error('kode_jam_kerja') is-invalid @enderror" 
-                                    value="{{ old('kode_jam_kerja') }}" required>
+                                    value="{{ $autoCode ?? old('kode_jam_kerja') }}" required readonly>
                                 @error('kode_jam_kerja')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror

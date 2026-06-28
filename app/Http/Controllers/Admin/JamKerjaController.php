@@ -42,7 +42,19 @@ class JamKerjaController extends Controller
      */
     public function create()
     {
-        return view('admin.jamkerja.create');
+        // Get the latest JamKerja code to auto-generate the next one
+        $lastJamKerja = JamKerja::orderBy('kode_jam_kerja', 'desc')->first();
+        if ($lastJamKerja) {
+            $lastCode = $lastJamKerja->kode_jam_kerja;
+            // Assuming format is JK-XXX
+            $number = (int) str_replace('JK-', '', $lastCode);
+            $nextNumber = $number + 1;
+        } else {
+            $nextNumber = 1;
+        }
+        $autoCode = 'JK-' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+
+        return view('admin.jamkerja.create', compact('autoCode'));
     }
 
     /**

@@ -2,8 +2,8 @@
 
 return [
     'defaults' => [
-        'guard' => 'web',
-        'passwords' => 'users',
+        'guard' => 'karyawan',
+        'passwords' => 'karyawans',
     ],
 
     'guards' => [

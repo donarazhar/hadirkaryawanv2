@@ -14,9 +14,22 @@ class AuthAdminController extends Controller
      */
     public function login()
     {
-        // Jika sudah login, redirect ke dashboard admin
+        // Jika sudah login sebagai admin, redirect ke dashboard admin
         if (Auth::guard('user')->check()) {
             return redirect('/panel/dashboardadmin');
+        }
+
+        // AUTO-LOGIN: Jika sudah login sebagai karyawan (via Google SSO)
+        // Cek apakah karyawan ini juga memiliki akses admin (terdaftar di tabel users)
+        if (Auth::guard('karyawan')->check()) {
+            $karyawan = Auth::guard('karyawan')->user();
+            $adminUser = \App\Models\User::where('email', $karyawan->email)->first();
+            
+            if ($adminUser) {
+                // Login otomatis sebagai admin
+                Auth::guard('user')->login($adminUser);
+                return redirect('/panel/dashboardadmin');
+            }
         }
 
         return view('admin.auth.login');

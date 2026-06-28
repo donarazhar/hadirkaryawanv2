@@ -91,6 +91,25 @@ class DatabaseSeeder extends Seeder
             );
             $this->command->info('✅ OAuth Client: Persuratan App (SSO Integration)');
 
+            // 7. OAuth Client for TODO SSO
+            DB::table('oauth_clients')->updateOrInsert(
+                ['id' => 'b2345678-89ab-cdef-0123-456789abcdef'],
+                [
+                    'name' => 'TODO App',
+                    'secret' => Hash::make('todo-secret-key-1234567890'),
+                    'redirect_uris' => json_encode([
+                        'http://localhost:8000/auth/presensi/callback', 
+                        'http://127.0.0.1:8000/auth/presensi/callback',
+                        'https://todo.masjidagungalazhar.com/auth/presensi/callback'
+                    ]),
+                    'grant_types' => json_encode(['authorization_code', 'refresh_token']),
+                    'revoked' => false,
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]
+            );
+            $this->command->info('✅ OAuth Client: TODO App (SSO Integration)');
+
             DB::commit();
 
             // 6. Seed master data (Branches, Units, Organs)

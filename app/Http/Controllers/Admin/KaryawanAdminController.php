@@ -295,6 +295,20 @@ class KaryawanAdminController extends Controller
                 \Illuminate\Support\Facades\Log::warning('Gagal sync ke db persuratan: ' . $syncEx->getMessage());
             }
 
+            // Sync to todo.users
+            try {
+                if ($oldEmail) {
+                    \Illuminate\Support\Facades\DB::table('todo.users')
+                        ->where('email', $oldEmail)
+                        ->update([
+                            'nama' => $request->nama_lengkap,
+                            'email' => $request->email
+                        ]);
+                }
+            } catch (\Exception $syncEx) {
+                \Illuminate\Support\Facades\Log::warning('Gagal sync ke db todo: ' . $syncEx->getMessage());
+            }
+
             \App\Helpers\LogHelper::record(
                 'UPDATE_KARYAWAN',
                 "Mengubah data karyawan dengan NIK: {$nik}"

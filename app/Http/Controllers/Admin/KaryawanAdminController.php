@@ -125,6 +125,14 @@ class KaryawanAdminController extends Controller
                 ->withInput();
         }
 
+        $user = auth('user')->user();
+        if ($user && $user->role === 'admin') {
+            $organ = Organ::with('unit')->findOrFail($request->organ_id);
+            if ($organ->unit->branch_id != $user->branch_id) {
+                abort(403, 'Unauthorized action.');
+            }
+        }
+
         try {
             $data = [
                 'nik' => $request->nik,
@@ -220,6 +228,13 @@ class KaryawanAdminController extends Controller
 
             if ($user && $user->role === 'admin' && $karyawan->branch_id !== $user->branch_id) {
                 abort(403, 'Unauthorized action.');
+            }
+            
+            if ($user && $user->role === 'admin') {
+                $organ = Organ::with('unit')->findOrFail($request->organ_id);
+                if ($organ->unit->branch_id != $user->branch_id) {
+                    abort(403, 'Unauthorized action.');
+                }
             }
 
             $data = [

@@ -20,6 +20,11 @@ class KonfigurasiJkUnitController extends Controller
     public function index(Request $request)
     {
         $query = KonfigurasiJkUnit::with(['branch', 'unit', 'details.jamKerja']);
+        $user = auth('user')->user();
+
+        if ($user && $user->role === 'admin') {
+            $query->where('branch_id', $user->branch_id);
+        }
 
         // Search functionality
         if ($request->has('search') && $request->search != '') {
@@ -33,18 +38,27 @@ class KonfigurasiJkUnitController extends Controller
         }
 
         $konfigurasi = $query->orderBy('kode_jk_unit', 'DESC')->paginate(10);
-        $branches = Branch::orderBy('name')->get();
+        
+        if ($user && $user->role === 'admin') {
+            $branches = Branch::where('id', $user->branch_id)->get();
+        } else {
+            $branches = Branch::orderBy('name')->get();
+        }
 
         return view('admin.konfigurasi-jk-unit.index', compact('konfigurasi', 'branches'));
     }
 
-    /**
-     * Show the form for creating a new konfigurasi
-     */
     public function create()
     {
-        $branches = Branch::orderBy('name')->get();
-        $units = Unit::orderBy('name')->get();
+        $user = auth('user')->user();
+        if ($user && $user->role === 'admin') {
+            $branches = Branch::where('id', $user->branch_id)->get();
+            $units = Unit::where('branch_id', $user->branch_id)->orderBy('name')->get();
+        } else {
+            $branches = Branch::orderBy('name')->get();
+            $units = Unit::orderBy('name')->get();
+        }
+        
         $jamkerja = JamKerja::orderBy('nama_jam_kerja')->get();
 
         $lastKonfigurasi = KonfigurasiJkUnit::orderBy('kode_jk_unit', 'desc')->first();
@@ -82,6 +96,11 @@ class KonfigurasiJkUnitController extends Controller
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput();
+        }
+
+        $user = auth('user')->user();
+        if ($user && $user->role === 'admin' && $request->branch_id != $user->branch_id) {
+            abort(403, 'Unauthorized action.');
         }
 
         DB::beginTransaction();
@@ -124,8 +143,20 @@ class KonfigurasiJkUnitController extends Controller
     public function edit($kode_jk_unit)
     {
         $konfigurasi = KonfigurasiJkUnit::with('details')->findOrFail($kode_jk_unit);
-        $branches = Branch::orderBy('name')->get();
-        $units = Unit::orderBy('name')->get();
+        $user = auth('user')->user();
+        
+        if ($user && $user->role === 'admin' && $konfigurasi->branch_id != $user->branch_id) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        if ($user && $user->role === 'admin') {
+            $branches = Branch::where('id', $user->branch_id)->get();
+            $units = Unit::where('branch_id', $user->branch_id)->orderBy('name')->get();
+        } else {
+            $branches = Branch::orderBy('name')->get();
+            $units = Unit::orderBy('name')->get();
+        }
+        
         $jamkerja = JamKerja::orderBy('nama_jam_kerja')->get();
 
         return view('admin.konfigurasi-jk-unit.edit', compact('konfigurasi', 'branches', 'units', 'jamkerja'));
@@ -136,6 +167,13 @@ class KonfigurasiJkUnitController extends Controller
      */
     public function update(Request $request, $kode_jk_unit)
     {
+        $konfigurasi = KonfigurasiJkUnit::findOrFail($kode_jk_unit);
+        $user = auth('user')->user();
+        
+        if ($user && $user->role === 'admin' && $konfigurasi->branch_id != $user->branch_id) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $validator = Validator::make($request->all(), [
             'branch_id' => 'required|exists:branches,id',
             'unit_id' => 'required|exists:units,id',
@@ -150,6 +188,10 @@ class KonfigurasiJkUnitController extends Controller
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput();
+        }
+        
+        if ($user && $user->role === 'admin' && $request->branch_id != $user->branch_id) {
+            abort(403, 'Unauthorized action.');
         }
 
         DB::beginTransaction();
@@ -195,13 +237,19 @@ class KonfigurasiJkUnitController extends Controller
      */
     public function destroy($kode_jk_unit)
     {
+        $konfigurasi = KonfigurasiJkUnit::findOrFail($kode_jk_unit);
+        $user = auth('user')->user();
+        
+        if ($user && $user->role === 'admin' && $konfigurasi->branch_id != $user->branch_id) {
+            abort(403, 'Unauthorized action.');
+        }
+        
         DB::beginTransaction();
         try {
             // Delete details first
             KonfigurasiJkUnitDetail::where('kode_jk_unit', $kode_jk_unit)->delete();
 
             // Delete master
-            $konfigurasi = KonfigurasiJkUnit::findOrFail($kode_jk_unit);
             $konfigurasi->delete();
 
             DB::commit();

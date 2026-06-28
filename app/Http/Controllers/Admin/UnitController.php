@@ -12,11 +12,18 @@ class UnitController extends Controller
     public function index(Request $request)
     {
         $query = Unit::with('branch');
+        $user = auth('user')->user();
+
+        if ($user && $user->role === 'admin') {
+            $query->where('branch_id', $user->branch_id);
+        }
         
         if ($request->has('search')) {
             $search = $request->search;
-            $query->where('name', 'like', "%{$search}%")
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
                   ->orWhere('code', 'like', "%{$search}%");
+            });
         }
         
         $units = $query->paginate(15);
@@ -25,7 +32,13 @@ class UnitController extends Controller
 
     public function create()
     {
-        $branches = Branch::all();
+        $user = auth('user')->user();
+        if ($user && $user->role === 'admin') {
+            $branches = Branch::where('id', $user->branch_id)->get();
+        } else {
+            $branches = Branch::all();
+        }
+
         $lastUnit = Unit::latest('id')->first();
         $nextNumber = $lastUnit ? $lastUnit->id + 1 : 1;
         $autoCode = 'UNT-' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
@@ -42,6 +55,11 @@ class UnitController extends Controller
             'is_sekretariat' => 'boolean'
         ]);
 
+        $user = auth('user')->user();
+        if ($user && $user->role === 'admin' && $request->branch_id != $user->branch_id) {
+            abort(403, 'Unauthorized action.');
+        }
+
         Unit::create([
             'name' => $request->name,
             'code' => $request->code,
@@ -54,18 +72,37 @@ class UnitController extends Controller
 
     public function edit(Unit $unit)
     {
-        $branches = Branch::all();
+        $user = auth('user')->user();
+        if ($user && $user->role === 'admin' && $unit->branch_id != $user->branch_id) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        if ($user && $user->role === 'admin') {
+            $branches = Branch::where('id', $user->branch_id)->get();
+        } else {
+            $branches = Branch::all();
+        }
+
         return view('admin.unit.edit', compact('unit', 'branches'));
     }
 
     public function update(Request $request, Unit $unit)
     {
+        $user = auth('user')->user();
+        if ($user && $user->role === 'admin' && $unit->branch_id != $user->branch_id) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $request->validate([
             'name' => 'required|string|max:255',
             'code' => 'nullable|string|max:50',
             'branch_id' => 'required|exists:branches,id',
             'is_sekretariat' => 'boolean'
         ]);
+
+        if ($user && $user->role === 'admin' && $request->branch_id != $user->branch_id) {
+            abort(403, 'Unauthorized action.');
+        }
 
         $unit->update([
             'name' => $request->name,
@@ -79,6 +116,11 @@ class UnitController extends Controller
 
     public function destroy(Unit $unit)
     {
+        $user = auth('user')->user();
+        if ($user && $user->role === 'admin' && $unit->branch_id != $user->branch_id) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $unit->delete();
         return redirect()->route('panel.unit.index')->with('success', 'Data unit berhasil dihapus!');
     }

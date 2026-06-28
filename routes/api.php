@@ -22,6 +22,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
         'nik_karyawan' => $karyawan->nik,
         'name'         => $karyawan->nama_lengkap,
         'email'        => $karyawan->email ?? ($karyawan->nik . '@alazhar.com'),
+        'foto'         => $karyawan->foto,
         'cabang'       => $branch ? [
             'id'   => $branch->id,
             'name' => $branch->name,

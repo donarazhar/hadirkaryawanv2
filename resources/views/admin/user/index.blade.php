@@ -255,18 +255,11 @@
                             @endif
                         </td>
                         <td>
-                            @if($item->cabang)
+                            @if($item->branch)
                                 <div class="ctx-item">
                                     <i class="mdi mdi-office-building text-blue"></i>
-                                    <span>{{ $item->cabang->nama_cabang }}</span>
+                                    <span>{{ $item->branch->name }}</span>
                                 </div>
-                                
-                                @if($item->role === 'pimpinan' && $item->departemen)
-                                <div class="ctx-item">
-                                    <i class="mdi mdi-sitemap text-green"></i>
-                                    <span>{{ $item->departemen->nama_dept }}</span>
-                                </div>
-                                @endif
                             @else
                                 <div class="ctx-item ctx-global"><i class="mdi mdi-earth"></i> Semua Cabang (Global)</div>
                             @endif

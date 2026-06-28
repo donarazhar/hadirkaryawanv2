@@ -20,6 +20,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'no-cache.panel' => \App\Http\Middleware\NoCachePanelMiddleware::class,
         ]);
 
+        $middleware->redirectUsersTo(function (\Illuminate\Http\Request $request) {
+            return $request->is('panel*') ? '/panel/dashboard' : '/dashboard';
+        });
+
         // Priority middleware
         $middleware->priority([
             \Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests::class,

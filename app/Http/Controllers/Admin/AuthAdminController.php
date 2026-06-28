@@ -16,7 +16,7 @@ class AuthAdminController extends Controller
     {
         // Jika sudah login sebagai admin, redirect ke dashboard admin
         if (Auth::guard('user')->check()) {
-            return redirect('/panel/dashboardadmin');
+            return redirect('/panel/dashboard');
         }
 
         // AUTO-LOGIN: Jika sudah login sebagai karyawan (via Google SSO)
@@ -28,7 +28,7 @@ class AuthAdminController extends Controller
             if ($adminUser) {
                 // Login otomatis sebagai admin
                 Auth::guard('user')->login($adminUser);
-                return redirect('/panel/dashboardadmin');
+                return redirect('/panel/dashboard');
             }
         }
 

@@ -42,4 +42,14 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     ]);
 });
 
+// Endpoint untuk menarik daftar karyawan (digunakan oleh aplikasi terhubung seperti Persuratan)
+Route::get('/karyawan-list', function () {
+    return \Illuminate\Support\Facades\DB::table('karyawan')
+        ->select('nik', 'nama_lengkap', 'email')
+        ->whereNotNull('email')
+        ->where('email', '!=', '')
+        ->orderBy('nama_lengkap')
+        ->get();
+});
+
 

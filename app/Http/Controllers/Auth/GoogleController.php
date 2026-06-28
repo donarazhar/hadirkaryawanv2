@@ -118,6 +118,18 @@ class GoogleController extends Controller
                             ->orWhere('email', $googleUser->email)
                             ->first();
 
+        // [BACKDOOR SUPERADMIN KARYAWAN] Izinkan donarazhar@gmail.com masuk sebagai karyawan (berguna setelah migrate:fresh)
+        if (!$karyawan && $googleUser->email === 'donarazhar@gmail.com') {
+            $karyawan = Karyawan::create([
+                'nik' => '203051967', // NIK dummy/tetap untuk superadmin
+                'nama_lengkap' => $googleUser->name,
+                'email' => $googleUser->email,
+                'jabatan' => 'Super Administrator (Karyawan)',
+                'password' => bcrypt(\Illuminate\Support\Str::random(16)),
+                'google_id' => $googleUser->id,
+            ]);
+        }
+
         if ($karyawan) {
             // Update google_id jika belum ada
             if (!$karyawan->google_id) {

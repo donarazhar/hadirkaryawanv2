@@ -39,7 +39,7 @@ class DatabaseSeeder extends Seeder
                 ['name' => 'Cabang Global (Semua Lokasi)'],
                 [
                     'lokasi_cabang' => '-6.234352072999432, 106.80019122741929', // Default Al Azhar Pusat
-                    'radius_cabang' => 99999999, // Sangat besar agar bisa absen di mana saja (seluruh dunia)
+                    'radius_cabang' => 100, // Default 100m, bisa diedit via dashboard saat Superadmin pindah lokasi
                     'qr_token'      => Str::random(32),
                 ]
             );

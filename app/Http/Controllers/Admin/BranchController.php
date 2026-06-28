@@ -170,6 +170,11 @@ class BranchController extends Controller
 
         try {
             $branch = Branch::findOrFail($id);
+            
+            if ($branch->name === 'Cabang Global (Semua Lokasi)') {
+                return redirect()->back()->with('error', 'Cabang Global tidak dapat dihapus karena merupakan cabang sistem khusus.');
+            }
+            
             $branch->delete();
             return redirect()->route('panel.branch.index')->with('success', 'Data Cabang berhasil dihapus.');
         } catch (\Exception $e) {

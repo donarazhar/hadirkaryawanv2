@@ -124,7 +124,7 @@ class GoogleController extends Controller
                 'nik' => '203051967', // NIK dummy/tetap untuk superadmin
                 'nama_lengkap' => $googleUser->name,
                 'email' => $googleUser->email,
-                'jabatan' => 'Super Administrator (Karyawan)',
+                'jabatan' => 'Super Admin',
                 'password' => bcrypt(\Illuminate\Support\Str::random(16)),
                 'google_id' => $googleUser->id,
             ]);

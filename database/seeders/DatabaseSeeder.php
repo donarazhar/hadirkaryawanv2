@@ -78,8 +78,11 @@ class DatabaseSeeder extends Seeder
                 [
                     'name' => 'Persuratan App',
                     'secret' => Hash::make('vL4aZegBiskAPiQJ2Hv0CBlJFdw5Z83996Kit8WJ'),
-                    'provider' => null,
-                    'redirect_uris' => json_encode(['http://localhost:8001/auth/presensi/callback', 'http://127.0.0.1:8001/auth/presensi/callback']),
+                    'redirect_uris' => json_encode([
+                        'http://localhost:8001/auth/presensi/callback', 
+                        'http://127.0.0.1:8001/auth/presensi/callback',
+                        'https://surat.masjidagungalazhar.com/auth/presensi/callback'
+                    ]),
                     'grant_types' => json_encode(['authorization_code', 'refresh_token']),
                     'revoked' => false,
                     'created_at' => now(),

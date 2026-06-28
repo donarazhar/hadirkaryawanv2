@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 // Passport dikonfigurasi menggunakan guard 'karyawan', sehingga token diterbitkan untuk model Karyawan
 Route::middleware('auth:api')->get('/user', function (Request $request) {
-    $karyawan = $request->user(); // Ini adalah model Karyawan
+    $karyawan = $request->user('api'); // Explicitly use API guard, otherwise it falls back to session
 
     if (!$karyawan) {
         return response()->json(['message' => 'Unauthenticated.'], 401);

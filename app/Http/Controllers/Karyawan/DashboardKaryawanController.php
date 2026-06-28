@@ -18,8 +18,8 @@ class DashboardKaryawanController extends Controller
         $tahunini = date("Y");
         $karyawan_auth = Auth::guard('karyawan')->user();
         $karyawan = \App\Models\Karyawan::with('organ.unit')->where('nik', $karyawan_auth->nik)->first();
-        $nik = $karyawan->nik;
-        $branch_id = $karyawan->organ->unit->branch_id ?? null;
+        $nik = $karyawan->nik ?? $karyawan_auth->nik;
+        $branch_id = $karyawan?->organ?->unit?->branch_id;
 
         // Presensi hari ini dengan join ke jam_kerja untuk mendapatkan jam_masuk (Mendukung Multi-Shift)
         $presensihariini = DB::table('presensi')

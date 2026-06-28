@@ -562,51 +562,7 @@
                 Masuk dengan Google
             </a>
 
-            <div class="divider">atau masuk dengan email</div>
 
-            {{-- Login Form --}}
-            <form action="{{ route('panel.login.process') }}" method="POST">
-                @csrf
-
-                <div class="form-group">
-                    <span class="input-icon">
-                        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path stroke-linecap="round" stroke-linejoin="round" d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/><path stroke-linecap="round" stroke-linejoin="round" d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/></svg>
-                    </span>
-                    <input
-                        type="email"
-                        name="email"
-                        class="form-control"
-                        placeholder="Alamat Email"
-                        x-model="email"
-                        autocomplete="email"
-                        required>
-                </div>
-
-                <div class="form-group">
-                    <span class="input-icon">
-                        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path stroke-linecap="round" stroke-linejoin="round" d="M5 9V7a5 5 0 0110 0v2M4 9h12a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2v-6a2 2 0 012-2z"/></svg>
-                    </span>
-                    <input
-                        :type="showPassword ? 'text' : 'password'"
-                        name="password"
-                        class="form-control"
-                        placeholder="Password"
-                        x-model="password"
-                        autocomplete="current-password"
-                        required>
-                    <button type="button" class="eye-btn" @click="showPassword = !showPassword" aria-label="Tampilkan password">
-                        <svg x-show="!showPassword" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path stroke-linecap="round" stroke-linejoin="round" d="M1 10S4 4 10 4s9 6 9 6-3 6-9 6-9-6-9-6z"/><circle cx="10" cy="10" r="2.5" stroke="currentColor"/></svg>
-                        <svg x-show="showPassword" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3l14 14M10 4c-1.3 0-2.5.3-3.6.8M1 10s.5-.9 1.5-2M19 10s-3 6-9 6c-1.3 0-2.5-.3-3.6-.8"/></svg>
-                    </button>
-                </div>
-
-                <button
-                    type="submit"
-                    class="btn-submit"
-                    :class="{ 'is-active': isReady }">
-                    Masuk ke Panel Admin
-                </button>
-            </form>
 
             <div class="form-footer">
                 &copy; {{ date('Y') }} <strong style="color:var(--slate-600);">YPI Al Azhar</strong> — Al Azhar Presensi System.<br>

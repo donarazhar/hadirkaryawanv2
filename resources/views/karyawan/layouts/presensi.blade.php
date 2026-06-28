@@ -514,7 +514,7 @@
                 @php
                     $todoUrl = rtrim(env('TODO_URL', 'http://localhost:8002'), '/');
                 @endphp
-                <a href="{{ $todoUrl }}/auth/presensi/redirect" target="_blank" class="menu-item">
+                <a href="{{ $todoUrl }}/auth/presensi" target="_blank" class="menu-item">
                     <div class="menu-icon-box" style="background: #F0FDF4; color: #16A34A;">
                         <ion-icon name="checkmark-done-circle"></ion-icon>
                     </div>

@@ -470,7 +470,7 @@
                 @if($isAdmin)
                 <div class="menu-section-title">Aplikasi Terhubung</div>
                 
-                <a href="{{ url('/panel') }}" class="menu-item">
+                <a href="{{ route('karyawan.switch-to-admin') }}" class="menu-item">
                     <div class="menu-icon-box" style="background: #FEF2F2; color: #DC2626;">
                         <ion-icon name="settings"></ion-icon>
                     </div>
@@ -481,7 +481,7 @@
                     <ion-icon name="open-outline" style="color: #9CA3AF;"></ion-icon>
                 </a>
                 
-                <a href="http://localhost:8001" target="_blank" class="menu-item">
+                <a href="http://localhost:8001/auth/presensi" target="_blank" class="menu-item">
                     <div class="menu-icon-box" style="background: #ECFEFF; color: #0891B2;">
                         <ion-icon name="mail"></ion-icon>
                     </div>

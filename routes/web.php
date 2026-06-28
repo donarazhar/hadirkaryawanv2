@@ -26,6 +26,7 @@ use App\Http\Controllers\Karyawan\PresensiKaryawanController;
 use App\Http\Controllers\Karyawan\ProfileKaryawanController;
 use App\Http\Controllers\Auth\GoogleController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 
 
 // Root redirect
@@ -54,6 +55,17 @@ Route::middleware('auth:karyawan')->group(function () {
     Route::post('/proseslogout', [AuthController::class, 'proseslogout'])->name('proseslogout');
     Route::get('/dashboard', [DashboardKaryawanController::class, 'index'])->name('dashboard');
     Route::get('/kalender', [DashboardKaryawanController::class, 'kalender'])->name('karyawan.kalender');
+
+    // Switch to Admin Panel for Superadmin/Admin
+    Route::get('/karyawan/switch-to-admin', function () {
+        $karyawan = Auth::guard('karyawan')->user();
+        $adminUser = \App\Models\User::where('email', $karyawan->email)->first();
+        if ($adminUser) {
+            Auth::guard('user')->login($adminUser);
+            return redirect()->route('panel.dashboard');
+        }
+        return redirect()->route('dashboard')->with('error', 'Akun admin tidak ditemukan.');
+    })->name('karyawan.switch-to-admin');
 
     // Presensi
     Route::controller(PresensiKaryawanController::class)->prefix('presensi')->name('presensi.')->group(function () {

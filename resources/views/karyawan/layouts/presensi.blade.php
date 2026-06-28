@@ -260,6 +260,121 @@
             .dock-fab { width: 50px; height: 50px; border-radius: 16px; margin-top: -14px; }
             .dock-fab ion-icon { font-size: 23px; }
         }
+        /* ── MENU BOTTOM SHEET ── */
+        .menu-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            align-items: flex-end;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .menu-overlay.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .menu-sheet {
+            background: #ffffff;
+            width: 100%;
+            max-width: 480px;
+            border-radius: 28px 28px 0 0;
+            padding: 24px 24px 34px;
+            transform: translateY(100%);
+            transition: transform 0.35s cubic-bezier(0.34, 1.2, 0.64, 1);
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
+        }
+
+        .menu-overlay.show .menu-sheet {
+            transform: translateY(0);
+        }
+
+        .menu-drag-handle {
+            width: 44px;
+            height: 5px;
+            background: #E2E8F0;
+            border-radius: 3px;
+            margin: 0 auto 24px;
+        }
+
+        .menu-header {
+            font-size: 20px;
+            font-weight: 800;
+            color: #0F172A;
+            margin-bottom: 20px;
+            letter-spacing: -0.4px;
+        }
+
+        .menu-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 16px;
+            background: #F8FAFC;
+            border: 1px solid #F1F5F9;
+            border-radius: 18px;
+            text-decoration: none;
+            color: #0F172A;
+            transition: all 0.2s;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .menu-item:active {
+            transform: scale(0.96);
+            background: #F1F5F9;
+        }
+
+        .menu-icon-box {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .menu-icon-box ion-icon {
+            font-size: 24px;
+        }
+
+        .menu-item-text {
+            flex: 1;
+        }
+
+        .menu-item-title {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 3px;
+            color: #1E293B;
+            letter-spacing: -0.2px;
+        }
+
+        .menu-item-desc {
+            font-size: 12px;
+            color: #64748B;
+            line-height: 1.4;
+        }
+        
+        .menu-section-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #94A3B8;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin: 16px 0 4px 4px;
+        }
     </style>
 
     @stack('styles')
@@ -315,16 +430,70 @@
                 <span>Izin</span>
             </a>
 
-            {{-- Profile --}}
-            <a href="{{ route('profile.edit') }}"
+            {{-- Menu (sebelumnya Profile) --}}
+            <a href="#" onclick="openMainMenu(event)"
                class="dock-item {{ request()->routeIs('profile.*') ? 'active' : '' }}">
                 <div class="nav-icon-wrap">
-                    <ion-icon name="{{ request()->routeIs('profile.*') ? 'person' : 'person-outline' }}"></ion-icon>
+                    <ion-icon name="menu-outline"></ion-icon>
                 </div>
-                <span>Profile</span>
+                <span>Menu</span>
             </a>
 
         </nav>
+    </div>
+
+    <!-- ── MENU BOTTOM SHEET ── -->
+    <div class="menu-overlay" id="mainMenuSheet">
+        <div class="menu-sheet">
+            <div class="menu-drag-handle"></div>
+            <div class="menu-header">Menu Utama</div>
+            
+            <div class="menu-list">
+                <!-- Menu Default Karyawan -->
+                <a href="{{ route('profile.edit') }}" class="menu-item">
+                    <div class="menu-icon-box" style="background: #F3F4F6; color: #4B5563;">
+                        <ion-icon name="person"></ion-icon>
+                    </div>
+                    <div class="menu-item-text">
+                        <div class="menu-item-title">Profile Saya</div>
+                        <div class="menu-item-desc">Lihat dan ubah data profile Anda</div>
+                    </div>
+                    <ion-icon name="chevron-forward-outline" style="color: #9CA3AF;"></ion-icon>
+                </a>
+                
+                @php
+                    // Cek apakah user yang login juga terdaftar sebagai Admin di tabel users
+                    $userEmail = Auth::guard('karyawan')->user()->email;
+                    $isAdmin = \App\Models\User::where('email', $userEmail)->exists();
+                @endphp
+                
+                @if($isAdmin)
+                <div class="menu-section-title">Aplikasi Terhubung</div>
+                
+                <a href="{{ url('/panel') }}" class="menu-item">
+                    <div class="menu-icon-box" style="background: #FEF2F2; color: #DC2626;">
+                        <ion-icon name="settings"></ion-icon>
+                    </div>
+                    <div class="menu-item-text">
+                        <div class="menu-item-title">Dashboard PresensiGPS</div>
+                        <div class="menu-item-desc">Kelola master data & konfigurasi</div>
+                    </div>
+                    <ion-icon name="open-outline" style="color: #9CA3AF;"></ion-icon>
+                </a>
+                
+                <a href="http://localhost:8001" target="_blank" class="menu-item">
+                    <div class="menu-icon-box" style="background: #ECFEFF; color: #0891B2;">
+                        <ion-icon name="mail"></ion-icon>
+                    </div>
+                    <div class="menu-item-text">
+                        <div class="menu-item-title">Persuratan (E-Office)</div>
+                        <div class="menu-item-desc">Manajemen surat menyurat & disposisi</div>
+                    </div>
+                    <ion-icon name="open-outline" style="color: #9CA3AF;"></ion-icon>
+                </a>
+                @endif
+            </div>
+        </div>
     </div>
 
     <!-- Scripts -->
@@ -342,6 +511,30 @@
                     if ('vibrate' in navigator) navigator.vibrate(8);
                 }, { passive: true });
             });
+        });
+
+        // --- BOTTOM MENU LOGIC ---
+        function openMainMenu(e) {
+            e.preventDefault();
+            const menu = document.getElementById('mainMenuSheet');
+            menu.style.display = 'flex';
+            menu.offsetHeight; // force reflow
+            menu.classList.add('show');
+        }
+
+        function closeMainMenu() {
+            const menu = document.getElementById('mainMenuSheet');
+            menu.classList.remove('show');
+            setTimeout(() => {
+                menu.style.display = 'none';
+            }, 300);
+        }
+
+        document.addEventListener('click', function(e) {
+            const menu = document.getElementById('mainMenuSheet');
+            if (e.target === menu) {
+                closeMainMenu();
+            }
         });
     </script>
     @stack('myscript')

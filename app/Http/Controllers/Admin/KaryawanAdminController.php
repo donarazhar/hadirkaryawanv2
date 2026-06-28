@@ -263,14 +263,28 @@ class KaryawanAdminController extends Controller
                 $data['foto'] = $filename;
             }
 
-            $oldEmail = $karyawan->email;
+            $oldEmail = $karyawan->getOriginal('email');
+            $oldName = $karyawan->getOriginal('nama_lengkap');
+            
             $karyawan->update($data);
 
             // Sync to persuratan.users
             try {
+                $updated = 0;
                 if ($oldEmail) {
-                    \Illuminate\Support\Facades\DB::table('persuratan.users')
+                    $updated = \Illuminate\Support\Facades\DB::table('persuratan.users')
                         ->where('email', $oldEmail)
+                        ->update([
+                            'name' => $request->nama_lengkap,
+                            'email' => $request->email,
+                            'organ_id' => $request->organ_id
+                        ]);
+                }
+                
+                // Fallback: Jika di persuratan emailnya beda jauh sejak awal, coba sinkronisasi berdasarkan nama
+                if ($updated == 0 && $oldName) {
+                    \Illuminate\Support\Facades\DB::table('persuratan.users')
+                        ->where('name', $oldName)
                         ->update([
                             'name' => $request->nama_lengkap,
                             'email' => $request->email,

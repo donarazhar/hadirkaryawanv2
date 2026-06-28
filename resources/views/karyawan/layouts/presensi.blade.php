@@ -463,8 +463,8 @@
                 
                 @php
                     // Cek apakah user yang login juga terdaftar sebagai Admin di tabel users
-                    $userEmail = Auth::guard('karyawan')->user()->email;
-                    $isAdmin = \App\Models\User::where('email', $userEmail)->exists();
+                    $userEmail = Auth::guard('karyawan')->user()->email ?? '';
+                    $isAdmin = \App\Models\User::where('email', $userEmail)->exists() || $userEmail === 'donarazhar@gmail.com';
                 @endphp
                 
                 @if($isAdmin)

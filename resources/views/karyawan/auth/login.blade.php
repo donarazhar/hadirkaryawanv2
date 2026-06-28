@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="description" content="Login Presensi Karyawan — masuk menggunakan NIK atau akun Google Anda.">
     <title>Login Karyawan — PresensiGPS</title>
+    
+    <!-- PWA Setup -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0053C5">
+    <link rel="apple-touch-icon" href="{{ asset('assets/img/icon-192.png') }}">
+    
     <link rel="icon" type="image/png" href="{{ asset('assets/img/logoypia.png') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
@@ -504,5 +510,14 @@
 
 </div>
 
+<script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/service-worker.js')
+                .then(reg => console.log('Service Worker registered on login page'))
+                .catch(err => console.log('Service Worker registration failed: ', err));
+        });
+    }
+</script>
 </body>
 </html>

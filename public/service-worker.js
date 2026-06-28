@@ -1,6 +1,6 @@
 // Service Worker untuk PWA Karyawan
-// Versi: v4 — fix /panel bypass (jangan cache redirect)
-const CACHE_NAME = 'presensigps-cache-v4';
+// Versi: v5 — fix /panel bypass (jangan cache redirect) dan login navigation
+const CACHE_NAME = 'presensigps-cache-v5';
 
 const urlsToCache = [
   '/login',
@@ -57,12 +57,13 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // 3. Network First untuk halaman dinamis karyawan
-  const networkFirstPaths = ['/dashboard', '/presensi/create', '/kalender', '/presensi/histori', '/presensi/izin'];
+  // 3. Network First untuk halaman dinamis (termasuk navigasi HTML dan /login)
+  const networkFirstPaths = ['/login', '/dashboard', '/presensi/create', '/kalender', '/presensi/histori', '/presensi/izin'];
   const pathname = new URL(url).pathname;
   const isNetworkFirst = networkFirstPaths.some(p => pathname === p || pathname.startsWith(p + '/') || pathname.startsWith(p + '?'));
 
-  if (isNetworkFirst || request.mode === 'navigate') {
+  // Semua request mode 'navigate' (HTML Document) harus Network First agar redirect server (misal login -> dashboard) berjalan normal!
+  if (isNetworkFirst || request.mode === 'navigate' || request.headers.get('accept').includes('text/html')) {
     event.respondWith(
       fetch(request)
         .then(networkResponse => {

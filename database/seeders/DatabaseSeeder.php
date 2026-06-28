@@ -98,9 +98,9 @@ class DatabaseSeeder extends Seeder
                     'name' => 'TODO App',
                     'secret' => Hash::make('todo-secret-key-1234567890'),
                     'redirect_uris' => json_encode([
-                        'http://localhost:8000/auth/presensi/callback', 
-                        'http://127.0.0.1:8000/auth/presensi/callback',
-                        'https://todo.masjidagungalazhar.com/auth/presensi/callback'
+                        'http://localhost:8002/auth/presensi/callback', 
+                        'http://127.0.0.1:8002/auth/presensi/callback',
+                        'https://todo.donarazhar.site/auth/presensi/callback'
                     ]),
                     'grant_types' => json_encode(['authorization_code', 'refresh_token']),
                     'revoked' => false,

@@ -480,9 +480,7 @@
                     }
                 @endphp
                 
-                @if($isAdminPresensi || $isUserPersuratan)
                 <div class="menu-section-title">Aplikasi Terhubung</div>
-                @endif
                 
                 @if($isAdminPresensi)
                 <a href="{{ route('karyawan.switch-to-admin') }}" class="menu-item">
@@ -512,6 +510,20 @@
                     <ion-icon name="open-outline" style="color: #9CA3AF;"></ion-icon>
                 </a>
                 @endif
+
+                @php
+                    $todoUrl = rtrim(env('TODO_URL', 'http://localhost:8002'), '/');
+                @endphp
+                <a href="{{ $todoUrl }}/auth/presensi/redirect" target="_blank" class="menu-item">
+                    <div class="menu-icon-box" style="background: #F0FDF4; color: #16A34A;">
+                        <ion-icon name="checkmark-done-circle"></ion-icon>
+                    </div>
+                    <div class="menu-item-text">
+                        <div class="menu-item-title">Al Azhar Task & Schedule System</div>
+                        <div class="menu-item-desc">Manajemen tugas & jadwal kerja</div>
+                    </div>
+                    <ion-icon name="open-outline" style="color: #9CA3AF;"></ion-icon>
+                </a>
             </div>
         </div>
     </div>

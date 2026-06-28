@@ -498,7 +498,10 @@
                 @endif
                 
                 @if($isUserPersuratan)
-                <a href="http://localhost:8001/auth/presensi" target="_blank" class="menu-item">
+                @php
+                    $persuratanUrl = rtrim(env('PERSURATAN_URL', 'http://localhost:8001'), '/');
+                @endphp
+                <a href="{{ $persuratanUrl }}/auth/presensi" target="_blank" class="menu-item">
                     <div class="menu-icon-box" style="background: #ECFEFF; color: #0891B2;">
                         <ion-icon name="mail"></ion-icon>
                     </div>

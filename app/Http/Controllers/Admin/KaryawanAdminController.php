@@ -263,7 +263,23 @@ class KaryawanAdminController extends Controller
                 $data['foto'] = $filename;
             }
 
+            $oldEmail = $karyawan->email;
             $karyawan->update($data);
+
+            // Sync to persuratan.users
+            try {
+                if ($oldEmail) {
+                    \Illuminate\Support\Facades\DB::table('persuratan.users')
+                        ->where('email', $oldEmail)
+                        ->update([
+                            'name' => $request->nama_lengkap,
+                            'email' => $request->email,
+                            'organ_id' => $request->organ_id
+                        ]);
+                }
+            } catch (\Exception $syncEx) {
+                \Illuminate\Support\Facades\Log::warning('Gagal sync ke db persuratan: ' . $syncEx->getMessage());
+            }
 
             \App\Helpers\LogHelper::record(
                 'UPDATE_KARYAWAN',

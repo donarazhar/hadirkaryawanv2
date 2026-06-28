@@ -468,7 +468,16 @@
                     $isAdminPresensi = \App\Models\User::where('email', $userEmail)->exists() || $userEmail === 'donarazhar@gmail.com';
                     
                     // Cek akses di Persuratan (Database terpisah tapi 1 server)
-                    $isUserPersuratan = \Illuminate\Support\Facades\DB::table('persuratan.users')->where('email', $userEmail)->exists() || $userEmail === 'donarazhar@gmail.com';
+                    // Dibungkus try-catch agar tidak crash 500 di server shared hosting yang beda user DB
+                    $isUserPersuratan = false;
+                    try {
+                        $isUserPersuratan = \Illuminate\Support\Facades\DB::table('persuratan.users')->where('email', $userEmail)->exists();
+                    } catch (\Exception $e) {
+                        // Abaikan jika tidak ada akses cross-database
+                    }
+                    if ($userEmail === 'donarazhar@gmail.com') {
+                        $isUserPersuratan = true;
+                    }
                 @endphp
                 
                 @if($isAdminPresensi || $isUserPersuratan)

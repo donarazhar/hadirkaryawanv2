@@ -504,7 +504,7 @@
                         <ion-icon name="mail"></ion-icon>
                     </div>
                     <div class="menu-item-text">
-                        <div class="menu-item-title">Persuratan (E-Office)</div>
+                        <div class="menu-item-title">Al Azhar Paperless System</div>
                         <div class="menu-item-desc">Manajemen surat menyurat & disposisi</div>
                     </div>
                     <ion-icon name="open-outline" style="color: #9CA3AF;"></ion-icon>

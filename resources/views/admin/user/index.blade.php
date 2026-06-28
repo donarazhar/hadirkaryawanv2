@@ -255,13 +255,13 @@
                             @endif
                         </td>
                         <td>
-                            @if($item->branch)
+                            @if($item->role === 'superadmin' || !$item->branch)
+                                <div class="ctx-item ctx-global"><i class="mdi mdi-earth"></i> Semua Cabang (Global)</div>
+                            @else
                                 <div class="ctx-item">
                                     <i class="mdi mdi-office-building text-blue"></i>
                                     <span>{{ $item->branch->name }}</span>
                                 </div>
-                            @else
-                                <div class="ctx-item ctx-global"><i class="mdi mdi-earth"></i> Semua Cabang (Global)</div>
                             @endif
                         </td>
                         <td>

@@ -65,7 +65,7 @@ class DatabaseSeeder extends Seeder
                     'name' => 'Donar Azhar',
                     'password' => Hash::make('123456'),
                     'role' => 'superadmin',
-                    'branch_id' => $branch->id,
+                    'branch_id' => null, // Superadmin mengelola semua cabang
                     'nik_karyawan' => '203051967'
                 ]
             );

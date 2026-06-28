@@ -206,7 +206,7 @@
                             <div class="fg">
                                 <label>Kode Konfigurasi <span class="req">*</span></label>
                                 <input type="text" name="kode_jk_unit" class="form-control @error('kode_jk_unit') is-invalid @enderror" 
-                                    placeholder="Contoh: JKDEPT001" value="{{ old('kode_jk_unit') }}" maxlength="10" required>
+                                    placeholder="Contoh: JKDEPT001" value="{{ $autoCode ?? old('kode_jk_unit') }}" required readonly>
                                 @error('kode_jk_unit')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror

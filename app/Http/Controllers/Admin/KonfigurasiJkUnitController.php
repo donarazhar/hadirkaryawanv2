@@ -47,7 +47,17 @@ class KonfigurasiJkUnitController extends Controller
         $units = Unit::orderBy('name')->get();
         $jamkerja = JamKerja::orderBy('nama_jam_kerja')->get();
 
-        return view('admin.konfigurasi-jk-unit.create', compact('branches', 'units', 'jamkerja'));
+        $lastKonfigurasi = KonfigurasiJkUnit::orderBy('kode_jk_unit', 'desc')->first();
+        if ($lastKonfigurasi) {
+            $lastCode = $lastKonfigurasi->kode_jk_unit;
+            $number = (int) str_replace('KJU-', '', $lastCode);
+            $nextNumber = $number + 1;
+        } else {
+            $nextNumber = 1;
+        }
+        $autoCode = 'KJU-' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+
+        return view('admin.konfigurasi-jk-unit.create', compact('branches', 'units', 'jamkerja', 'autoCode'));
     }
 
     /**

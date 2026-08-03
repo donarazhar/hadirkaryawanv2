@@ -4,6 +4,7 @@
 @section('page-title', 'Tambah Jam Kerja')
 
 @push('styles')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <style>
     :root {
         --blue:       #2563EB;
@@ -264,20 +265,20 @@
                     <div class="card-body">
                         <div class="time-grid">
                             <div class="fg">
-                                <label>Awal Jam Masuk</label>
-                                <input type="time" name="awal_jam_masuk" class="form-control" value="{{ old('awal_jam_masuk') }}">
+                                <label>Awal Jam Masuk (WIB)</label>
+                                <input type="time" name="awal_jam_masuk" class="form-control time-picker-wib" value="{{ old('awal_jam_masuk') }}">
                             </div>
                             <div class="fg">
-                                <label>Jam Masuk</label>
-                                <input type="time" name="jam_masuk" class="form-control" value="{{ old('jam_masuk') }}">
+                                <label>Jam Masuk (WIB)</label>
+                                <input type="time" name="jam_masuk" class="form-control time-picker-wib" value="{{ old('jam_masuk') }}">
                             </div>
                             <div class="fg">
-                                <label>Akhir Jam Masuk</label>
-                                <input type="time" name="akhir_jam_masuk" class="form-control" value="{{ old('akhir_jam_masuk') }}">
+                                <label>Akhir Jam Masuk (WIB)</label>
+                                <input type="time" name="akhir_jam_masuk" class="form-control time-picker-wib" value="{{ old('akhir_jam_masuk') }}">
                             </div>
                             <div class="fg">
-                                <label>Jam Pulang</label>
-                                <input type="time" name="jam_pulang" class="form-control" value="{{ old('jam_pulang') }}">
+                                <label>Jam Pulang (WIB)</label>
+                                <input type="time" name="jam_pulang" class="form-control time-picker-wib" value="{{ old('jam_pulang') }}">
                             </div>
                         </div>
                     </div>
@@ -394,6 +395,7 @@
 @endsection
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
     let shiftIndex = 0;
 
@@ -422,6 +424,14 @@
         if ($('#tipeJamKerja').val() === 'multi_shift') {
             addShift();
         }
+
+        // Init Flatpickr for 24h format (WIB)
+        flatpickr(".time-picker-wib", {
+            enableTime: true,
+            noCalendar: true,
+            dateFormat: "H:i",
+            time_24hr: true
+        });
     });
 
     function toggleSections() {

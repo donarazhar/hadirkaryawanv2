@@ -46,6 +46,15 @@ class JamKerja extends Model
     }
 
     /**
+     * Alias relationship untuk kompatibilitas dengan controller
+     * (konfigurasiJkDeptDetail = KonfigurasiJkUnitDetail)
+     */
+    public function konfigurasiJkDeptDetail()
+    {
+        return $this->hasMany(KonfigurasiJkUnitDetail::class, 'kode_jam_kerja', 'kode_jam_kerja');
+    }
+
+    /**
      * Relationship: JamKerja has many Presensi
      */
     public function presensi()

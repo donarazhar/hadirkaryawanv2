@@ -100,7 +100,8 @@ class DatabaseSeeder extends Seeder
                     'redirect_uris' => json_encode([
                         'http://localhost:8002/auth/presensi/callback', 
                         'http://127.0.0.1:8002/auth/presensi/callback',
-                        'https://todo.donarazhar.tech/auth/presensi/callback'
+                        'https://todo.donarazhar.tech/auth/presensi/callback',
+                        'https://todo.donarazhar.site/auth/presensi/callback'
                     ]),
                     'grant_types' => json_encode(['authorization_code', 'refresh_token']),
                     'revoked' => false,
